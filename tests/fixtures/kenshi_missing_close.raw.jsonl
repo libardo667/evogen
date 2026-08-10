@@ -1,0 +1,11 @@
+{"type":"run_started","sequence":0,"payload":{"objective":"Inspect a trader and return control."}}
+{"type":"observation","sequence":1,"telemetry_sequence":100,"payload":{"ui":{"trade_open":false,"blocking_interface":null}}}
+{"type":"affordances","sequence":2,"payload":{"offers":[{"action":"open_trade_window","target_id":"trader-1"}]}}
+{"type":"planner_decision","sequence":3,"payload":{"choice":{"action":"open_trade_window","target_id":"trader-1"}}}
+{"type":"action_binding","sequence":4,"payload":{"binding":"fresh"}}
+{"type":"native_command","sequence":5,"payload":{"command_id":"cmd-1","action":"open_trade_window"}}
+{"type":"action_result","sequence":6,"payload":{"accepted":true,"executed":true}}
+{"type":"world_state_update","sequence":7,"telemetry_sequence":101,"payload":{"ui":{"trade_open":true,"blocking_interface":"trade"}}}
+{"type":"affordances","sequence":8,"payload":{"offers":[]}}
+{"type":"goal_blocked","sequence":9,"payload":{"code":"no_supported_action","blocker_type":"blocking_interface","required_effect":"close_interface"}}
+{"type":"run_finalized","sequence":10,"payload":{"success":false,"termination":"goal_blocked"}}

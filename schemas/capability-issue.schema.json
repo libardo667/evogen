@@ -1,0 +1,222 @@
+{
+  "$defs": {
+    "EvidenceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "title": "Event Id",
+          "type": "string"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "event_id",
+        "note"
+      ],
+      "title": "EvidenceRef",
+      "type": "object"
+    },
+    "FailureLayer": {
+      "enum": [
+        "perception",
+        "observability",
+        "world_representation",
+        "identity_topology",
+        "affordance_discovery",
+        "binding_preconditions",
+        "execution",
+        "outcome_verification",
+        "causal_attribution",
+        "memory_continuity",
+        "planning_strategy",
+        "recovery",
+        "runtime_infrastructure",
+        "environment_limitation",
+        "insufficient_evidence",
+        "not_reproducible"
+      ],
+      "title": "FailureLayer",
+      "type": "string"
+    },
+    "IssueClassification": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "items": {
+            "$ref": "#/$defs/FailureLayer"
+          },
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "primary": {
+          "$ref": "#/$defs/FailureLayer"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "primary",
+        "confidence",
+        "rationale"
+      ],
+      "title": "IssueClassification",
+      "type": "object"
+    },
+    "IssueStatus": {
+      "enum": [
+        "open",
+        "specified",
+        "implemented",
+        "resolved",
+        "rejected"
+      ],
+      "title": "IssueStatus",
+      "type": "string"
+    },
+    "ResolutionKind": {
+      "enum": [
+        "add_capability",
+        "correct_capability",
+        "remove_unsafe_capability",
+        "add_observation",
+        "add_outcome_evidence",
+        "add_recovery_path",
+        "change_memory_representation",
+        "change_planner_policy",
+        "add_knowledge",
+        "build_probe",
+        "fix_infrastructure",
+        "no_change_environment_refused",
+        "no_change_existing_capability"
+      ],
+      "title": "ResolutionKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "acceptance_hints": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "Acceptance Hints",
+      "type": "object"
+    },
+    "blocker_type": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Blocker Type"
+    },
+    "classification": {
+      "$ref": "#/$defs/IssueClassification"
+    },
+    "contradicting_evidence": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Contradicting Evidence",
+      "type": "array"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "issue_id": {
+      "title": "Issue Id",
+      "type": "string"
+    },
+    "known_unknowns": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Known Unknowns",
+      "type": "array"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "title": "Metadata",
+      "type": "object"
+    },
+    "prediction": {
+      "title": "Prediction",
+      "type": "string"
+    },
+    "proposed_resolution": {
+      "$ref": "#/$defs/ResolutionKind"
+    },
+    "required_effect": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Required Effect"
+    },
+    "status": {
+      "$ref": "#/$defs/IssueStatus",
+      "default": "open"
+    },
+    "subject_generation": {
+      "title": "Subject Generation",
+      "type": "string"
+    },
+    "supporting_evidence": {
+      "items": {
+        "$ref": "#/$defs/EvidenceRef"
+      },
+      "title": "Supporting Evidence",
+      "type": "array"
+    },
+    "symptom_summary": {
+      "title": "Symptom Summary",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    }
+  },
+  "required": [
+    "issue_id",
+    "subject_generation",
+    "title",
+    "symptom_summary",
+    "classification",
+    "supporting_evidence",
+    "proposed_resolution",
+    "prediction"
+  ],
+  "title": "CapabilityIssue",
+  "type": "object"
+}

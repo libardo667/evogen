@@ -1,0 +1,67 @@
+{
+  "$defs": {
+    "GateVerdict": {
+      "enum": [
+        "retain",
+        "revise",
+        "reject"
+      ],
+      "title": "GateVerdict",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "candidate_id": {
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "decision_id": {
+      "title": "Decision Id",
+      "type": "string"
+    },
+    "failed_rules": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Failed Rules",
+      "type": "array"
+    },
+    "passed_rules": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Passed Rules",
+      "type": "array"
+    },
+    "rationale": {
+      "title": "Rationale",
+      "type": "string"
+    },
+    "retained_generation_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Retained Generation Id"
+    },
+    "verdict": {
+      "$ref": "#/$defs/GateVerdict"
+    }
+  },
+  "required": [
+    "decision_id",
+    "candidate_id",
+    "verdict",
+    "passed_rules",
+    "failed_rules",
+    "rationale"
+  ],
+  "title": "GateDecision",
+  "type": "object"
+}

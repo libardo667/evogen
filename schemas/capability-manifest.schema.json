@@ -1,0 +1,113 @@
+{
+  "$defs": {
+    "CapabilityDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "applicability": {
+          "title": "Applicability",
+          "type": "string"
+        },
+        "completion_evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Completion Evidence",
+          "type": "array"
+        },
+        "implementation_ref": {
+          "title": "Implementation Ref",
+          "type": "string"
+        },
+        "input_schema": {
+          "additionalProperties": true,
+          "title": "Input Schema",
+          "type": "object"
+        },
+        "introduced_generation": {
+          "title": "Introduced Generation",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "limitations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Limitations",
+          "type": "array"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "output_schema": {
+          "additionalProperties": true,
+          "title": "Output Schema",
+          "type": "object"
+        },
+        "owner_component": {
+          "title": "Owner Component",
+          "type": "string"
+        },
+        "proof_class": {
+          "$ref": "#/$defs/ProofClass",
+          "default": "portable"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        },
+        "semantic_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Semantic Effects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "purpose",
+        "kind",
+        "owner_component",
+        "applicability",
+        "implementation_ref",
+        "introduced_generation"
+      ],
+      "title": "CapabilityDefinition",
+      "type": "object"
+    },
+    "ProofClass": {
+      "enum": [
+        "synthetic",
+        "portable",
+        "replay",
+        "live"
+      ],
+      "title": "ProofClass",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "capabilities": {
+      "items": {
+        "$ref": "#/$defs/CapabilityDefinition"
+      },
+      "title": "Capabilities",
+      "type": "array"
+    },
+    "generation_id": {
+      "title": "Generation Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "generation_id",
+    "capabilities"
+  ],
+  "title": "CapabilityManifest",
+  "type": "object"
+}

@@ -1,0 +1,57 @@
+{
+  "$defs": {
+    "AgentRole": {
+      "enum": [
+        "trace_analyst",
+        "diagnostician",
+        "investigator",
+        "capability_architect",
+        "implementer",
+        "adversarial_reviewer",
+        "evaluator",
+        "release_steward"
+      ],
+      "title": "AgentRole",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    },
+    "output": {
+      "additionalProperties": true,
+      "title": "Output",
+      "type": "object"
+    },
+    "request_id": {
+      "title": "Request Id",
+      "type": "string"
+    },
+    "response_id": {
+      "title": "Response Id",
+      "type": "string"
+    },
+    "role": {
+      "$ref": "#/$defs/AgentRole"
+    },
+    "success": {
+      "title": "Success",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "response_id",
+    "request_id",
+    "role",
+    "success",
+    "output"
+  ],
+  "title": "RoleResponse",
+  "type": "object"
+}

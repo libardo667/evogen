@@ -1,0 +1,20 @@
+{
+  "bounded-collection": "bounded-collection.schema.json",
+  "candidate-manifest": "candidate-manifest.schema.json",
+  "capability-definition": "capability-definition.schema.json",
+  "capability-issue": "capability-issue.schema.json",
+  "capability-manifest": "capability-manifest.schema.json",
+  "capability-spec": "capability-spec.schema.json",
+  "cycle-result": "cycle-result.schema.json",
+  "distilled-trace": "distilled-trace.schema.json",
+  "evolution-plan": "evolution-plan.schema.json",
+  "experiment-result": "experiment-result.schema.json",
+  "gate-decision": "gate-decision.schema.json",
+  "generation-manifest": "generation-manifest.schema.json",
+  "investigation-report": "investigation-report.schema.json",
+  "patch-set": "patch-set.schema.json",
+  "role-request": "role-request.schema.json",
+  "role-response": "role-response.schema.json",
+  "run-record": "run-record.schema.json",
+  "trajectory-event": "trajectory-event.schema.json"
+}

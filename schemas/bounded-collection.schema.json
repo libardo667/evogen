@@ -1,0 +1,47 @@
+{
+  "$defs": {
+    "Completeness": {
+      "enum": [
+        "complete",
+        "truncated",
+        "missing",
+        "unknown"
+      ],
+      "title": "Completeness",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "completeness": {
+      "$ref": "#/$defs/Completeness"
+    },
+    "items": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "known_total": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Known Total"
+    }
+  },
+  "required": [
+    "items",
+    "completeness"
+  ],
+  "title": "BoundedCollection[dict[str, object]]",
+  "type": "object"
+}

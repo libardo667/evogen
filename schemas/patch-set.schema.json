@@ -1,0 +1,50 @@
+{
+  "$defs": {
+    "PatchFile": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "content"
+      ],
+      "title": "PatchFile",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "claimed_capabilities": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Claimed Capabilities",
+      "type": "array"
+    },
+    "files": {
+      "items": {
+        "$ref": "#/$defs/PatchFile"
+      },
+      "title": "Files",
+      "type": "array"
+    },
+    "summary": {
+      "title": "Summary",
+      "type": "string"
+    }
+  },
+  "required": [
+    "summary",
+    "files"
+  ],
+  "title": "PatchSet",
+  "type": "object"
+}

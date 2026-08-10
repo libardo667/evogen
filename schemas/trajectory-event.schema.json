@@ -1,0 +1,85 @@
+{
+  "$defs": {
+    "EventKind": {
+      "enum": [
+        "run_started",
+        "observation",
+        "observation_delta",
+        "affordance_set",
+        "decision",
+        "binding",
+        "dispatch",
+        "execution_receipt",
+        "outcome_observation",
+        "memory_update",
+        "human_intervention",
+        "recovery",
+        "error",
+        "goal_blocked",
+        "goal_achieved",
+        "run_finished"
+      ],
+      "title": "EventKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "generation_id": {
+      "title": "Generation Id",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/EventKind"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "title": "Payload",
+      "type": "object"
+    },
+    "recorded_at": {
+      "format": "date-time",
+      "title": "Recorded At",
+      "type": "string"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "sequence": {
+      "minimum": 0,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "world_revision": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "World Revision"
+    }
+  },
+  "required": [
+    "event_id",
+    "run_id",
+    "generation_id",
+    "scenario_id",
+    "sequence",
+    "kind"
+  ],
+  "title": "TrajectoryEvent",
+  "type": "object"
+}

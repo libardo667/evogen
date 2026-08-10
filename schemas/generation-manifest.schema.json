@@ -1,0 +1,77 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "artifact_digests": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Artifact Digests",
+      "type": "object"
+    },
+    "capability_manifest_digest": {
+      "title": "Capability Manifest Digest",
+      "type": "string"
+    },
+    "config": {
+      "additionalProperties": true,
+      "title": "Config",
+      "type": "object"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "generation_id": {
+      "title": "Generation Id",
+      "type": "string"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "title": "Metadata",
+      "type": "object"
+    },
+    "models": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Models",
+      "type": "object"
+    },
+    "parent_generation_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parent Generation Id"
+    },
+    "prompts": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Prompts",
+      "type": "object"
+    },
+    "source_ref": {
+      "title": "Source Ref",
+      "type": "string"
+    },
+    "subject": {
+      "title": "Subject",
+      "type": "string"
+    }
+  },
+  "required": [
+    "generation_id",
+    "subject",
+    "source_ref",
+    "capability_manifest_digest"
+  ],
+  "title": "GenerationManifest",
+  "type": "object"
+}

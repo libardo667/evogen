@@ -1,0 +1,1123 @@
+{
+  "$defs": {
+    "CandidateManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_digests": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Artifact Digests",
+          "type": "object"
+        },
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "changed_files": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Changed Files",
+          "type": "array"
+        },
+        "claimed_capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Claimed Capabilities",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "issue_id": {
+          "title": "Issue Id",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "parent_generation": {
+          "title": "Parent Generation",
+          "type": "string"
+        },
+        "source_digest": {
+          "title": "Source Digest",
+          "type": "string"
+        },
+        "spec_id": {
+          "title": "Spec Id",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/CandidateStatus",
+          "default": "created"
+        },
+        "workspace_path": {
+          "title": "Workspace Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "parent_generation",
+        "issue_id",
+        "spec_id",
+        "workspace_path",
+        "source_digest",
+        "artifact_digests",
+        "changed_files",
+        "claimed_capabilities"
+      ],
+      "title": "CandidateManifest",
+      "type": "object"
+    },
+    "CandidateStatus": {
+      "enum": [
+        "created",
+        "reviewed",
+        "evaluated",
+        "retained",
+        "rejected"
+      ],
+      "title": "CandidateStatus",
+      "type": "string"
+    },
+    "CapabilityIssue": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_hints": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Acceptance Hints",
+          "type": "object"
+        },
+        "blocker_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blocker Type"
+        },
+        "classification": {
+          "$ref": "#/$defs/IssueClassification"
+        },
+        "contradicting_evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Contradicting Evidence",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "issue_id": {
+          "title": "Issue Id",
+          "type": "string"
+        },
+        "known_unknowns": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Known Unknowns",
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "prediction": {
+          "title": "Prediction",
+          "type": "string"
+        },
+        "proposed_resolution": {
+          "$ref": "#/$defs/ResolutionKind"
+        },
+        "required_effect": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Required Effect"
+        },
+        "status": {
+          "$ref": "#/$defs/IssueStatus",
+          "default": "open"
+        },
+        "subject_generation": {
+          "title": "Subject Generation",
+          "type": "string"
+        },
+        "supporting_evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "title": "Supporting Evidence",
+          "type": "array"
+        },
+        "symptom_summary": {
+          "title": "Symptom Summary",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "issue_id",
+        "subject_generation",
+        "title",
+        "symptom_summary",
+        "classification",
+        "supporting_evidence",
+        "proposed_resolution",
+        "prediction"
+      ],
+      "title": "CapabilityIssue",
+      "type": "object"
+    },
+    "CapabilitySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "applicability": {
+          "title": "Applicability",
+          "type": "string"
+        },
+        "binding_rules": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Binding Rules",
+          "type": "array"
+        },
+        "capability_name": {
+          "title": "Capability Name",
+          "type": "string"
+        },
+        "completion_evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Completion Evidence",
+          "type": "array"
+        },
+        "execution_route": {
+          "title": "Execution Route",
+          "type": "string"
+        },
+        "implementation_constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Implementation Constraints",
+          "type": "array"
+        },
+        "input_schema": {
+          "additionalProperties": true,
+          "title": "Input Schema",
+          "type": "object"
+        },
+        "issue_id": {
+          "title": "Issue Id",
+          "type": "string"
+        },
+        "long_horizon_suites": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Long Horizon Suites",
+          "type": "array"
+        },
+        "non_goals": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Non Goals",
+          "type": "array"
+        },
+        "output_schema": {
+          "additionalProperties": true,
+          "title": "Output Schema",
+          "type": "object"
+        },
+        "owner_component": {
+          "title": "Owner Component",
+          "type": "string"
+        },
+        "parent_generation": {
+          "title": "Parent Generation",
+          "type": "string"
+        },
+        "prediction": {
+          "title": "Prediction",
+          "type": "string"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        },
+        "regression_suites": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Regression Suites",
+          "type": "array"
+        },
+        "revealing_cases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Revealing Cases",
+          "type": "array"
+        },
+        "semantic_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Semantic Effects",
+          "type": "array"
+        },
+        "spec_id": {
+          "title": "Spec Id",
+          "type": "string"
+        },
+        "structural_variants": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Structural Variants",
+          "type": "array"
+        }
+      },
+      "required": [
+        "spec_id",
+        "issue_id",
+        "parent_generation",
+        "capability_name",
+        "purpose",
+        "semantic_effects",
+        "owner_component",
+        "input_schema",
+        "output_schema",
+        "applicability",
+        "binding_rules",
+        "execution_route",
+        "completion_evidence",
+        "non_goals",
+        "prediction",
+        "revealing_cases",
+        "structural_variants",
+        "regression_suites",
+        "long_horizon_suites"
+      ],
+      "title": "CapabilitySpec",
+      "type": "object"
+    },
+    "EnvironmentOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "input_schema": {
+          "additionalProperties": true,
+          "title": "Input Schema",
+          "type": "object"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "output_schema": {
+          "additionalProperties": true,
+          "title": "Output Schema",
+          "type": "object"
+        },
+        "semantic_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Semantic Effects",
+          "type": "array"
+        },
+        "source_ref": {
+          "title": "Source Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "semantic_effects",
+        "description",
+        "source_ref"
+      ],
+      "title": "EnvironmentOperation",
+      "type": "object"
+    },
+    "EvidenceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "title": "Event Id",
+          "type": "string"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "event_id",
+        "note"
+      ],
+      "title": "EvidenceRef",
+      "type": "object"
+    },
+    "ExperimentResult": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_generation": {
+          "title": "Baseline Generation",
+          "type": "string"
+        },
+        "baseline_metrics": {
+          "$ref": "#/$defs/MetricVector"
+        },
+        "baseline_results": {
+          "items": {
+            "$ref": "#/$defs/ScenarioResult"
+          },
+          "title": "Baseline Results",
+          "type": "array"
+        },
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "candidate_metrics": {
+          "$ref": "#/$defs/MetricVector"
+        },
+        "candidate_results": {
+          "items": {
+            "$ref": "#/$defs/ScenarioResult"
+          },
+          "title": "Candidate Results",
+          "type": "array"
+        },
+        "experiment_id": {
+          "title": "Experiment Id",
+          "type": "string"
+        },
+        "finished_at": {
+          "format": "date-time",
+          "title": "Finished At",
+          "type": "string"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "prediction_matched": {
+          "title": "Prediction Matched",
+          "type": "boolean"
+        },
+        "review_passed": {
+          "title": "Review Passed",
+          "type": "boolean"
+        },
+        "started_at": {
+          "format": "date-time",
+          "title": "Started At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "experiment_id",
+        "candidate_id",
+        "baseline_generation",
+        "started_at",
+        "finished_at",
+        "baseline_results",
+        "candidate_results",
+        "baseline_metrics",
+        "candidate_metrics",
+        "prediction_matched",
+        "review_passed"
+      ],
+      "title": "ExperimentResult",
+      "type": "object"
+    },
+    "FailureLayer": {
+      "enum": [
+        "perception",
+        "observability",
+        "world_representation",
+        "identity_topology",
+        "affordance_discovery",
+        "binding_preconditions",
+        "execution",
+        "outcome_verification",
+        "causal_attribution",
+        "memory_continuity",
+        "planning_strategy",
+        "recovery",
+        "runtime_infrastructure",
+        "environment_limitation",
+        "insufficient_evidence",
+        "not_reproducible"
+      ],
+      "title": "FailureLayer",
+      "type": "string"
+    },
+    "GateDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "decision_id": {
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "failed_rules": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Failed Rules",
+          "type": "array"
+        },
+        "passed_rules": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Passed Rules",
+          "type": "array"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "retained_generation_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Retained Generation Id"
+        },
+        "verdict": {
+          "$ref": "#/$defs/GateVerdict"
+        }
+      },
+      "required": [
+        "decision_id",
+        "candidate_id",
+        "verdict",
+        "passed_rules",
+        "failed_rules",
+        "rationale"
+      ],
+      "title": "GateDecision",
+      "type": "object"
+    },
+    "GateVerdict": {
+      "enum": [
+        "retain",
+        "revise",
+        "reject"
+      ],
+      "title": "GateVerdict",
+      "type": "string"
+    },
+    "GenerationManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_digests": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Artifact Digests",
+          "type": "object"
+        },
+        "capability_manifest_digest": {
+          "title": "Capability Manifest Digest",
+          "type": "string"
+        },
+        "config": {
+          "additionalProperties": true,
+          "title": "Config",
+          "type": "object"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "generation_id": {
+          "title": "Generation Id",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "models": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Models",
+          "type": "object"
+        },
+        "parent_generation_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Generation Id"
+        },
+        "prompts": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Prompts",
+          "type": "object"
+        },
+        "source_ref": {
+          "title": "Source Ref",
+          "type": "string"
+        },
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        }
+      },
+      "required": [
+        "generation_id",
+        "subject",
+        "source_ref",
+        "capability_manifest_digest"
+      ],
+      "title": "GenerationManifest",
+      "type": "object"
+    },
+    "InvestigationReport": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_operations": {
+          "items": {
+            "$ref": "#/$defs/EnvironmentOperation"
+          },
+          "title": "Candidate Operations",
+          "type": "array"
+        },
+        "conclusion": {
+          "title": "Conclusion",
+          "type": "string"
+        },
+        "inspected_sources": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Inspected Sources",
+          "type": "array"
+        },
+        "issue_id": {
+          "title": "Issue Id",
+          "type": "string"
+        },
+        "rejected_operations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Rejected Operations",
+          "type": "array"
+        },
+        "remaining_unknowns": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Remaining Unknowns",
+          "type": "array"
+        },
+        "report_id": {
+          "title": "Report Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "report_id",
+        "issue_id",
+        "inspected_sources",
+        "candidate_operations",
+        "conclusion"
+      ],
+      "title": "InvestigationReport",
+      "type": "object"
+    },
+    "IssueClassification": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "items": {
+            "$ref": "#/$defs/FailureLayer"
+          },
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "primary": {
+          "$ref": "#/$defs/FailureLayer"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "primary",
+        "confidence",
+        "rationale"
+      ],
+      "title": "IssueClassification",
+      "type": "object"
+    },
+    "IssueStatus": {
+      "enum": [
+        "open",
+        "specified",
+        "implemented",
+        "resolved",
+        "rejected"
+      ],
+      "title": "IssueStatus",
+      "type": "string"
+    },
+    "MetricVector": {
+      "additionalProperties": false,
+      "properties": {
+        "average_steps": {
+          "minimum": 0.0,
+          "title": "Average Steps",
+          "type": "number"
+        },
+        "blocked_run_count": {
+          "minimum": 0,
+          "title": "Blocked Run Count",
+          "type": "integer"
+        },
+        "intervention_count": {
+          "minimum": 0,
+          "title": "Intervention Count",
+          "type": "integer"
+        },
+        "invalid_action_count": {
+          "minimum": 0,
+          "title": "Invalid Action Count",
+          "type": "integer"
+        },
+        "long_horizon_success_rate": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Long Horizon Success Rate",
+          "type": "number"
+        },
+        "new_high_severity_issues": {
+          "default": 0,
+          "minimum": 0,
+          "title": "New High Severity Issues",
+          "type": "integer"
+        },
+        "regression_success_rate": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Regression Success Rate",
+          "type": "number"
+        },
+        "revealing_success_rate": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Revealing Success Rate",
+          "type": "number"
+        },
+        "variant_success_rate": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Variant Success Rate",
+          "type": "number"
+        }
+      },
+      "required": [
+        "revealing_success_rate",
+        "variant_success_rate",
+        "regression_success_rate",
+        "long_horizon_success_rate",
+        "intervention_count",
+        "invalid_action_count",
+        "blocked_run_count",
+        "average_steps"
+      ],
+      "title": "MetricVector",
+      "type": "object"
+    },
+    "ResolutionKind": {
+      "enum": [
+        "add_capability",
+        "correct_capability",
+        "remove_unsafe_capability",
+        "add_observation",
+        "add_outcome_evidence",
+        "add_recovery_path",
+        "change_memory_representation",
+        "change_planner_policy",
+        "add_knowledge",
+        "build_probe",
+        "fix_infrastructure",
+        "no_change_environment_refused",
+        "no_change_existing_capability"
+      ],
+      "title": "ResolutionKind",
+      "type": "string"
+    },
+    "ReviewFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "file": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "File"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        }
+      },
+      "required": [
+        "severity",
+        "code",
+        "message"
+      ],
+      "title": "ReviewFinding",
+      "type": "object"
+    },
+    "ReviewReport": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "checks": {
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "title": "Checks",
+          "type": "object"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/ReviewFinding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "passed": {
+          "title": "Passed",
+          "type": "boolean"
+        },
+        "review_id": {
+          "title": "Review Id",
+          "type": "string"
+        },
+        "reviewed_files": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewed Files",
+          "type": "array"
+        }
+      },
+      "required": [
+        "review_id",
+        "candidate_id",
+        "passed",
+        "checks"
+      ],
+      "title": "ReviewReport",
+      "type": "object"
+    },
+    "RunRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "finished_at": {
+          "format": "date-time",
+          "title": "Finished At",
+          "type": "string"
+        },
+        "generation_id": {
+          "title": "Generation Id",
+          "type": "string"
+        },
+        "interventions": {
+          "default": 0,
+          "title": "Interventions",
+          "type": "integer"
+        },
+        "invalid_actions": {
+          "default": 0,
+          "title": "Invalid Actions",
+          "type": "integer"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "scenario_id": {
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "title": "Started At",
+          "type": "string"
+        },
+        "steps": {
+          "title": "Steps",
+          "type": "integer"
+        },
+        "success": {
+          "title": "Success",
+          "type": "boolean"
+        },
+        "termination": {
+          "title": "Termination",
+          "type": "string"
+        },
+        "trace_digest": {
+          "title": "Trace Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "generation_id",
+        "scenario_id",
+        "started_at",
+        "finished_at",
+        "success",
+        "termination",
+        "trace_digest",
+        "steps"
+      ],
+      "title": "RunRecord",
+      "type": "object"
+    },
+    "ScenarioResult": {
+      "additionalProperties": false,
+      "properties": {
+        "blocked": {
+          "title": "Blocked",
+          "type": "boolean"
+        },
+        "category": {
+          "title": "Category",
+          "type": "string"
+        },
+        "interventions": {
+          "title": "Interventions",
+          "type": "integer"
+        },
+        "invalid_actions": {
+          "title": "Invalid Actions",
+          "type": "integer"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "scenario_id": {
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "steps": {
+          "title": "Steps",
+          "type": "integer"
+        },
+        "success": {
+          "title": "Success",
+          "type": "boolean"
+        },
+        "termination": {
+          "title": "Termination",
+          "type": "string"
+        },
+        "trace_digest": {
+          "title": "Trace Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scenario_id",
+        "category",
+        "success",
+        "steps",
+        "interventions",
+        "invalid_actions",
+        "blocked",
+        "termination",
+        "run_id",
+        "trace_digest"
+      ],
+      "title": "ScenarioResult",
+      "type": "object"
+    },
+    "Severity": {
+      "enum": [
+        "info",
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "title": "Severity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "baseline_generation": {
+      "$ref": "#/$defs/GenerationManifest"
+    },
+    "candidate": {
+      "$ref": "#/$defs/CandidateManifest"
+    },
+    "decision": {
+      "$ref": "#/$defs/GateDecision"
+    },
+    "diagnostic_runs": {
+      "items": {
+        "$ref": "#/$defs/RunRecord"
+      },
+      "title": "Diagnostic Runs",
+      "type": "array"
+    },
+    "experiment": {
+      "$ref": "#/$defs/ExperimentResult"
+    },
+    "investigation": {
+      "$ref": "#/$defs/InvestigationReport"
+    },
+    "issue": {
+      "$ref": "#/$defs/CapabilityIssue"
+    },
+    "retained_generation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GenerationManifest"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "review": {
+      "$ref": "#/$defs/ReviewReport"
+    },
+    "specification": {
+      "$ref": "#/$defs/CapabilitySpec"
+    },
+    "workspace": {
+      "title": "Workspace",
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace",
+    "baseline_generation",
+    "diagnostic_runs",
+    "issue",
+    "investigation",
+    "specification",
+    "candidate",
+    "review",
+    "experiment",
+    "decision"
+  ],
+  "title": "CycleResult",
+  "type": "object"
+}

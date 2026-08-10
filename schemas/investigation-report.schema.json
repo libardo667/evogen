@@ -1,0 +1,105 @@
+{
+  "$defs": {
+    "EnvironmentOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "input_schema": {
+          "additionalProperties": true,
+          "title": "Input Schema",
+          "type": "object"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "output_schema": {
+          "additionalProperties": true,
+          "title": "Output Schema",
+          "type": "object"
+        },
+        "semantic_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Semantic Effects",
+          "type": "array"
+        },
+        "source_ref": {
+          "title": "Source Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "semantic_effects",
+        "description",
+        "source_ref"
+      ],
+      "title": "EnvironmentOperation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "candidate_operations": {
+      "items": {
+        "$ref": "#/$defs/EnvironmentOperation"
+      },
+      "title": "Candidate Operations",
+      "type": "array"
+    },
+    "conclusion": {
+      "title": "Conclusion",
+      "type": "string"
+    },
+    "inspected_sources": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Inspected Sources",
+      "type": "array"
+    },
+    "issue_id": {
+      "title": "Issue Id",
+      "type": "string"
+    },
+    "rejected_operations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Rejected Operations",
+      "type": "array"
+    },
+    "remaining_unknowns": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Remaining Unknowns",
+      "type": "array"
+    },
+    "report_id": {
+      "title": "Report Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "report_id",
+    "issue_id",
+    "inspected_sources",
+    "candidate_operations",
+    "conclusion"
+  ],
+  "title": "InvestigationReport",
+  "type": "object"
+}

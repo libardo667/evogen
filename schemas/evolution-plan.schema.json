@@ -1,0 +1,56 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "diagnostic_scenarios": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Diagnostic Scenarios",
+      "type": "array"
+    },
+    "forbidden_literals": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Forbidden Literals",
+      "type": "array"
+    },
+    "long_horizon_suites": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Long Horizon Suites",
+      "type": "array"
+    },
+    "regression_suites": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Regression Suites",
+      "type": "array"
+    },
+    "revealing_cases": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Revealing Cases",
+      "type": "array"
+    },
+    "structural_variants": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Structural Variants",
+      "type": "array"
+    }
+  },
+  "required": [
+    "diagnostic_scenarios",
+    "revealing_cases",
+    "structural_variants",
+    "regression_suites",
+    "long_horizon_suites"
+  ],
+  "title": "EvolutionPlan",
+  "type": "object"
+}

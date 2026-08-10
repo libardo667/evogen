@@ -1,0 +1,60 @@
+{
+  "$defs": {
+    "AgentRole": {
+      "enum": [
+        "trace_analyst",
+        "diagnostician",
+        "investigator",
+        "capability_architect",
+        "implementer",
+        "adversarial_reviewer",
+        "evaluator",
+        "release_steward"
+      ],
+      "title": "AgentRole",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "constraints": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Constraints",
+      "type": "array"
+    },
+    "input_artifacts": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Input Artifacts",
+      "type": "object"
+    },
+    "objective": {
+      "title": "Objective",
+      "type": "string"
+    },
+    "output_contract": {
+      "additionalProperties": true,
+      "title": "Output Contract",
+      "type": "object"
+    },
+    "request_id": {
+      "title": "Request Id",
+      "type": "string"
+    },
+    "role": {
+      "$ref": "#/$defs/AgentRole"
+    }
+  },
+  "required": [
+    "request_id",
+    "role",
+    "objective",
+    "input_artifacts",
+    "output_contract"
+  ],
+  "title": "RoleRequest",
+  "type": "object"
+}

@@ -1,0 +1,149 @@
+{
+  "$defs": {
+    "EvidenceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "title": "Event Id",
+          "type": "string"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "event_id",
+        "note"
+      ],
+      "title": "EvidenceRef",
+      "type": "object"
+    },
+    "FailureSignature": {
+      "additionalProperties": false,
+      "properties": {
+        "blocker_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blocker Type"
+        },
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "count": {
+          "minimum": 1,
+          "title": "Count",
+          "type": "integer"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "facts": {
+          "additionalProperties": true,
+          "title": "Facts",
+          "type": "object"
+        },
+        "offered_actions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Offered Actions",
+          "type": "array"
+        },
+        "required_effect": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Required Effect"
+        }
+      },
+      "required": [
+        "code",
+        "count",
+        "evidence"
+      ],
+      "title": "FailureSignature",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "event_count": {
+      "title": "Event Count",
+      "type": "integer"
+    },
+    "existing_capabilities": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Existing Capabilities",
+      "type": "array"
+    },
+    "existing_semantic_effects": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Existing Semantic Effects",
+      "type": "array"
+    },
+    "generation_id": {
+      "title": "Generation Id",
+      "type": "string"
+    },
+    "run_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Run Ids",
+      "type": "array"
+    },
+    "scenario_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Scenario Ids",
+      "type": "array"
+    },
+    "signatures": {
+      "items": {
+        "$ref": "#/$defs/FailureSignature"
+      },
+      "title": "Signatures",
+      "type": "array"
+    }
+  },
+  "required": [
+    "generation_id",
+    "run_ids",
+    "scenario_ids",
+    "existing_capabilities",
+    "existing_semantic_effects",
+    "signatures",
+    "event_count"
+  ],
+  "title": "DistilledTrace",
+  "type": "object"
+}

@@ -1,0 +1,137 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "applicability": {
+      "title": "Applicability",
+      "type": "string"
+    },
+    "binding_rules": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Binding Rules",
+      "type": "array"
+    },
+    "capability_name": {
+      "title": "Capability Name",
+      "type": "string"
+    },
+    "completion_evidence": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Completion Evidence",
+      "type": "array"
+    },
+    "execution_route": {
+      "title": "Execution Route",
+      "type": "string"
+    },
+    "implementation_constraints": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Implementation Constraints",
+      "type": "array"
+    },
+    "input_schema": {
+      "additionalProperties": true,
+      "title": "Input Schema",
+      "type": "object"
+    },
+    "issue_id": {
+      "title": "Issue Id",
+      "type": "string"
+    },
+    "long_horizon_suites": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Long Horizon Suites",
+      "type": "array"
+    },
+    "non_goals": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Non Goals",
+      "type": "array"
+    },
+    "output_schema": {
+      "additionalProperties": true,
+      "title": "Output Schema",
+      "type": "object"
+    },
+    "owner_component": {
+      "title": "Owner Component",
+      "type": "string"
+    },
+    "parent_generation": {
+      "title": "Parent Generation",
+      "type": "string"
+    },
+    "prediction": {
+      "title": "Prediction",
+      "type": "string"
+    },
+    "purpose": {
+      "title": "Purpose",
+      "type": "string"
+    },
+    "regression_suites": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Regression Suites",
+      "type": "array"
+    },
+    "revealing_cases": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Revealing Cases",
+      "type": "array"
+    },
+    "semantic_effects": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Semantic Effects",
+      "type": "array"
+    },
+    "spec_id": {
+      "title": "Spec Id",
+      "type": "string"
+    },
+    "structural_variants": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Structural Variants",
+      "type": "array"
+    }
+  },
+  "required": [
+    "spec_id",
+    "issue_id",
+    "parent_generation",
+    "capability_name",
+    "purpose",
+    "semantic_effects",
+    "owner_component",
+    "input_schema",
+    "output_schema",
+    "applicability",
+    "binding_rules",
+    "execution_route",
+    "completion_evidence",
+    "non_goals",
+    "prediction",
+    "revealing_cases",
+    "structural_variants",
+    "regression_suites",
+    "long_horizon_suites"
+  ],
+  "title": "CapabilitySpec",
+  "type": "object"
+}
