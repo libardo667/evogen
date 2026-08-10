@@ -7,18 +7,23 @@ retains older checkpoints.
 ## Repository and planning authority
 
 ```text
-parent commit          88c169d46e3eaf5c0b0cc87f31e05c95ea9356b4
+parent commit          9c8d94c59a95222a719e20fac5a61d2ec712743d
 integration branch     main
 current goal           Goal 1 - Freeze and publish the alpha honestly
 next unstarted goal    Goal 2 - Give subjects a real plugin boundary
+alpha source commit    88c169d46e3eaf5c0b0cc87f31e05c95ea9356b4
+alpha release commit   9c8d94c59a95222a719e20fac5a61d2ec712743d
+alpha tag              v0.1.0
+public remote          https://github.com/libardo667/evogen
 plan file              EVOGEN_KENSHI_OPENTTD_BOUNDED_GOALS.md
 plan file id           1IcZkzsjmsdtPqxxj4NxSiKWIBzB8In3D
 plan updated           2026-08-10T21:25:08.835Z
 ```
 
-The alpha source baseline is the parent commit above. It was restored from the
-complete Git bundle at `C:\Hub\00_Inbox\evogen-main.bundle`; the bundle SHA-256
-is `bb4d33ec2cf10fc4db4157f3d5055c259fb4be1c54ba434f48b3f29af1a833ca`.
+The alpha source baseline is the `alpha source commit` above. It was restored
+from the complete Git bundle at `C:\Hub\00_Inbox\evogen-main.bundle`; the
+bundle SHA-256 is
+`bb4d33ec2cf10fc4db4157f3d5055c259fb4be1c54ba434f48b3f29af1a833ca`.
 The extracted workspace matched that commit after excluding its local virtual
 environment and Windows download-metadata sidecars.
 
@@ -70,8 +75,13 @@ Ruff policy and strict mypy over `src`, executes the complete microworld cycle
 in a temporary workspace, and checks whitespace errors.
 
 The supported alpha matrix is CPython 3.11, 3.12, and 3.13. Local verification
-passed under CPython 3.11 and 3.12 on 2026-08-10. Hosted matrix completion
-remains withheld until the committed workflow is observed after publication.
+passed under CPython 3.11 and 3.12 on 2026-08-10. Public GitHub Actions runs
+[`31439981915`](https://github.com/libardo667/evogen/actions/runs/31439981915)
+for `main` and
+[`31439981992`](https://github.com/libardo667/evogen/actions/runs/31439981992)
+for `v0.1.0` both ran the complete matrix against exact commit
+`9c8d94c59a95222a719e20fac5a61d2ec712743d`; every Python 3.11, 3.12, and
+3.13 job completed successfully.
 
 ## External subject availability
 
@@ -88,9 +98,12 @@ OpenTTD subject generation.
 
 ## Completion boundary
 
-Goal 1 ends after the locked proof passes from this candidate and a fresh clone,
-the checkpoint freshness ratchet passes before and after its commit, the tree is
-clean, and the completed commit is tagged as the alpha baseline. Goal 2 remains
+Goal 1 is complete. The locked proof passed from the candidate and a fresh
+clone, the checkpoint freshness ratchet passed before and after the release
+commit, the public remote matches local `main`, both branch and tag matrices
+passed, the tree is clean, and the release commit is tagged as the alpha
+baseline. This evidence-only follow-up records the independently observed
+hosted result without changing runtime or package behavior. Goal 2 remains
 unstarted.
 
 `EvolutionOrchestrator.run()` intentionally remains the alpha's synchronous
