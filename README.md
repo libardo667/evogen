@@ -140,3 +140,5 @@ game integration, resumable stage execution, or model-generated diagnosis.
 
 The current repository authority and next unstarted bounded goal are recorded
 in [docs/INTEGRATION_CHECKPOINT.md](docs/INTEGRATION_CHECKPOINT.md).
+The cross-repository delegation and evidence handoff protocol is recorded in
+[docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md](docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md).

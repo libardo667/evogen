@@ -7,7 +7,7 @@ retains older checkpoints.
 ## Repository and planning authority
 
 ```text
-parent commit          9c8d94c59a95222a719e20fac5a61d2ec712743d
+parent commit          5db5b64459b6a0c9e892a9bfc3513a441bada62e
 integration branch     main
 current goal           Goal 1 - Freeze and publish the alpha honestly
 next unstarted goal    Goal 2 - Give subjects a real plugin boundary
@@ -18,6 +18,7 @@ public remote          https://github.com/libardo667/evogen
 plan file              EVOGEN_KENSHI_OPENTTD_BOUNDED_GOALS.md
 plan file id           1IcZkzsjmsdtPqxxj4NxSiKWIBzB8In3D
 plan updated           2026-08-10T21:25:08.835Z
+execution plan         docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
 ```
 
 The alpha source baseline is the `alpha source commit` above. It was restored
@@ -70,9 +71,10 @@ uv run --frozen --extra dev python scripts/verify.py
 ```
 
 It uses the checked-in lock, compiles the source and tests, runs the full pytest
-suite including schema freshness and checkpoint freshness, enforces the narrow
-Ruff policy and strict mypy over `src`, executes the complete microworld cycle
-in a temporary workspace, and checks whitespace errors.
+suite including schema freshness, checkpoint freshness, and execution-plan
+sequencing, enforces the narrow Ruff policy and strict mypy over `src`, executes
+the complete microworld cycle in a temporary workspace, and checks whitespace
+errors.
 
 The supported alpha matrix is CPython 3.11, 3.12, and 3.13. Local verification
 passed under CPython 3.11 and 3.12 on 2026-08-10. Public GitHub Actions runs
@@ -105,6 +107,13 @@ passed, the tree is clean, and the release commit is tagged as the alpha
 baseline. This evidence-only follow-up records the independently observed
 hosted result without changing runtime or package behavior. Goal 2 remains
 unstarted.
+
+The checked-in sequenced execution plan is the operational routing companion
+for the external 49-goal planning authority. It defines one active numbered
+goal, read-only and independent-review fan-out inside that goal, one writer per
+repository, exact handback schemas, repository locks, human/live gates, and a
+machine-readable goal registry. Publishing this coordination artifact does not
+start Goal 2 or alter the alpha runtime.
 
 `EvolutionOrchestrator.run()` intentionally remains the alpha's synchronous
 one-shot composition. Its stage outputs are typed, but individual stages are not
