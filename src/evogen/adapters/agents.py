@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Protocol, Sequence
+from typing import Protocol
 
 from evogen.core.ids import new_id
 from evogen.core.models import RoleRequest, RoleResponse

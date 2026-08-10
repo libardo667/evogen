@@ -38,7 +38,7 @@ class BoundedCollection(StrictModel, Generic[_ItemT]):
     known_total: int | None = Field(default=None, ge=0)
 
     @model_validator(mode="after")
-    def validate_completeness(self) -> "BoundedCollection[_ItemT]":
+    def validate_completeness(self) -> BoundedCollection[_ItemT]:
         if self.completeness == Completeness.COMPLETE:
             if self.known_total is None or self.known_total != len(self.items):
                 raise ValueError(
@@ -92,7 +92,10 @@ class CapabilityManifest(StrictModel):
         return {capability.name for capability in self.capabilities}
 
     def by_name(self, name: str) -> CapabilityDefinition | None:
-        return next((capability for capability in self.capabilities if capability.name == name), None)
+        return next(
+            (capability for capability in self.capabilities if capability.name == name),
+            None,
+        )
 
 
 class GenerationManifest(StrictModel):
@@ -317,7 +320,7 @@ class GateDecision(StrictModel):
     retained_generation_id: str | None = None
 
     @model_validator(mode="after")
-    def retained_generation_requires_retain(self) -> "GateDecision":
+    def retained_generation_requires_retain(self) -> GateDecision:
         if self.retained_generation_id is not None and self.verdict != GateVerdict.RETAIN:
             raise ValueError("retained_generation_id is valid only for a retain verdict")
         return self

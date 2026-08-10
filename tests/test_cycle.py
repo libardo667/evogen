@@ -20,6 +20,9 @@ def test_complete_cycle_retains_generalizing_candidate(tmp_path):
     assert Path(result.candidate.workspace_path, "plugins", "inspect_container.py").exists()
     assert (workspace / "report.md").exists()
     assert (workspace / "cycle-result.json").exists()
+    report = (workspace / "report.md").read_text(encoding="utf-8")
+    assert "uv run --frozen --extra dev python scripts/verify.py" in report
+    assert "uv sync --extra dev" not in report
 
     lineage = MicroworldEvolutionCycle(workspace).ledger.lineage_rows()
     assert len(lineage) == 1

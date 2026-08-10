@@ -22,6 +22,33 @@ def render_cycle_markdown(result: CycleResult) -> str:
         if result.retained_generation is not None
         else "not retained"
     )
+    candidate_operations = "\n".join(
+        f"- `{operation.name}` — {operation.description}"
+        for operation in result.investigation.candidate_operations
+    )
+    evaluation_rows = "\n".join(
+        [
+            "| Revealing success | "
+            f"{baseline.revealing_success_rate:.0%} | "
+            f"{candidate.revealing_success_rate:.0%} |",
+            "| Variant success | "
+            f"{baseline.variant_success_rate:.0%} | "
+            f"{candidate.variant_success_rate:.0%} |",
+            "| Regression success | "
+            f"{baseline.regression_success_rate:.0%} | "
+            f"{candidate.regression_success_rate:.0%} |",
+            "| Long-horizon success | "
+            f"{baseline.long_horizon_success_rate:.0%} | "
+            f"{candidate.long_horizon_success_rate:.0%} |",
+            f"| Blocked runs | {baseline.blocked_run_count} | {candidate.blocked_run_count} |",
+            "| Invalid actions | "
+            f"{baseline.invalid_action_count} | {candidate.invalid_action_count} |",
+            f"| Interventions | {baseline.intervention_count} | "
+            f"{candidate.intervention_count} |",
+            f"| Average steps | {baseline.average_steps:.2f} | "
+            f"{candidate.average_steps:.2f} |",
+        ]
+    )
     return f"""# EvoGen evolution-cycle report
 
 ## Outcome
@@ -56,7 +83,7 @@ Prediction:
 
 Candidate environment operations:
 
-{chr(10).join(f'- `{operation.name}` — {operation.description}' for operation in result.investigation.candidate_operations)}
+{candidate_operations}
 
 ## Candidate review
 
@@ -69,14 +96,7 @@ Candidate environment operations:
 
 | Metric | Baseline | Candidate |
 | --- | ---: | ---: |
-| Revealing success | {baseline.revealing_success_rate:.0%} | {candidate.revealing_success_rate:.0%} |
-| Variant success | {baseline.variant_success_rate:.0%} | {candidate.variant_success_rate:.0%} |
-| Regression success | {baseline.regression_success_rate:.0%} | {candidate.regression_success_rate:.0%} |
-| Long-horizon success | {baseline.long_horizon_success_rate:.0%} | {candidate.long_horizon_success_rate:.0%} |
-| Blocked runs | {baseline.blocked_run_count} | {candidate.blocked_run_count} |
-| Invalid actions | {baseline.invalid_action_count} | {candidate.invalid_action_count} |
-| Interventions | {baseline.intervention_count} | {candidate.intervention_count} |
-| Average steps | {baseline.average_steps:.2f} | {candidate.average_steps:.2f} |
+{evaluation_rows}
 
 Prediction matched: `{str(result.experiment.prediction_matched).lower()}`
 
@@ -95,9 +115,7 @@ Failed:
 From the repository root:
 
 ```bash
-uv sync --extra dev
-uv run evogen demo --workspace .evogen-demo --clean
-uv run pytest
+uv run --frozen --extra dev python scripts/verify.py
 ```
 
 The full JSON result is stored beside this report, while raw JSONL trajectories,

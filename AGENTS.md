@@ -41,8 +41,7 @@ Do not replace this with a mock that merely reports success.
 ## Verification
 
 ```bash
-uv run pytest
-uv run evogen demo --workspace .evogen-demo --clean
+uv run --frozen --extra dev python scripts/verify.py
 ```
 
 ## Near-term priorities

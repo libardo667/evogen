@@ -7,6 +7,7 @@ from evogen.core.ids import new_id
 from evogen.core.models import (
     CandidateManifest,
     CapabilityManifest,
+    CycleResult,
     EvolutionPlan,
     ExperimentResult,
     GateDecision,
@@ -96,14 +97,14 @@ class MicroworldEvolutionCycle:
         self.runner = MicroworldRunner()
 
     @classmethod
-    def prepare(cls, workspace: Path, *, clean: bool = False) -> "MicroworldEvolutionCycle":
+    def prepare(cls, workspace: Path, *, clean: bool = False) -> MicroworldEvolutionCycle:
         resolved = workspace.resolve()
         if clean and resolved.exists():
             shutil.rmtree(resolved)
         resolved.mkdir(parents=True, exist_ok=True)
         return cls(resolved)
 
-    def run(self):
+    def run(self) -> CycleResult:
         baseline = self._baseline_generation()
         forbidden_literals = [
             *REVEALING_CASES,

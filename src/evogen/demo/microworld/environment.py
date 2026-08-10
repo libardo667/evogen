@@ -13,7 +13,6 @@ from .models import (
     WorldSnapshot,
 )
 
-
 ENVIRONMENT_OPERATIONS = [
     EnvironmentOperation(
         name="move",

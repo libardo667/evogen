@@ -9,7 +9,6 @@ from evogen.core.enums import EventKind
 from evogen.core.ids import new_id
 from evogen.core.models import TrajectoryEvent
 
-
 _RAW_KIND_MAP: dict[str, EventKind] = {
     "run_started": EventKind.RUN_STARTED,
     "observation": EventKind.OBSERVATION,

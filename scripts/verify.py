@@ -6,11 +6,11 @@ import sys
 import tempfile
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def run(*arguments: str) -> None:
+    print(f"\n==> {' '.join(arguments)}", flush=True)
     env = os.environ.copy()
     source = str(ROOT / "src")
     env["PYTHONPATH"] = (
@@ -21,6 +21,8 @@ def run(*arguments: str) -> None:
 
 def main() -> None:
     run(sys.executable, "-m", "compileall", "-q", "src", "tests")
+    run("ruff", "check", ".")
+    run("mypy", "src")
     run(sys.executable, "-m", "pytest", "-q")
     with tempfile.TemporaryDirectory(prefix="evogen-verify-") as directory:
         run(
@@ -32,6 +34,7 @@ def main() -> None:
             directory,
             "--clean",
         )
+    run("git", "diff", "--check")
 
 
 if __name__ == "__main__":

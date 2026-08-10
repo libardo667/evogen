@@ -2,6 +2,8 @@
 
 ## 0.1.0 - 2026-08-10
 
+- Published the immutable alpha baseline with locked local and CI verification.
+- Added a mechanically enforced integration checkpoint for bounded goal work.
 - Added typed generation, trajectory, capability, issue, candidate, experiment,
   and lineage contracts.
 - Added content-addressed artifact storage and SQLite ledger.

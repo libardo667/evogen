@@ -7,7 +7,7 @@ name = "evogen"
 version = "0.1.0"
 description = "Evidence-driven outer-loop capability engineering for autonomous agents"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 license = {text = "MIT"}
 authors = [{name = "EvoGen contributors"}]
 keywords = ["agents", "autonomy", "evaluation", "capability-engineering", "middleware"]
@@ -28,7 +28,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+  "mypy>=1.14,<2",
   "pytest>=8,<10",
+  "ruff>=0.9,<1",
 ]
 
 [project.scripts]
@@ -44,3 +46,18 @@ evogen = ["py.typed"]
 addopts = "-q"
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/evogen/cli.py" = ["B008"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true

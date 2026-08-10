@@ -36,10 +36,13 @@ This is a runnable alpha, not only a scaffold. It includes:
 ## Run the proof
 
 ```bash
-uv sync --extra dev
-uv run evogen demo --workspace .evogen-demo --clean
-uv run pytest
+uv run --frozen --extra dev python scripts/verify.py
 ```
+
+This single command installs the locked development environment, runs Ruff and
+strict mypy, checks the committed schemas, runs the full test suite, reproduces
+the deterministic microworld retention result in a disposable workspace, and
+checks the diff for whitespace errors.
 
 The demonstration starts with an intentionally impoverished agent. The world
 supports inspecting opaque containers, but the baseline agent body exposes only
@@ -131,7 +134,9 @@ See [docs/contracts.md](docs/contracts.md) and
 
 ## Project status
 
-The codebase completes one honest end-to-end prototype and supplies extension
-boundaries for a real coding-agent swarm. The next serious milestone is closing
-one previously unknown capability deficit in Kenshi Agent Environment from live
-trajectory evidence through human-approved deployment and supervised proof.
+The codebase completes one honest deterministic end-to-end prototype and
+supplies extension boundaries for external roles. It does not yet prove a real
+game integration, resumable stage execution, or model-generated diagnosis.
+
+The current repository authority and next unstarted bounded goal are recorded
+in [docs/INTEGRATION_CHECKPOINT.md](docs/INTEGRATION_CHECKPOINT.md).

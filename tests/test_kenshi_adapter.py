@@ -8,7 +8,6 @@ from evogen.evolution.diagnosis import EvidenceFirstDiagnostician
 from evogen.integrations.kenshi.adapter import KenshiJsonlAdapter
 from evogen.trace.distill import TraceDistiller
 
-
 FIXTURE = Path(__file__).parent / "fixtures" / "kenshi_missing_close.raw.jsonl"
 
 

@@ -4,10 +4,10 @@ from pathlib import Path
 from typing import Protocol
 
 from evogen.core.models import (
+    CandidateManifest,
     CapabilityIssue,
     CapabilityManifest,
     CapabilitySpec,
-    CandidateManifest,
     ExperimentResult,
     GateDecision,
     GenerationManifest,

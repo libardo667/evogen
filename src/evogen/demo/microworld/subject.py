@@ -111,7 +111,7 @@ class MicroworldSubject:
             self._load_plugins(plugin_root)
 
     @classmethod
-    def from_generation(cls, generation: GenerationManifest) -> "MicroworldSubject":
+    def from_generation(cls, generation: GenerationManifest) -> MicroworldSubject:
         plugin_value = generation.config.get("plugin_root")
         plugin_root = Path(plugin_value) if isinstance(plugin_value, str) else None
         return cls(generation_id=generation.generation_id, plugin_root=plugin_root)
@@ -247,7 +247,7 @@ class MicroworldRunner:
             world_revision=str(world.revision),
         )
 
-        for step_index in range(scenario.max_steps):
+        for _step_index in range(scenario.max_steps):
             snapshot = world.snapshot()
             observed_opaque.update(
                 container.container_id

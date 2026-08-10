@@ -10,7 +10,6 @@ from evogen.core.models import (
     GenerationManifest,
 )
 
-
 _INSPECT_CONTAINER_PLUGIN = '''from __future__ import annotations
 
 from evogen.core.enums import ProofClass
