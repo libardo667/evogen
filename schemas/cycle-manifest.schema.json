@@ -1,0 +1,113 @@
+{
+  "$defs": {
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "A typed reference to one immutable content-addressed artifact.",
+      "properties": {
+        "digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "model"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "StageName": {
+      "description": "The public, ordered evolution-stage contract.",
+      "enum": [
+        "ingest",
+        "distill",
+        "diagnose",
+        "investigate",
+        "specify",
+        "build",
+        "review",
+        "evaluate",
+        "select"
+      ],
+      "title": "StageName",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Immutable composition identity shared by every stage receipt.",
+  "properties": {
+    "baseline_generation_id": {
+      "title": "Baseline Generation Id",
+      "type": "string"
+    },
+    "baseline_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "cycle_id": {
+      "title": "Cycle Id",
+      "type": "string"
+    },
+    "manifest_version": {
+      "const": "1.0",
+      "title": "Manifest Version",
+      "type": "string"
+    },
+    "plan_digest": {
+      "title": "Plan Digest",
+      "type": "string"
+    },
+    "plan_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "stage_order": {
+      "items": {
+        "$ref": "#/$defs/StageName"
+      },
+      "title": "Stage Order",
+      "type": "array"
+    },
+    "subject": {
+      "title": "Subject",
+      "type": "string"
+    },
+    "subject_generation_fingerprint": {
+      "title": "Subject Generation Fingerprint",
+      "type": "string"
+    },
+    "subject_plugin_api_version": {
+      "title": "Subject Plugin Api Version",
+      "type": "string"
+    },
+    "subject_plugin_source": {
+      "title": "Subject Plugin Source",
+      "type": "string"
+    }
+  },
+  "required": [
+    "manifest_version",
+    "cycle_id",
+    "subject",
+    "subject_plugin_api_version",
+    "subject_plugin_source",
+    "baseline_generation_id",
+    "subject_generation_fingerprint",
+    "plan_digest",
+    "baseline_ref",
+    "plan_ref",
+    "stage_order"
+  ],
+  "title": "CycleManifest",
+  "type": "object"
+}

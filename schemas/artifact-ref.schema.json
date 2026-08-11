@@ -1,0 +1,23 @@
+{
+  "additionalProperties": false,
+  "description": "A typed reference to one immutable content-addressed artifact.",
+  "properties": {
+    "digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Digest",
+      "type": "string"
+    },
+    "model": {
+      "title": "Model",
+      "type": "string"
+    }
+  },
+  "required": [
+    "digest",
+    "model"
+  ],
+  "title": "ArtifactRef",
+  "type": "object"
+}

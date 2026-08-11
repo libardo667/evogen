@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import importlib.metadata
 import shutil
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol, cast
 
+from evogen.core.enums import StageName
+from evogen.core.ids import sha256_bytes
 from evogen.core.models import CycleResult, EvolutionPlan, GenerationManifest
 from evogen.evolution.orchestrator import EvolutionOrchestrator
 from evogen.storage.artifacts import ArtifactStore
@@ -521,6 +524,11 @@ def compose_subject(
         reviewer=reviewer,
         evaluator=evaluator,
         materializer=materializer,
+        baseline=bootstrap.baseline,
+        plan=bootstrap.plan,
+        subject_plugin_name=subject_name,
+        subject_plugin_api_version=validated.api_version,
+        subject_plugin_source=_plugin_source_identity(validated),
     )
     return SubjectComposition(
         plugin=validated,
@@ -535,6 +543,17 @@ def compose_subject(
         bootstrap=bootstrap,
         orchestrator=orchestrator,
     )
+
+
+def _plugin_source_identity(plugin: SubjectPlugin) -> str:
+    module_name = plugin.__class__.__module__
+    module = sys.modules.get(module_name)
+    source_path = getattr(module, "__file__", None)
+    if isinstance(source_path, str):
+        path = Path(source_path)
+        if path.is_file():
+            return f"{module_name}:{sha256_bytes(path.read_bytes())}"
+    return f"{module_name}:{plugin.__class__.__qualname__}"
 
 
 def _is_recognizable_workspace(path: Path) -> bool:
@@ -601,6 +620,7 @@ def run_subject_cycle(
     workspace: Path,
     *,
     clean: bool = False,
+    until: StageName | str | None = None,
 ) -> CycleResult:
     plugin = load_subject_plugin(subject_name)
     resolved = _prepare_workspace(workspace, clean=clean)
@@ -610,10 +630,100 @@ def run_subject_cycle(
         ledger=Ledger(resolved / "evogen.sqlite3"),
     )
     composition = compose_subject(plugin, context=context)
-    return composition.orchestrator.run(
-        baseline=composition.bootstrap.baseline,
-        plan=composition.bootstrap.plan,
+    result = composition.orchestrator.stages.run(until=until)
+    if not isinstance(result, CycleResult):
+        raise SubjectWorkspaceError(
+            "run_subject_cycle requires select or no --until; "
+            f"received {type(result).__name__}"
+        )
+    return result
+
+
+def run_subject_progress(
+    subject_name: str,
+    workspace: Path,
+    *,
+    clean: bool = False,
+    until: StageName | str | None = None,
+) -> object:
+    """Run the same dispatcher, allowing a typed mid-cycle result."""
+    plugin = load_subject_plugin(subject_name)
+    resolved = _prepare_workspace(workspace, clean=clean)
+    context = SubjectFactoryContext(
+        workspace=resolved,
+        artifacts=ArtifactStore(resolved / "artifacts"),
+        ledger=Ledger(resolved / "evogen.sqlite3"),
     )
+    composition = compose_subject(plugin, context=context)
+    return composition.orchestrator.stages.run(until=until)
+
+
+def run_subject_stage(
+    subject_name: str,
+    workspace: Path,
+    stage: StageName | str,
+    *,
+    clean: bool = False,
+) -> object:
+    """Invoke exactly one persisted stage through the generic dispatcher."""
+    plugin = load_subject_plugin(subject_name)
+    resolved = _prepare_workspace(workspace, clean=clean)
+    context = SubjectFactoryContext(
+        workspace=resolved,
+        artifacts=ArtifactStore(resolved / "artifacts"),
+        ledger=Ledger(resolved / "evogen.sqlite3"),
+    )
+    composition = compose_subject(plugin, context=context)
+    return composition.orchestrator.stages.invoke(stage)
+
+
+def read_subject_stage(
+    subject_name: str,
+    workspace: Path,
+    stage: StageName | str,
+) -> object:
+    """Read a completed stage without executing or publishing any stage."""
+    plugin = load_subject_plugin(subject_name)
+    resolved = workspace.resolve()
+    if not resolved.exists():
+        raise SubjectWorkspaceError(f"No EvoGen workspace at {resolved}")
+    if (
+        not (resolved / "artifacts").is_dir()
+        or not (resolved / "evogen.sqlite3").is_file()
+        or not (resolved / "cycle-manifest.pointer.json").is_file()
+    ):
+        raise SubjectWorkspaceError(f"Incomplete EvoGen workspace at {resolved}")
+    context = SubjectFactoryContext(
+        workspace=resolved,
+        artifacts=ArtifactStore(resolved / "artifacts", read_only=True),
+        ledger=Ledger(resolved / "evogen.sqlite3", read_only=True),
+    )
+    composition = compose_subject(plugin, context=context)
+    return composition.orchestrator.stages.completed_stage(stage)
+
+
+def read_subject_status(
+    subject_name: str,
+    workspace: Path,
+) -> tuple[tuple[StageName, ...], StageName | None]:
+    """Validate and report stage state without running a missing stage."""
+    plugin = load_subject_plugin(subject_name)
+    resolved = workspace.resolve()
+    if not resolved.exists():
+        raise SubjectWorkspaceError(f"No EvoGen workspace at {resolved}")
+    if (
+        not (resolved / "artifacts").is_dir()
+        or not (resolved / "evogen.sqlite3").is_file()
+        or not (resolved / "cycle-manifest.pointer.json").is_file()
+    ):
+        raise SubjectWorkspaceError(f"Incomplete EvoGen workspace at {resolved}")
+    context = SubjectFactoryContext(
+        workspace=resolved,
+        artifacts=ArtifactStore(resolved / "artifacts", read_only=True),
+        ledger=Ledger(resolved / "evogen.sqlite3", read_only=True),
+    )
+    composition = compose_subject(plugin, context=context)
+    return composition.orchestrator.stages.stage_status()
 
 
 __all__ = [
@@ -637,6 +747,10 @@ __all__ = [
     "discover_subject_entry_points",
     "load_subject_plugin",
     "run_subject_cycle",
+    "run_subject_progress",
+    "run_subject_stage",
+    "read_subject_stage",
+    "read_subject_status",
     "SubjectWorkspaceError",
     "validate_subject_plugin",
 ]

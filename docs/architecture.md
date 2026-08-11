@@ -46,9 +46,13 @@ observed runs
   -> lineage
 ```
 
-The current reference cycle is synchronous and local. Every stage emits a typed
-artifact, so stages can later be queued, distributed, or performed by different
-models without changing the evidence model.
+The reference cycle is a persisted ordered dispatcher. The public stages are
+`ingest`, `distill`, `diagnose`, `investigate`, `specify`, `build`, `review`,
+`evaluate`, and `select`; convenience cycle execution invokes those same stage
+boundaries. Each stage reloads typed content-addressed inputs, writes a typed
+output, and publishes a hash-chained receipt through an atomic pointer. A cycle
+manifest pins subject/plugin identity, generation fingerprint, and plan digest
+across processes.
 
 ## Data ownership
 
@@ -108,6 +112,11 @@ only for a retain verdict.
 `ArtifactStore` writes immutable bytes under their SHA-256. `Ledger` indexes JSON
 records in SQLite. The ledger is not the sole copy of large evidence; it points to
 content-addressed objects and trace files.
+
+Resume is safe at completed stage boundaries. A crash may leave orphaned
+content-addressed objects, but an orphan receipt or artifact is not completion
+evidence until its stage pointer is atomically published. The implementation does
+not claim arbitrary instruction-level transactional recovery.
 
 The alpha runs locally and trusts the workspace filesystem. A production version
 would add signed manifests, explicit artifact media types, transactional candidate

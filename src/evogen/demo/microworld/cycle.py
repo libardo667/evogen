@@ -100,10 +100,7 @@ class MicroworldEvolutionCycle:
         return cls(resolved)
 
     def run(self) -> CycleResult:
-        return self.composition.orchestrator.run(
-            baseline=self.composition.bootstrap.baseline,
-            plan=self.composition.bootstrap.plan,
-        )
+        return self.composition.orchestrator.run()
 
     def _baseline_generation(self) -> GenerationManifest:
         return self.composition.bootstrap.baseline

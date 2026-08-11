@@ -110,6 +110,17 @@ The bundled microworld is registered through the same entry-point path as an
 external subject. Generated capability files remain a separate runtime plugin
 boundary and are not loaded through subject entry points.
 
+## Persisted evolution stages
+
+The generic dispatcher exposes nine individually invokable stages in this exact
+order: `ingest`, `distill`, `diagnose`, `investigate`, `specify`, `build`,
+`review`, `evaluate`, `select`. Each stage stores a Pydantic-validated output in
+the content-addressed artifact store and publishes an immutable receipt and
+atomic stage pointer. Reinvoking a completed stage verifies and returns its
+stored output. A cycle can resume in a new process only at a completed boundary;
+orphan artifacts left by a crash are not completion proof, and arbitrary
+instruction-level transactional recovery is intentionally not claimed.
+
 When `clean=True`, recursive deletion is allowed only for a recognized EvoGen
 workspace (ledger, artifact store, and workspace evidence) or the explicit
 default `.evogen-demo` path. Filesystem roots, home/current directories, Git

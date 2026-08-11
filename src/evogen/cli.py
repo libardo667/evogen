@@ -8,7 +8,15 @@ from rich.console import Console
 from rich.table import Table
 
 from evogen import __version__
-from evogen.adapters.subjects import run_subject_cycle
+from evogen.adapters.subjects import (
+    read_subject_stage,
+    read_subject_status,
+    run_subject_cycle,
+    run_subject_progress,
+    run_subject_stage,
+)
+from evogen.core.enums import StageName
+from evogen.core.models import CycleResult
 from evogen.integrations.kenshi.adapter import KenshiJsonlAdapter
 from evogen.schema import export_schemas
 from evogen.storage.ledger import Ledger
@@ -19,6 +27,55 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 console = Console()
+
+
+def _print_result(result: object, *, json_output: bool = False) -> None:
+    if json_output:
+        if hasattr(result, "model_dump_json"):
+            console.print_json(result.model_dump_json())
+        else:
+            console.print_json(json.dumps(result))
+        return
+    if isinstance(result, CycleResult):
+        console.print(f"Verdict: [bold]{result.decision.verdict.value}[/bold]")
+        console.print(f"Result: {Path(result.workspace) / 'cycle-result.json'}")
+    else:
+        console.print(f"Completed stage: [bold]{type(result).__name__}[/bold]")
+
+
+@app.command()
+def cycle(
+    subject: str = typer.Option("microworld", "--subject"),
+    workspace: Path = typer.Option(Path(".evogen-demo"), "--workspace", "-w"),
+    clean: bool = typer.Option(False, "--clean"),
+    until: str | None = typer.Option(None, "--until", help="Stop at a named stage."),
+    json_output: bool = typer.Option(False, "--json"),
+) -> None:
+    """Run or resume the generic persisted evolution cycle."""
+    if until is not None:
+        try:
+            StageName(until)
+        except ValueError as exc:
+            raise typer.BadParameter(f"Unknown stage {until!r}") from exc
+    result = run_subject_progress(subject, workspace, clean=clean, until=until)
+    _print_result(result, json_output=json_output)
+
+
+@app.command("stage")
+def stage_command(
+    name: str = typer.Argument(..., help="One of the nine ordered stage names."),
+    subject: str = typer.Option("microworld", "--subject"),
+    workspace: Path = typer.Option(Path(".evogen-demo"), "--workspace", "-w"),
+    clean: bool = typer.Option(False, "--clean"),
+    json_output: bool = typer.Option(False, "--json"),
+) -> None:
+    """Invoke one persisted stage through the cycle dispatcher."""
+    try:
+        selected = StageName(name)
+    except ValueError as exc:
+        raise typer.BadParameter(f"Unknown stage {name!r}") from exc
+    result = run_subject_stage(subject, workspace, selected, clean=clean)
+    _print_result(result, json_output=json_output)
 
 
 @app.command()
@@ -87,13 +144,15 @@ def demo(
 
 @app.command()
 def status(
+    subject: str = typer.Option("microworld", "--subject"),
     workspace: Path = typer.Option(Path(".evogen-demo"), "--workspace", "-w"),
 ) -> None:
     """Show generations and retained lineage in an EvoGen workspace."""
+    completed_stages, next_stage_value = read_subject_status(subject, workspace)
     ledger_path = workspace.resolve() / "evogen.sqlite3"
     if not ledger_path.exists():
         raise typer.BadParameter(f"No EvoGen ledger at {ledger_path}")
-    ledger = Ledger(ledger_path)
+    ledger = Ledger(ledger_path, read_only=True)
     generations = ledger.list_generations()
     table = Table(title="EvoGen generations")
     table.add_column("Generation")
@@ -108,6 +167,10 @@ def status(
             generation.source_ref,
         )
     console.print(table)
+    completed = [stage.value for stage in completed_stages]
+    next_stage = next_stage_value.value if next_stage_value is not None else "complete"
+    console.print(f"Stages completed: {', '.join(completed) or 'none'}")
+    console.print(f"Next stage: {next_stage}")
     lineage = ledger.lineage_rows()
     if lineage:
         console.print("Lineage:")
@@ -120,13 +183,14 @@ def status(
 
 @app.command("show-result")
 def show_result(
+    subject: str = typer.Option("microworld", "--subject"),
     workspace: Path = typer.Option(Path(".evogen-demo"), "--workspace", "-w"),
 ) -> None:
     """Pretty-print the last stored cycle result."""
-    path = workspace.resolve() / "cycle-result.json"
-    if not path.exists():
-        raise typer.BadParameter(f"No result at {path}")
-    console.print_json(json.dumps(json.loads(path.read_text(encoding="utf-8"))))
+    result = read_subject_stage(subject, workspace, StageName.SELECT)
+    if not isinstance(result, CycleResult):
+        raise typer.BadParameter("Stored select output is not a CycleResult")
+    console.print_json(result.model_dump_json())
 
 
 @app.command("normalize-kae")

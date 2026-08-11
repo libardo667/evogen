@@ -136,7 +136,9 @@ See [docs/contracts.md](docs/contracts.md) and
 
 The codebase completes one honest deterministic end-to-end prototype and
 supplies extension boundaries for external roles. It does not yet prove a real
-game integration, resumable stage execution, or model-generated diagnosis.
+game integration or model-generated diagnosis. Its local cycle is resumable at
+completed persisted stage boundaries, with typed receipts and content-addressed
+outputs; arbitrary instruction-level crash recovery is not claimed.
 
 The current repository authority and next unstarted bounded goal are recorded
 in [docs/INTEGRATION_CHECKPOINT.md](docs/INTEGRATION_CHECKPOINT.md).

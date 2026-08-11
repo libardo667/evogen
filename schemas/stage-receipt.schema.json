@@ -1,0 +1,110 @@
+{
+  "$defs": {
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "A typed reference to one immutable content-addressed artifact.",
+      "properties": {
+        "digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "model"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "StageName": {
+      "description": "The public, ordered evolution-stage contract.",
+      "enum": [
+        "ingest",
+        "distill",
+        "diagnose",
+        "investigate",
+        "specify",
+        "build",
+        "review",
+        "evaluate",
+        "select"
+      ],
+      "title": "StageName",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Hash-chain node proving one typed stage output and its exact inputs.",
+  "properties": {
+    "cycle_id": {
+      "title": "Cycle Id",
+      "type": "string"
+    },
+    "input_refs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ArtifactRef"
+      },
+      "title": "Input Refs",
+      "type": "object"
+    },
+    "manifest_digest": {
+      "title": "Manifest Digest",
+      "type": "string"
+    },
+    "output_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "prior_receipt_digest": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prior Receipt Digest"
+    },
+    "receipt_id": {
+      "title": "Receipt Id",
+      "type": "string"
+    },
+    "receipt_version": {
+      "const": "1.0",
+      "title": "Receipt Version",
+      "type": "string"
+    },
+    "stage": {
+      "$ref": "#/$defs/StageName"
+    },
+    "subject": {
+      "title": "Subject",
+      "type": "string"
+    },
+    "subject_generation_fingerprint": {
+      "title": "Subject Generation Fingerprint",
+      "type": "string"
+    }
+  },
+  "required": [
+    "receipt_version",
+    "receipt_id",
+    "cycle_id",
+    "manifest_digest",
+    "stage",
+    "subject",
+    "subject_generation_fingerprint",
+    "input_refs",
+    "output_ref"
+  ],
+  "title": "StageReceipt",
+  "type": "object"
+}

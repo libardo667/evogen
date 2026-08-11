@@ -3,6 +3,24 @@ from __future__ import annotations
 from enum import StrEnum
 
 
+class StageName(StrEnum):
+    """The public, ordered evolution-stage contract."""
+
+    INGEST = "ingest"
+    DISTILL = "distill"
+    DIAGNOSE = "diagnose"
+    INVESTIGATE = "investigate"
+    SPECIFY = "specify"
+    BUILD = "build"
+    REVIEW = "review"
+    EVALUATE = "evaluate"
+    SELECT = "select"
+
+    @classmethod
+    def ordered(cls) -> tuple[StageName, ...]:
+        return tuple(cls)
+
+
 class Completeness(StrEnum):
     COMPLETE = "complete"
     TRUNCATED = "truncated"

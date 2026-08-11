@@ -1,0 +1,48 @@
+{
+  "$defs": {
+    "StageName": {
+      "description": "The public, ordered evolution-stage contract.",
+      "enum": [
+        "ingest",
+        "distill",
+        "diagnose",
+        "investigate",
+        "specify",
+        "build",
+        "review",
+        "evaluate",
+        "select"
+      ],
+      "title": "StageName",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Small atomic workspace pointer; the receipt and output remain immutable.",
+  "properties": {
+    "cycle_id": {
+      "title": "Cycle Id",
+      "type": "string"
+    },
+    "pointer_version": {
+      "const": "1.0",
+      "title": "Pointer Version",
+      "type": "string"
+    },
+    "receipt_digest": {
+      "title": "Receipt Digest",
+      "type": "string"
+    },
+    "stage": {
+      "$ref": "#/$defs/StageName"
+    }
+  },
+  "required": [
+    "pointer_version",
+    "cycle_id",
+    "stage",
+    "receipt_digest"
+  ],
+  "title": "StagePointer",
+  "type": "object"
+}

@@ -44,6 +44,13 @@
       "title": "Created At",
       "type": "string"
     },
+    "file_digests": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "File Digests",
+      "type": "object"
+    },
     "issue_id": {
       "title": "Issue Id",
       "type": "string"

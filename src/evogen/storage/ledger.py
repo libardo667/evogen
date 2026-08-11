@@ -26,16 +26,28 @@ class Ledger:
 
     SCHEMA_VERSION = 1
 
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Path, *, read_only: bool = False) -> None:
         self.path = path
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._initialize()
+        self.read_only = read_only
+        if read_only:
+            if not self.path.is_file():
+                raise FileNotFoundError(f"Ledger not found: {self.path}")
+        else:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            self._initialize()
 
     def connect(self) -> sqlite3.Connection:
-        connection = sqlite3.connect(self.path)
+        if self.read_only:
+            connection = sqlite3.connect(
+                f"file:{self.path.resolve()}?mode=ro&immutable=1",
+                uri=True,
+            )
+        else:
+            connection = sqlite3.connect(self.path)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys = ON")
-        connection.execute("PRAGMA journal_mode = WAL")
+        if not self.read_only:
+            connection.execute("PRAGMA journal_mode = WAL")
         return connection
 
     def _initialize(self) -> None:

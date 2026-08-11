@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any, Generic, Literal, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
 
 from .enums import (
     AgentRole,
@@ -16,6 +16,7 @@ from .enums import (
     ProofClass,
     ResolutionKind,
     Severity,
+    StageName,
 )
 
 
@@ -257,6 +258,7 @@ class CandidateManifest(StrictModel):
     artifact_digests: dict[str, str]
     changed_files: list[str]
     claimed_capabilities: list[str]
+    file_digests: dict[str, str] = Field(default_factory=dict)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -357,6 +359,81 @@ class EvolutionPlan(StrictModel):
     regression_suites: list[str]
     long_horizon_suites: list[str]
     forbidden_literals: list[str] = Field(default_factory=list)
+
+
+class ArtifactRef(StrictModel):
+    """A typed reference to one immutable content-addressed artifact."""
+
+    digest: str = Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
+    model: str
+
+    @field_validator("model")
+    @classmethod
+    def validate_model_identity(cls, value: str) -> str:
+        if not value or not value[0].isalpha() or not all(
+            character.isalnum() or character == "_" for character in value
+        ):
+            raise ValueError("Artifact model identity must be a controlled identifier")
+        return value
+
+
+class CycleManifest(StrictModel):
+    """Immutable composition identity shared by every stage receipt."""
+
+    manifest_version: Literal["1.0"]
+    cycle_id: str
+    subject: str
+    subject_plugin_api_version: str
+    subject_plugin_source: str
+    baseline_generation_id: str
+    subject_generation_fingerprint: str
+    plan_digest: str
+    baseline_ref: ArtifactRef
+    plan_ref: ArtifactRef
+    stage_order: tuple[StageName, ...]
+    created_at: datetime = Field(default_factory=utc_now)
+
+    @model_validator(mode="after")
+    def validate_stage_order(self) -> CycleManifest:
+        if self.stage_order != StageName.ordered():
+            raise ValueError("Cycle manifest stage order does not match the public contract")
+        return self
+
+
+class IngestResult(StrictModel):
+    cycle_id: str
+    subject: str
+    generation_id: str
+    baseline_ref: ArtifactRef
+    plan_ref: ArtifactRef
+    capability_ref: ArtifactRef
+    run_refs: list[ArtifactRef]
+    event_refs: list[ArtifactRef]
+    runs: list[RunRecord]
+
+
+class StageReceipt(StrictModel):
+    """Hash-chain node proving one typed stage output and its exact inputs."""
+
+    receipt_version: Literal["1.0"]
+    receipt_id: str
+    cycle_id: str
+    manifest_digest: str
+    stage: StageName
+    subject: str
+    subject_generation_fingerprint: str
+    input_refs: dict[str, ArtifactRef]
+    output_ref: ArtifactRef
+    prior_receipt_digest: str | None = None
+
+
+class StagePointer(StrictModel):
+    """Small atomic workspace pointer; the receipt and output remain immutable."""
+
+    pointer_version: Literal["1.0"]
+    cycle_id: str
+    stage: StageName
+    receipt_digest: str
 
 
 class CycleResult(StrictModel):

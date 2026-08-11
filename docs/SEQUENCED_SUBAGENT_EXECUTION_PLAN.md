@@ -23,8 +23,8 @@ Current execution state:
 - Public remote: `https://github.com/libardo667/evogen`
 - Hosted proof: branch run `31439981915` and tag run `31439981992` each passed
   Python 3.11, 3.12, and 3.13 at the exact release commit
-- Goal 3 state: completed in the current bounded goal commit
-- Next unstarted goal: Goal 4
+- Goal 4 state: completed in the current bounded goal commit
+- Next unstarted goal: Goal 5
 
 ## 1. What this plan controls
 
@@ -344,7 +344,7 @@ independent and the extra handoff creates more evidence than coordination risk.
 
 ### G04 — Resumable stages
 
-- State: next; implementation remains unstarted.
+- State: completed in the current bounded goal commit.
 - Depends on: G03.
 - Effectively serial writer: orchestration ownership changes are high fan-out.
 - Pre-write fan-out: stage-state map; crash/resume/hash-mismatch proof design.
@@ -354,6 +354,7 @@ independent and the extra handoff creates more evidence than coordination risk.
 
 ### G05 — First-class probes
 
+- State: next; implementation remains unstarted.
 - Depends on: G04 artifact/resume state.
 - Pre-write fan-out: current insufficient-evidence path audit; probe/permanent
   capability separation threat model.
@@ -661,8 +662,8 @@ goals:
   - {id: G01, repo: [evogen], depends: [], profile: foundation_release, state: complete, human_gate: []}
   - {id: G02, repo: [evogen], depends: [G01], profile: core_contract, state: complete, human_gate: []}
   - {id: G03, repo: [evogen], depends: [G02], profile: schema_migration, state: complete, human_gate: []}
-  - {id: G04, repo: [evogen], depends: [G03], profile: orchestration_state, state: next, human_gate: []}
-  - {id: G05, repo: [evogen], depends: [G04], profile: lifecycle_contract, state: unstarted, human_gate: []}
+  - {id: G04, repo: [evogen], depends: [G03], profile: orchestration_state, state: complete, human_gate: []}
+  - {id: G05, repo: [evogen], depends: [G04], profile: lifecycle_contract, state: next, human_gate: []}
   - {id: G06, repo: [evogen], depends: [G05], profile: role_contract, state: unstarted, human_gate: []}
   - {id: G07, repo: [evogen], depends: [G06], profile: evaluator_security, state: unstarted, human_gate: []}
   - {id: G08, repo: [evogen], depends: [G07], profile: conformance, state: unstarted, human_gate: []}
@@ -711,22 +712,24 @@ goals:
 
 ## 16. Immediate next execution packet
 
-The next permitted packet is G04 only. It remains unstarted until the Goal 3
+The next permitted packet is G05 only. It remains unstarted until the Goal 4
 stop and navigator review are complete.
 
-Before any G04 edit, the root must:
+Before any G05 edit, the root must:
 
 1. re-read EvoGen `AGENTS.md` and `docs/INTEGRATION_CHECKPOINT.md`;
-2. confirm `main` starts at the reviewed, committed G03 result with a clean
+2. confirm `main` starts at the reviewed, committed G04 result with a clean
    checkpoint ratchet;
-3. inspect the orchestrator, CLI, ledger, artifact store, workspace layout,
-   typed stage outputs, and every value the one-shot cycle keeps only in memory;
-4. dispatch a stage-state cartographer and crash/resume proof designer read-only;
-5. freeze the persisted stage manifest, immutable upstream references, subject
-   generation and hash checks, invocation boundary, and one-shot compatibility;
-6. assign one writer to make the nine stages individually invokable while the
-   convenience `cycle` command executes the same stage path;
-7. independently stop after diagnosis, resume in a new process, and prove the
-   final lineage and artifacts match an uninterrupted cycle exactly;
-8. refresh the checkpoint with the exact G04 parent and next G05; and
-9. commit and stop without beginning G05.
+3. inspect insufficient-evidence diagnosis, investigation, specification,
+   candidate lifecycle, retention, ledger, and capability-manifest authority;
+4. dispatch an insufficient-evidence path auditor and a probe/permanent
+   capability separation threat model read-only;
+5. freeze the typed probe lifecycle, its persisted artifacts and statuses, and
+   the boundary that prevents probe candidates from reaching the permanent
+   capability architect or retained manifest;
+6. assign one writer to implement the first-class probe path without changing
+   environment or evaluator truth to make a probe pass;
+7. independently prove a probe resolves one named uncertainty while the
+   retained permanent-capability manifest stays byte-identical;
+8. refresh the checkpoint with the exact G05 parent and next G06; and
+9. commit and stop without beginning G06.
