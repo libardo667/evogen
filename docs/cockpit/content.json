@@ -1,0 +1,237 @@
+{
+  "schema_version": "evogen-cockpit/v1",
+  "product_name": "EvoGen",
+  "product_thesis": "Turn repeated agent failures into evidence-backed capability changes.",
+  "snapshot_label": "G11 closed · G12 queued",
+  "plan_revision_commit": "be1b57c23aee52482d677c8175154c2691a1b3ce",
+  "last_closed_goal": {
+    "goal_id": "G11",
+    "title": "Export an exact KAE generation manifest",
+    "summary": "KAE can now publish a stable, redacted, typed identity for the source, models, prompts, policy, configuration, protocols, scenarios, and native artifacts that form one generation."
+  },
+  "current_focus": {
+    "goal_id": "G12",
+    "title": "Log the exact affordance set as its own event",
+    "state": "unstarted",
+    "summary": "The next slice will record exactly what the KAE planner could choose immediately before delivery, without parsing prompt labels or exposing executor mechanics.",
+    "human_gate": "none"
+  },
+  "journeys": [
+    {"id": "foundation", "label": "I · EvoGen foundation", "first_goal": 1, "last_goal": 8, "summary": "Make the generic evolution engine deterministic, resumable, typed, and subject-neutral."},
+    {"id": "kenshi", "label": "II · Kenshi proof", "first_goal": 9, "last_goal": 29, "summary": "Integrate a real autonomous-game subject while preserving causal and live-proof boundaries."},
+    {"id": "openttd", "label": "III · OpenTTD proof", "first_goal": 30, "last_goal": 45, "summary": "Build a second subject from a pinned headless environment through retained capability changes."},
+    {"id": "release", "label": "IV · Genericity and release", "first_goal": 46, "last_goal": 49, "summary": "Audit two-subject generality, unify operation, and freeze a serious completion state."}
+  ],
+  "proof_lanes": [
+    {"id": "source", "label": "Source", "description": "The authority exists in reviewed code or a checked-in contract."},
+    {"id": "static", "label": "Static tests", "description": "Automated tests exercise the contract without claiming an external effect."},
+    {"id": "portable", "label": "Portable", "description": "A clean locked verifier reproduces the result from the repository."},
+    {"id": "replay", "label": "Replay", "description": "Recorded evidence can reconstruct the relevant choice or outcome."},
+    {"id": "hosted", "label": "Hosted CI", "description": "The public commit passes its hosted test matrix."},
+    {"id": "built", "label": "Built artifact", "description": "An artifact was built and identified; loading is not implied."},
+    {"id": "installed", "label": "Installed artifact", "description": "Installed bytes were independently identified; runtime use is not implied."},
+    {"id": "live", "label": "Live effect", "description": "Later independent engine evidence attests a world effect."},
+    {"id": "withheld", "label": "Withheld", "description": "The evidence does not support this claim yet."}
+  ],
+  "repositories": [
+    {
+      "id": "evogen",
+      "name": "EvoGen",
+      "role": "generic evolution plane",
+      "branch": "main",
+      "state": "G01–G08 complete; G11 planning ratchet public",
+      "evidence_commit": "be1b57c23aee52482d677c8175154c2691a1b3ce",
+      "hosted_run": "31543193951",
+      "matrix": "Python 3.11–3.13",
+      "href": "https://github.com/libardo667/evogen/commit/be1b57c23aee52482d677c8175154c2691a1b3ce"
+    },
+    {
+      "id": "kae",
+      "name": "Kenshi Agent Environment",
+      "role": "first real subject",
+      "branch": "main",
+      "state": "G09–G11 complete",
+      "evidence_commit": "bfaa4d55ae10a34d33e7a06ee3959fc6659eceb4",
+      "hosted_run": "31542719034",
+      "matrix": "Python 3.11–3.14",
+      "href": "https://github.com/libardo667/kenshi-agent-env/commit/bfaa4d55ae10a34d33e7a06ee3959fc6659eceb4"
+    },
+    {
+      "id": "openttd",
+      "name": "OpenTTD Agent Environment",
+      "role": "second real subject",
+      "branch": "not created",
+      "state": "not started · begins at G30",
+      "evidence_commit": null,
+      "hosted_run": null,
+      "matrix": null,
+      "href": "../SEQUENCED_SUBAGENT_EXECUTION_PLAN.md"
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "cycle",
+      "name": "Deterministic evolution cycle",
+      "status": "available",
+      "plain_language": "Runs an intentionally limited agent, finds a repeated missing capability, generates real plugin code, challenges it across four suites, and retains it only when the evidence clears every gate.",
+      "proof": ["source", "static", "portable", "hosted"],
+      "not_proven": "The reference diagnostician is deterministic; arbitrary model diagnosis is not proven.",
+      "evidence": [{"label": "Architecture", "href": "../architecture.md"}, {"label": "Run contract", "href": "../contracts.md"}]
+    },
+    {
+      "id": "resumption",
+      "name": "Persisted, resumable orchestration",
+      "status": "available",
+      "plain_language": "Stores typed stage receipts and immutable artifacts so a completed stage can be resumed without silently rerunning prior work.",
+      "proof": ["source", "static", "portable", "hosted"],
+      "not_proven": "Instruction-level crash recovery inside an unfinished stage is not claimed.",
+      "evidence": [{"label": "Evolution contracts", "href": "../contracts.md"}]
+    },
+    {
+      "id": "subject_boundary",
+      "name": "Subject plugin and conformance doctor",
+      "status": "available",
+      "plain_language": "Discovers subjects without importing demo ontology into the generic core and checks their manifests, isolation, symmetry, and retained-generation materialization.",
+      "proof": ["source", "static", "portable", "hosted"],
+      "not_proven": "A passing doctor is additional evidence, not certification of a live environment.",
+      "evidence": [{"label": "Integration guide", "href": "../kenshi-integration.md"}]
+    },
+    {
+      "id": "evaluation",
+      "name": "Frozen evaluator and candidate isolation",
+      "status": "available",
+      "plain_language": "Candidate authors cannot rewrite their evaluator, scenario authority, or baseline. Rejected work remains in lineage rather than disappearing.",
+      "proof": ["source", "static", "portable", "hosted"],
+      "not_proven": "The deterministic demo does not establish model-generated candidate quality.",
+      "evidence": [{"label": "Research plan", "href": "../research-plan.md"}]
+    },
+    {
+      "id": "kae_events",
+      "name": "KAE event authority and sequence",
+      "status": "available",
+      "plain_language": "KAE has an audited event surface and a monotonic event sequence, closing the identity ambiguity that blocked faithful trajectory import.",
+      "proof": ["source", "static", "portable", "hosted"],
+      "not_proven": "The exact planner affordance set is not yet a dedicated event; that is G12.",
+      "evidence": [{"label": "Current checkpoint", "href": "../INTEGRATION_CHECKPOINT.md"}]
+    },
+    {
+      "id": "kae_generation",
+      "name": "Exact KAE generation manifest",
+      "status": "available",
+      "plain_language": "Publishes a stable, redacted identity for KAE source and runtime authorities, including independent built, staged, and installed native-artifact evidence.",
+      "proof": ["source", "static", "portable", "hosted", "built", "installed"],
+      "not_proven": "File identity does not prove that a DLL is loaded, a process matches it, or a world effect occurred.",
+      "evidence": [{"label": "G11 checkpoint", "href": "../INTEGRATION_CHECKPOINT.md"}, {"label": "KAE completion commit", "href": "https://github.com/libardo667/kenshi-agent-env/commit/bfaa4d55ae10a34d33e7a06ee3959fc6659eceb4"}]
+    },
+    {
+      "id": "kae_affordances",
+      "name": "Exact KAE affordance-set event",
+      "status": "next",
+      "plain_language": "Will let replay reconstruct exactly what the planner could choose at each decision point, without prompt-label parsing.",
+      "proof": ["withheld"],
+      "not_proven": "Unstarted. No implementation or completion evidence is claimed.",
+      "evidence": [{"label": "G12 source plan", "href": "../SEQUENCED_SUBAGENT_EXECUTION_PLAN.md"}]
+    },
+    {
+      "id": "kae_cycle",
+      "name": "Historical and new KAE evolution cycles",
+      "status": "planned",
+      "plain_language": "Will convert real KAE history into hidden-answer diagnostics, then close a genuinely new deficit through supervised live proof.",
+      "proof": ["withheld"],
+      "not_proven": "Planned in G15–G29; no retained KAE capability is claimed yet.",
+      "evidence": [{"label": "KAE journey", "href": "../SEQUENCED_SUBAGENT_EXECUTION_PLAN.md"}]
+    },
+    {
+      "id": "openttd_subject",
+      "name": "OpenTTD subject environment",
+      "status": "planned",
+      "plain_language": "Will provide a pinned, deterministic, headless second environment with causal command lifecycles and a narrow road-freight surface.",
+      "proof": ["withheld"],
+      "not_proven": "The local OpenTTD installation is an input, not proof of the planned environment. Repository work begins at G30.",
+      "evidence": [{"label": "OpenTTD journey", "href": "../SEQUENCED_SUBAGENT_EXECUTION_PLAN.md"}]
+    },
+    {
+      "id": "genericity",
+      "name": "Two-subject genericity",
+      "status": "planned",
+      "plain_language": "Will prove that one CLI and artifact layout operate both KAE and OpenTTD without leaking either subject's ontology into EvoGen core.",
+      "proof": ["withheld"],
+      "not_proven": "Cross-subject generality remains withheld until G46–G49.",
+      "evidence": [{"label": "Release journey", "href": "../SEQUENCED_SUBAGENT_EXECUTION_PLAN.md"}]
+    }
+  ],
+  "demo_result": {
+    "label": "Deterministic microworld retention proof",
+    "scope": "Portable and hosted evidence; not a live-game claim.",
+    "verdict": "retain",
+    "suites": [
+      {"label": "Revealing", "baseline": "0 / 1", "candidate": "1 / 1"},
+      {"label": "Structural variants", "baseline": "0 / 3", "candidate": "3 / 3"},
+      {"label": "Regressions", "baseline": "2 / 2", "candidate": "2 / 2"},
+      {"label": "Long horizon", "baseline": "0 / 1", "candidate": "1 / 1"}
+    ]
+  },
+  "commands": [
+    {"label": "Reproduce the full EvoGen verifier", "cwd": "evogen", "command": "uv run --frozen --extra dev python scripts/verify.py"},
+    {"label": "Inspect the bundled subject", "cwd": "evogen", "command": "uv run evogen subject doctor microworld"},
+    {"label": "Publish a KAE generation manifest", "cwd": "kenshi-agent-env", "command": "./dev generation-manifest --output /tmp/kae-generation.json"}
+  ],
+  "withheld_claims": [
+    "No general model has yet been shown to infer arbitrary missing capabilities from arbitrary environments.",
+    "The KAE generation manifest does not prove that native bytes are loaded, identify a running process, or prove a world effect.",
+    "KAE is not yet registered as a complete EvoGen subject, and its production trajectory exporter is not complete.",
+    "No OpenTTD subject repository or retained OpenTTD capability exists yet.",
+    "Two-subject genericity and the first serious release remain unproven."
+  ],
+  "goal_titles": {
+    "G01": "Freeze and publish the alpha honestly",
+    "G02": "Give subjects a real plugin boundary",
+    "G03": "Fix trajectory identity before importing real logs",
+    "G04": "Make the evolution cycle resumable",
+    "G05": "Make probes first-class",
+    "G06": "Put every reasoning role behind typed artifacts",
+    "G07": "Freeze evaluation authority outside candidates",
+    "G08": "Ship a subject conformance kit and doctor",
+    "G09": "Audit KAE's actual event surface",
+    "G10": "Add a real monotonic event sequence to KAE logs",
+    "G11": "Export an exact KAE generation manifest",
+    "G12": "Log the exact affordance set as its own event",
+    "G13": "Generate KAE's capability manifest from authorities",
+    "G14": "Replace the provisional normalizer with an exact KAE exporter",
+    "G15": "Register KAE as an EvoGen subject plugin",
+    "G16": "Build observer and replay runners first",
+    "G17": "Adapt KAE's existing metrics instead of replacing them",
+    "G18": "Package the missing-interface-close case exactly",
+    "G19": "Build the first KAE historical corpus",
+    "G20": "Add a hidden-answer diagnostic benchmark",
+    "G21": "Run the first model-versus-human diagnosis study",
+    "G22": "Give KAE a bounded environment investigator",
+    "G23": "Give KAE a capability architect that handles more than additions",
+    "G24": "Build isolated KAE candidates in Git worktrees",
+    "G25": "Review and evaluate KAE candidates without live installation",
+    "G26": "Define disposable live suites and binary provenance",
+    "G27": "Complete a historical KAE level-4 cycle",
+    "G28": "Observe a genuinely new KAE deficit without forcing one",
+    "G29": "Close the first new KAE issue through supervised live proof",
+    "G30": "Create `openttd-agent-env` with a pinned upstream boundary",
+    "G31": "Build and run OpenTTD headlessly and reproducibly",
+    "G32": "Create a deterministic OpenTTD scenario pack",
+    "G33": "Prove the least invasive external-control bridge",
+    "G34": "Build the minimal NoAI executor shell",
+    "G35": "Specify OpenTTD Protocol 1.0 as an economic network world model",
+    "G36": "Give OpenTTD commands a causal lifecycle",
+    "G37": "Expose a narrow road-freight operation surface",
+    "G38": "Build the OpenTTD agent runtime and planners",
+    "G39": "Register OpenTTD as an EvoGen subject",
+    "G40": "Establish honest baseline competence",
+    "G41": "Create a route-planning capability deficit that is not a missing engine verb",
+    "G42": "Let EvoGen diagnose and specify the route-planning gap",
+    "G43": "Implement and adversarially review `plan_road_route`",
+    "G44": "Evaluate and retain the first OpenTTD generation",
+    "G45": "Close a second OpenTTD issue in observability, not action",
+    "G46": "Perform the two-subject genericity audit",
+    "G47": "Make one CLI and artifact layout operate both subjects",
+    "G48": "Run a cross-subject capability-engineering study",
+    "G49": "Freeze the first serious EvoGen completion state"
+  }
+}

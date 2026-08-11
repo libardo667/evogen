@@ -156,6 +156,16 @@ game integration or model-generated diagnosis. Its local cycle is resumable at
 completed persisted stage boundaries, with typed receipts and content-addressed
 outputs; arbitrary instruction-level crash recovery is not claimed.
 
+For a human-readable view of what is closed, what is next, what can run, and
+which claims remain withheld, open the offline
+[project evidence cockpit](docs/cockpit/index.html). It is deterministically
+rebuilt from the checked-in plan, checkpoint, and reviewed capability narrative:
+
+```bash
+python scripts/build_project_cockpit.py
+python scripts/build_project_cockpit.py --check
+```
+
 The current repository authority and next unstarted bounded goal are recorded
 in [docs/INTEGRATION_CHECKPOINT.md](docs/INTEGRATION_CHECKPOINT.md).
 The cross-repository delegation and evidence handoff protocol is recorded in

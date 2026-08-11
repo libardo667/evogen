@@ -1,4 +1,4 @@
-# Integration checkpoint: Exact KAE generation manifest
+# Integration checkpoint: G11 closure and evidence cockpit
 
 This document is the current repository authority for one bounded integration
 goal. It is replaced in the same commit as every completed goal; Git history
@@ -7,7 +7,7 @@ retains older checkpoints.
 ## Repository and planning authority
 
 ```text
-parent commit                    303701c078ead81f1886933d10faa5d0891fac8d
+parent commit                    be1b57c23aee52482d677c8175154c2691a1b3ce
 integration branch               main
 current goal                     Goal 11 - Export exact KAE generation manifest
 next unstarted goal              Goal 12 - Log the exact affordance set
@@ -24,6 +24,12 @@ execution plan                   docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
 Goal 11 began from clean, synchronized KAE `main` after the complete Goal 10
 logger migration. This EvoGen commit changes only the durable planning ratchet;
 implementation and evidence live in the exact KAE completion commit above.
+
+The subsequent evidence-cockpit slice changes no numbered-goal state. It adds a
+generated, offline human interface over this checkpoint and the exact 49-goal
+registry. Goal 12 remains the sole next goal and remains unstarted. The cockpit
+keeps proof classes separate and treats this document and the registry—not its
+own presentation—as project authority.
 
 ## Behavioral change and authority
 

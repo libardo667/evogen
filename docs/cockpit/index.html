@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>EvoGen · Evidence cockpit</title>
+    <meta name="description" content="An offline, evidence-backed view of EvoGen progress and capability.">
+    <link rel="stylesheet" href="cockpit.css">
+    <script src="state.js" defer></script>
+    <script src="cockpit.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to project evidence</a>
+    <div class="app-shell">
+      <aside class="rail" aria-label="Project navigation">
+        <a class="brand" href="#now" aria-label="EvoGen cockpit home">
+          <span class="brand-mark" aria-hidden="true">E</span>
+          <span><strong>EvoGen</strong><small>evidence cockpit</small></span>
+        </a>
+        <nav class="view-nav" aria-label="Cockpit views">
+          <button class="nav-item is-active" type="button" data-view-target="now" aria-current="page"><span>01</span>Now</button>
+          <button class="nav-item" type="button" data-view-target="goals"><span>02</span>49 goals</button>
+          <button class="nav-item" type="button" data-view-target="capabilities"><span>03</span>Capabilities</button>
+          <button class="nav-item" type="button" data-view-target="evidence"><span>04</span>Evidence</button>
+          <button class="nav-item" type="button" data-view-target="repositories"><span>05</span>Repositories</button>
+        </nav>
+        <div class="rail-foot">
+          <p><span class="pulse" aria-hidden="true"></span>Checked-in snapshot</p>
+          <a href="../INTEGRATION_CHECKPOINT.md">Exact checkpoint ↗</a>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <button class="menu-button" type="button" aria-controls="mobile-nav" aria-expanded="false">Views</button>
+          <div>
+            <p class="eyebrow">Capability engineering · field record</p>
+            <p class="snapshot" id="snapshot-label">Loading checked-in state…</p>
+          </div>
+          <div class="truth-key"><span></span>Claims stop where evidence stops</div>
+        </header>
+        <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile cockpit views" hidden></nav>
+
+        <main id="main" tabindex="-1">
+          <!-- generated:fallback:start -->
+    <noscript>
+      <section class="noscript-card" aria-labelledby="noscript-title">
+        <p class="eyebrow">Read-only evidence snapshot</p>
+        <h1 id="noscript-title">EvoGen project cockpit</h1>
+        <p><strong>Last closed:</strong> G11 — Export an exact KAE generation manifest</p>
+        <p><strong>Next authorized:</strong> G12 —
+        Log the exact affordance set as its own event (unstarted)</p>
+        <p><strong>Proof lanes:</strong> Source, Static tests, Portable, Replay, Hosted CI, Built artifact, Installed artifact, Live effect, Withheld</p>
+        <h2>Claims still withheld</h2>
+        <ul><li>No general model has yet been shown to infer arbitrary missing capabilities from arbitrary environments.</li><li>The KAE generation manifest does not prove that native bytes are loaded, identify a running process, or prove a world effect.</li><li>KAE is not yet registered as a complete EvoGen subject, and its production trajectory exporter is not complete.</li><li>No OpenTTD subject repository or retained OpenTTD capability exists yet.</li><li>Two-subject genericity and the first serious release remain unproven.</li></ul>
+        <p><a href="../INTEGRATION_CHECKPOINT.md">Open the exact checkpoint</a> ·
+        <a href="../SEQUENCED_SUBAGENT_EXECUTION_PLAN.md">Open the 49-goal plan</a></p>
+      </section>
+    </noscript>
+    <!-- generated:fallback:end -->
+
+          <section class="view is-active" data-view="now" aria-labelledby="now-title">
+            <div class="hero-grid">
+              <div class="hero-copy">
+                <p class="eyebrow">The body can change, but only through proof</p>
+                <h1 id="now-title">What is true <em>right now</em></h1>
+                <p class="lede" id="product-thesis"></p>
+                <div class="progress-line" aria-label="Goal completion">
+                  <div><span id="progress-complete"></span><small>closed goals</small></div>
+                  <div class="progress-track" aria-hidden="true"><span id="progress-fill"></span></div>
+                  <div><span id="progress-total"></span><small>total goals</small></div>
+                </div>
+              </div>
+              <aside class="definition-card">
+                <p class="eyebrow">Working definition</p>
+                <p>A generation is the whole agent system: source, models, prompts, tools, memory, policies, configuration, and built artifacts.</p>
+              </aside>
+            </div>
+
+            <div class="handoff" aria-label="Current project handoff">
+              <article class="handoff-card closed" id="last-closed-card"></article>
+              <div class="handoff-arrow" aria-hidden="true"><span></span></div>
+              <article class="handoff-card next" id="next-card"></article>
+            </div>
+
+            <div class="section-heading">
+              <div><p class="eyebrow">Runnable today</p><h2>One complete causal proof</h2></div>
+              <span class="status-tag proven">portable + hosted</span>
+            </div>
+            <section class="demo-panel" id="demo-panel" aria-label="Deterministic microworld result"></section>
+
+            <div class="split-grid">
+              <section class="panel">
+                <div class="panel-head"><div><p class="eyebrow">Operator shelf</p><h2>Things you can run</h2></div></div>
+                <div id="command-list"></div>
+              </section>
+              <section class="panel caution-panel">
+                <div class="panel-head"><div><p class="eyebrow">Evidence boundary</p><h2>Claims deliberately withheld</h2></div></div>
+                <ul class="withheld-list" id="withheld-list"></ul>
+              </section>
+            </div>
+          </section>
+
+          <section class="view" data-view="goals" aria-labelledby="goals-title" hidden>
+            <div class="page-heading">
+              <p class="eyebrow">Sequenced execution registry</p>
+              <h1 id="goals-title">The 49-goal route</h1>
+              <p>Only one goal may be next. Closed, queued, and unstarted are registry states—not estimates.</p>
+            </div>
+            <div class="goal-controls">
+              <div class="segmented" role="group" aria-label="Filter goals">
+                <button type="button" class="is-active" data-goal-filter="all">All</button>
+                <button type="button" data-goal-filter="complete">Closed</button>
+                <button type="button" data-goal-filter="next">Next</button>
+                <button type="button" data-goal-filter="unstarted">Unstarted</button>
+              </div>
+              <label class="search"><span class="sr-only">Search goals</span><input id="goal-search" type="search" placeholder="Find a goal"></label>
+            </div>
+            <div id="goal-journeys"></div>
+          </section>
+
+          <section class="view" data-view="capabilities" aria-labelledby="capabilities-title" hidden>
+            <div class="page-heading">
+              <p class="eyebrow">Current operating envelope</p>
+              <h1 id="capabilities-title">What the project can—and cannot—do</h1>
+              <p>Each card names its proof lanes and the strongest nearby claim that remains unsupported.</p>
+            </div>
+            <div class="capability-grid" id="capability-grid"></div>
+          </section>
+
+          <section class="view" data-view="evidence" aria-labelledby="evidence-title" hidden>
+            <div class="page-heading">
+              <p class="eyebrow">Proof vocabulary</p>
+              <h1 id="evidence-title">Evidence is a ladder, not a badge</h1>
+              <p>Dispatch, a successful return, built bytes, installed bytes, and a later world effect are different facts.</p>
+            </div>
+            <div class="evidence-ladder" id="evidence-ladder"></div>
+            <section class="authority-panel" id="authority-panel"></section>
+          </section>
+
+          <section class="view" data-view="repositories" aria-labelledby="repositories-title" hidden>
+            <div class="page-heading">
+              <p class="eyebrow">Cross-repository handoff</p>
+              <h1 id="repositories-title">Where the evidence lives</h1>
+              <p>Commits identify reviewed repository states. Hosted runs attest those commits; neither substitutes for live evidence.</p>
+            </div>
+            <div class="repo-grid" id="repo-grid"></div>
+          </section>
+        </main>
+        <footer>
+          <p>Generated from checked-in authorities · <code id="state-id"></code></p>
+          <p><a href="state.json">Inspect canonical state</a> · <a href="README.md">Rebuild instructions</a></p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>
