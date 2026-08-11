@@ -7,7 +7,7 @@ retains older checkpoints.
 ## Repository and planning authority
 
 ```text
-parent commit          8869cb056ac4c182978b963dfc6be0937521b6d8
+parent commit          0a89273fc86ec5f2e494cb7c91da08d2cf7e4682
 integration branch     main
 current goal           Goal 7 - Freeze evaluation authority outside candidates
 next unstarted goal    Goal 8 - Add subject conformance kit and doctor command
@@ -21,10 +21,11 @@ plan updated           2026-08-10T21:25:08.835Z
 execution plan         docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
 ```
 
-Goal 7 began from the reviewed Goal 6 commit named by `parent commit`. This
-goal freezes the complete evaluation suite outside candidate authority, binds
-every final experiment to that suite and independent run evidence, and keeps
-candidate-authored tests outside deterministic retention authority.
+Goal 7 source work began from reviewed Goal 6 commit
+`8869cb056ac4c182978b963dfc6be0937521b6d8`. The first public G07 candidate is
+the immediate `parent commit`; hosted Python 3.13 then exposed a read-only WAL
+visibility defect, so this final closure commit retains that red candidate and
+corrects the portability boundary rather than rewriting history.
 
 ## Behavioral change and authority
 
@@ -64,7 +65,11 @@ Source-proven:
   content-hashed, statically reviewed, and checked again after evaluation, so
   undeclared or runtime-created files cannot escape review; and
 - validation occurs before experiment publication, candidate lifecycle
-  advancement, stage pointers, decisions, lineage, or cycle-result publication.
+  advancement, stage pointers, decisions, lineage, or cycle-result publication;
+  and
+- ledger context managers now explicitly close after commit or rollback, so a
+  writer finalizes WAL state before immutable status and replay inspection;
+  read-only commands still create or change no workspace bytes.
 
 Test-proven:
 
@@ -85,7 +90,10 @@ Test-proven:
   cases, empty seeds, invalid ceilings, and authoritative candidate-test claims
   are rejected by typed construction; and
 - a candidate subject metric claiming its own tests passed cannot override a
-  generic regression failure, which remains a deterministic rejection.
+  generic regression failure, which remains a deterministic rejection; and
+- a deterministic WAL fixture proves the ledger context closes its connection,
+  finalizes the committed record, and makes it visible to immutable read-only
+  replay without creating sidecar files.
 
 Generated authority:
 
@@ -129,6 +137,18 @@ authoritative dirty-candidate gate passed compile, Ruff, strict
 mypy, a fresh isolated wheel build, the entire test suite, the retained
 microworld demo, and whitespace checks.
 
+After the ledger lifecycle correction, the same authoritative gate passed
+uncontended under Python 3.13 with all 224 tests, the retained microworld demo,
+and the source, typing, build, and whitespace checks.
+
+Hosted run `31518315356` passed Python 3.11 and 3.12 but failed Python 3.13
+because immutable read-only SQLite replay ignored one committed evaluation run
+still present in the WAL. The failed run and public parent commit remain
+evidence. This closure candidate explicitly closes ledger context connections
+so writers finalize committed WAL state, while preserving side-effect-free
+immutable reads; its replacement hosted run must be green before Goal 7 is
+complete.
+
 Gauss and Hopper mapped evaluator authority and attack surfaces before writing.
 Tesla implemented the bounded candidate on the Luna model. The root rejected
 the first handback after Lovelace and Shannon found incomplete workspace
@@ -154,7 +174,7 @@ as a subject.
 
 ## Completion boundary
 
-This checkpoint is part of the coherent Goal 7 candidate. Goal 7 is complete
+This checkpoint is part of the final Goal 7 closure candidate. Goal 7 is complete
 only after the authoritative gate passes with this dirty checkpoint, the final
 diff is reviewed and committed, the clean-state checkpoint ratchet passes, and
 the tree is clean and synchronized with the public remote.

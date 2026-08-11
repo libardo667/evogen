@@ -3,7 +3,8 @@ from __future__ import annotations
 import sqlite3
 from collections.abc import Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, TypeVar
+from types import TracebackType
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 from pydantic import BaseModel
 
@@ -35,6 +36,21 @@ if TYPE_CHECKING:
 _ModelT = TypeVar("_ModelT", bound=BaseModel)
 
 
+class _ClosingConnection(sqlite3.Connection):
+    """Commit or roll back like sqlite3's context manager, then actually close."""
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> Literal[False]:
+        try:
+            return super().__exit__(exc_type, exc_value, traceback)
+        finally:
+            self.close()
+
+
 class Ledger:
     """SQLite index for immutable JSON records and lineage decisions."""
 
@@ -55,9 +71,10 @@ class Ledger:
             connection = sqlite3.connect(
                 f"file:{self.path.resolve()}?mode=ro&immutable=1",
                 uri=True,
+                factory=_ClosingConnection,
             )
         else:
-            connection = sqlite3.connect(self.path)
+            connection = sqlite3.connect(self.path, factory=_ClosingConnection)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys = ON")
         if not self.read_only:

@@ -27,6 +27,38 @@ def test_ledger_round_trips_generation(tmp_path):
     assert ledger.list_generations() == [generation]
 
 
+def test_ledger_context_closes_and_finalizes_committed_wal(tmp_path):
+    path = tmp_path / "evogen.sqlite3"
+    ledger = Ledger(path)
+    generation = GenerationManifest(
+        generation_id="gen-wal",
+        subject="test",
+        source_ref="source",
+        capability_manifest_digest="0" * 64,
+    )
+    with ledger.connect() as writer:
+        writer.execute("PRAGMA wal_autocheckpoint = 0")
+        writer.execute(
+            """
+            INSERT INTO generations(
+                generation_id, parent_generation_id, created_at, manifest_json
+            ) VALUES (?, ?, ?, ?)
+            """,
+            (
+                generation.generation_id,
+                generation.parent_generation_id,
+                generation.created_at.isoformat(),
+                generation.model_dump_json(),
+            ),
+        )
+        writer.commit()
+        assert path.with_name(f"{path.name}-wal").is_file()
+
+    with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+        writer.execute("SELECT 1")
+    assert Ledger(path, read_only=True).get_generation(generation.generation_id) == generation
+
+
 class _ReviewBackend:
     def __init__(self, response_id: str) -> None:
         self.response_id = response_id
