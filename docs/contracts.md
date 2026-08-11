@@ -85,3 +85,32 @@ and timeout.
 
 A backend process should never receive deployment credentials merely because it
 is allowed to author code.
+
+## Subject plugins
+
+Subjects are discovered from installed Python distribution metadata in the
+`evogen.subjects` entry-point group. The public API version is
+`evogen.adapters.subjects.SUBJECT_PLUGIN_API_VERSION` (`"1.0"`). An entry-point
+name is the generic subject identity and must match the loaded plugin's
+`name`; duplicate names, load failures, unsupported versions, and malformed
+factories fail closed with typed `SubjectPluginError` subclasses.
+
+The plugin supplies factories for seven behaviours: `SubjectRunner`,
+`EnvironmentInvestigator`, `CandidateBuilder`, `CandidateReviewer`,
+`ExperimentEvaluator`, `GenerationMaterializer`, and the minimal
+`SubjectDoctor`. It also supplies the separate subject-neutral
+`bootstrap_factory`, which returns the initial `GenerationManifest` and
+`EvolutionPlan` required for a one-shot run. Every factory receives one
+`SubjectFactoryContext` containing the shared workspace, artifact store, and
+ledger. The runner is placed on that context before bootstrap, evaluator, and
+materializer construction so subject adapters can reuse the exact runner
+instance.
+
+The bundled microworld is registered through the same entry-point path as an
+external subject. Generated capability files remain a separate runtime plugin
+boundary and are not loaded through subject entry points.
+
+When `clean=True`, recursive deletion is allowed only for a recognized EvoGen
+workspace (ledger, artifact store, and workspace evidence) or the explicit
+default `.evogen-demo` path. Filesystem roots, home/current directories, Git
+repositories, and unmarked directories fail closed with `SubjectWorkspaceError`.

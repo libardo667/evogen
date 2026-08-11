@@ -1,34 +1,25 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
 
+from evogen.adapters.subjects import (
+    SubjectFactoryContext,
+    _prepare_workspace,
+    compose_subject,
+    load_subject_plugin,
+)
 from evogen.core.ids import new_id
 from evogen.core.models import (
     CandidateManifest,
     CapabilityManifest,
     CycleResult,
-    EvolutionPlan,
     ExperimentResult,
     GateDecision,
     GenerationManifest,
 )
-from evogen.evolution.orchestrator import EvolutionOrchestrator
-from evogen.evolution.review import PythonCandidateReviewer
 from evogen.storage.artifacts import ArtifactStore
 from evogen.storage.ledger import Ledger
 
-from .builder import ReferenceMicroworldBuilder
-from .evaluator import MicroworldEvaluator
-from .investigator import MicroworldInvestigator
-from .scenarios import (
-    DIAGNOSTIC_SCENARIOS,
-    LONG_HORIZON_SUITES,
-    REGRESSION_SUITES,
-    REVEALING_CASES,
-    STRUCTURAL_VARIANTS,
-    get_scenario,
-)
 from .subject import MicroworldRunner
 
 
@@ -94,67 +85,25 @@ class MicroworldEvolutionCycle:
         self.workspace = workspace.resolve()
         self.artifacts = ArtifactStore(self.workspace / "artifacts")
         self.ledger = Ledger(self.workspace / "evogen.sqlite3")
-        self.runner = MicroworldRunner()
-
-    @classmethod
-    def prepare(cls, workspace: Path, *, clean: bool = False) -> MicroworldEvolutionCycle:
-        resolved = workspace.resolve()
-        if clean and resolved.exists():
-            shutil.rmtree(resolved)
-        resolved.mkdir(parents=True, exist_ok=True)
-        return cls(resolved)
-
-    def run(self) -> CycleResult:
-        baseline = self._baseline_generation()
-        forbidden_literals = [
-            *REVEALING_CASES,
-            *STRUCTURAL_VARIANTS,
-            *[get_scenario(identifier).target_item_id for identifier in REVEALING_CASES],
-        ]
-        plan = EvolutionPlan(
-            diagnostic_scenarios=DIAGNOSTIC_SCENARIOS,
-            revealing_cases=REVEALING_CASES,
-            structural_variants=STRUCTURAL_VARIANTS,
-            regression_suites=REGRESSION_SUITES,
-            long_horizon_suites=LONG_HORIZON_SUITES,
-            forbidden_literals=forbidden_literals,
-        )
-        orchestrator = EvolutionOrchestrator(
+        self.plugin = load_subject_plugin("microworld")
+        self.context = SubjectFactoryContext(
             workspace=self.workspace,
             artifacts=self.artifacts,
             ledger=self.ledger,
-            runner=self.runner,
-            investigator=MicroworldInvestigator(),
-            builder=ReferenceMicroworldBuilder(),
-            reviewer=PythonCandidateReviewer(),
-            evaluator=MicroworldEvaluator(runner=self.runner, ledger=self.ledger),
-            materializer=MicroworldGenerationMaterializer(
-                runner=self.runner,
-                artifacts=self.artifacts,
-            ),
         )
-        return orchestrator.run(baseline=baseline, plan=plan)
+        self.composition = compose_subject(self.plugin, context=self.context)
+        self.runner = self.composition.runner
+
+    @classmethod
+    def prepare(cls, workspace: Path, *, clean: bool = False) -> MicroworldEvolutionCycle:
+        resolved = _prepare_workspace(workspace, clean=clean)
+        return cls(resolved)
+
+    def run(self) -> CycleResult:
+        return self.composition.orchestrator.run(
+            baseline=self.composition.bootstrap.baseline,
+            plan=self.composition.bootstrap.plan,
+        )
 
     def _baseline_generation(self) -> GenerationManifest:
-        plugin_root = self.workspace / "subjects" / "microworld" / "genesis" / "plugins"
-        plugin_root.mkdir(parents=True, exist_ok=True)
-        generation_id = "gen-microworld-0001"
-        provisional = GenerationManifest(
-            generation_id=generation_id,
-            subject="microworld",
-            source_ref="builtin:microworld-baseline-v1",
-            capability_manifest_digest="pending",
-            config={"plugin_root": str(plugin_root)},
-            metadata={
-                "purpose": "intentionally impoverished baseline",
-                "withheld_environment_operation": "inspect_container",
-            },
-        )
-        manifest = self.runner.capability_manifest(provisional)
-        digest = self.artifacts.put_json(manifest.model_dump(mode="json"))
-        return provisional.model_copy(
-            update={
-                "capability_manifest_digest": digest,
-                "artifact_digests": {"capability_manifest": digest},
-            }
-        )
+        return self.composition.bootstrap.baseline

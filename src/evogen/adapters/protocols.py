@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from evogen.core.models import (
     CandidateManifest,
@@ -18,6 +18,7 @@ from evogen.core.models import (
 )
 
 
+@runtime_checkable
 class SubjectRunner(Protocol):
     def run(
         self,
@@ -30,10 +31,12 @@ class SubjectRunner(Protocol):
     def capability_manifest(self, generation: GenerationManifest) -> CapabilityManifest: ...
 
 
+@runtime_checkable
 class EnvironmentInvestigator(Protocol):
     def investigate(self, issue: CapabilityIssue) -> InvestigationReport: ...
 
 
+@runtime_checkable
 class CandidateBuilder(Protocol):
     def build(
         self,
@@ -45,6 +48,7 @@ class CandidateBuilder(Protocol):
     ) -> CandidateManifest: ...
 
 
+@runtime_checkable
 class ExperimentEvaluator(Protocol):
     def evaluate(
         self,
@@ -56,6 +60,7 @@ class ExperimentEvaluator(Protocol):
     ) -> ExperimentResult: ...
 
 
+@runtime_checkable
 class CandidateReviewer(Protocol):
     def review(
         self,
@@ -65,6 +70,7 @@ class CandidateReviewer(Protocol):
     ) -> ReviewReport: ...
 
 
+@runtime_checkable
 class GenerationMaterializer(Protocol):
     def materialize(
         self,
@@ -74,3 +80,10 @@ class GenerationMaterializer(Protocol):
         experiment: ExperimentResult,
         decision: GateDecision,
     ) -> GenerationManifest: ...
+
+
+@runtime_checkable
+class SubjectDoctor(Protocol):
+    """Minimal generic diagnostic boundary reserved for a later goal."""
+
+    def check(self) -> None: ...

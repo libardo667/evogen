@@ -8,7 +8,7 @@ from rich.console import Console
 from rich.table import Table
 
 from evogen import __version__
-from evogen.demo.microworld.cycle import MicroworldEvolutionCycle
+from evogen.adapters.subjects import run_subject_cycle
 from evogen.integrations.kenshi.adapter import KenshiJsonlAdapter
 from evogen.schema import export_schemas
 from evogen.storage.ledger import Ledger
@@ -41,7 +41,7 @@ def demo(
     ),
 ) -> None:
     """Run the complete offline microworld evolution proof."""
-    result = MicroworldEvolutionCycle.prepare(workspace, clean=clean).run()
+    result = run_subject_cycle("microworld", workspace, clean=clean)
     if json_output:
         console.print_json(result.model_dump_json())
         return
