@@ -13,6 +13,7 @@ class SubjectRunner(Protocol):
         *,
         generation: GenerationManifest,
         scenario_id: str,
+        seed: int = 0,
         trace_directory: Path,
     ) -> tuple[RunRecord, list[TrajectoryEvent]]: ...
 
@@ -70,7 +71,9 @@ class ExperimentEvaluator(Protocol):
 ```
 
 The evaluator reruns the unchanged baseline and the candidate under the same
-scenario definitions. It returns individual results plus a metric vector.
+scenario definitions. It returns an `EvaluationOutcome`; the generic root adds
+the suite reference and authority snapshots when constructing an
+`ExperimentResult`.
 
 ## External agent backend
 
@@ -90,21 +93,47 @@ is allowed to author code.
 
 Subjects are discovered from installed Python distribution metadata in the
 `evogen.subjects` entry-point group. The public API version is
-`evogen.adapters.subjects.SUBJECT_PLUGIN_API_VERSION` (`"1.0"`). An entry-point
+`evogen.adapters.subjects.SUBJECT_PLUGIN_API_VERSION` (`"1.1"`). An entry-point
 name is the generic subject identity and must match the loaded plugin's
 `name`; duplicate names, load failures, unsupported versions, and malformed
 factories fail closed with typed `SubjectPluginError` subclasses.
 
-The plugin supplies factories for seven behaviours: `SubjectRunner`,
+The plugin supplies factories for the runtime behaviours: `SubjectRunner`,
 `EnvironmentInvestigator`, `CandidateBuilder`, `CandidateReviewer`,
-`ExperimentEvaluator`, `GenerationMaterializer`, and the minimal
-`SubjectDoctor`. It also supplies the separate subject-neutral
-`bootstrap_factory`, which returns the initial `GenerationManifest` and
-`EvolutionPlan` required for a one-shot run. Every factory receives one
+`ExperimentEvaluator`, `GenerationMaterializer`, and `SubjectDoctor`. The
+required `conformance_factory` returns a data-only
+`SubjectConformanceFixture` containing opaque scenario IDs/seeds and a typed
+`CapabilityIssue`/`CapabilitySpec`; it contains no callbacks and cannot certify
+its own checks. `SubjectDoctor.check()` returns a typed
+`BoundedCollection[SubjectDiagnostic]`; complete-empty is distinct from
+missing/unknown. It also supplies the separate subject-neutral
+`bootstrap_factory`, which returns the initial `GenerationManifest`,
+`EvolutionPlan`, and `EvaluationSuiteManifest` required for a one-shot run.
+Every factory receives one
 `SubjectFactoryContext` containing the shared workspace, artifact store, and
 ledger. The runner is placed on that context before bootstrap, evaluator, and
 materializer construction so subject adapters can reuse the exact runner
 instance.
+
+The conformance kit is available without running any persisted evolution stage:
+`evogen subject list` reads installed metadata only, while
+`evogen subject doctor NAME` loads exactly that subject into disposable scratch
+storage and runs seven host-owned boundaries: generation and capability
+manifests, trajectory ordering, scenario isolation, candidate workspace
+isolation, evaluation symmetry, and retained-generation materialization. A
+doctor report is one typed JSON object (or deterministic human output), names
+the exact boundary on every failure, and exits nonzero on failure. It does not
+publish stage pointers, lineage, decisions, cycle results, or reports.
+
+Reports serialize `status` (`"pass"`/`"fail"`) and `passed`, and every check
+serializes a nonempty structured `evidence` object. A complete-empty doctor
+collection passes; missing, unknown, truncated, or nonempty diagnostic
+collections fail the doctor contract. Load, API, factory, bootstrap, and
+workspace failures use the same report shape: the exact failing boundary/code
+is recorded and dependent checks are blocked. Explicit doctor workspaces must
+be brand-new scratch paths: every existing path, symlink (including an
+ancestor symlink), repository, root, home, or current directory is refused;
+omitted workspaces are disposable.
 
 The bundled microworld is registered through the same entry-point path as an
 external subject. Generated capability files remain a separate runtime plugin

@@ -8,7 +8,12 @@ from rich.console import Console
 from rich.table import Table
 
 from evogen import __version__
+from evogen.adapters.conformance import (
+    run_subject_conformance,
+    subject_conformance_failure_report,
+)
 from evogen.adapters.subjects import (
+    discover_subject_entry_points,
     read_subject_stage,
     read_subject_status,
     run_subject_cycle,
@@ -26,6 +31,8 @@ app = typer.Typer(
     help="Evidence-driven outer-loop capability engineering for autonomous agents.",
     no_args_is_help=True,
 )
+subject_app = typer.Typer(help="Inspect installed subject adapters.")
+app.add_typer(subject_app, name="subject")
 console = Console()
 
 
@@ -59,6 +66,60 @@ def cycle(
             raise typer.BadParameter(f"Unknown stage {until!r}") from exc
     result = run_subject_progress(subject, workspace, clean=clean, until=until)
     _print_result(result, json_output=json_output)
+
+
+@subject_app.command("list")
+def subject_list_command(
+    json_output: bool = typer.Option(False, "--json"),
+) -> None:
+    """List installed subject metadata without loading or composing plugins."""
+    entries = discover_subject_entry_points()
+    values = [
+        {
+            "name": entry.name,
+            "value": str(getattr(entry, "value", "")),
+            "distribution": str(
+                getattr(getattr(entry, "dist", None), "name", "<unknown distribution>")
+            ),
+        }
+        for entry in entries
+    ]
+    if json_output:
+        console.print_json(json.dumps({"subjects": values}, sort_keys=True))
+        return
+    table = Table(title="Installed EvoGen subjects")
+    table.add_column("Name")
+    table.add_column("Distribution")
+    table.add_column("Entry point")
+    for value in values:
+        table.add_row(value["name"], value["distribution"], value["value"])
+    console.print(table)
+
+
+@subject_app.command("doctor")
+def subject_doctor_command(
+    name: str = typer.Argument(..., help="Installed subject name."),
+    workspace: Path | None = typer.Option(None, "--workspace", "-w"),
+    json_output: bool = typer.Option(False, "--json"),
+) -> None:
+    """Run host conformance checks and subject diagnostics without a persisted cycle."""
+    try:
+        report = run_subject_conformance(name, workspace=workspace)
+    except Exception as exc:
+        report = subject_conformance_failure_report(name, exc)
+    if json_output:
+        console.print_json(report.model_dump_json())
+    else:
+        console.print(f"Status: {report.status}")
+        for check in report.checks:
+            code = str(check.evidence.get("code", check.boundary_id))
+            console.print(
+                f"{check.boundary_id}: {check.status} [{code}] - {check.message}",
+                markup=False,
+            )
+        console.print(f"Diagnostics: {len(report.diagnostics.items)}")
+    if not report.passed:
+        raise typer.Exit(code=1)
 
 
 @app.command("stage")

@@ -46,6 +46,10 @@
   "scenario-result": "scenario-result.schema.json",
   "stage-pointer": "stage-pointer.schema.json",
   "stage-receipt": "stage-receipt.schema.json",
+  "subject-check": "subject-check.schema.json",
+  "subject-conformance-fixture": "subject-conformance-fixture.schema.json",
+  "subject-conformance-report": "subject-conformance-report.schema.json",
+  "subject-diagnostic": "subject-diagnostic.schema.json",
   "subject-metric-vector": "subject-metric-vector.schema.json",
   "trajectory-event": "trajectory-event.schema.json"
 }

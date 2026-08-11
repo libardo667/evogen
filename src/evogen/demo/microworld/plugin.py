@@ -5,6 +5,7 @@ from __future__ import annotations
 import inspect
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from types import ModuleType
 
@@ -24,15 +25,22 @@ from evogen.adapters.subjects import (
     SubjectFactoryContext,
     SubjectPlugin,
 )
+from evogen.core.enums import FailureLayer, ResolutionKind
 from evogen.core.ids import sha256_bytes
 from evogen.core.models import (
     ArtifactRef,
+    BoundedCollection,
+    CapabilityIssue,
+    CapabilitySpec,
     EvaluationCase,
     EvaluationCategory,
     EvaluationSuiteManifest,
     EvolutionPlan,
     GenerationManifest,
+    IssueClassification,
     ProtectedPathHash,
+    SubjectConformanceFixture,
+    SubjectDiagnostic,
 )
 from evogen.evolution.review import PythonCandidateReviewer
 
@@ -52,10 +60,14 @@ from .subject import MicroworldRunner
 
 
 class MicroworldDoctor:
-    """Placeholder for the later generic conformance/doctor goal."""
+    """Subject-local evidence hook; generic checks remain host-owned."""
 
-    def check(self) -> None:
-        return None
+    def check(self) -> BoundedCollection[SubjectDiagnostic]:
+        from evogen.core.enums import Completeness
+
+        return BoundedCollection[SubjectDiagnostic](
+            items=[], completeness=Completeness.COMPLETE, known_total=0
+        )
 
 
 def build_runner(context: SubjectFactoryContext) -> MicroworldRunner:
@@ -103,6 +115,57 @@ def build_materializer(context: SubjectFactoryContext) -> GenerationMaterializer
 def build_doctor(context: SubjectFactoryContext) -> MicroworldDoctor:
     del context
     return MicroworldDoctor()
+
+
+def build_conformance_fixture(context: SubjectFactoryContext) -> SubjectConformanceFixture:
+    """Return only opaque scenarios and typed builder inputs for host conformance."""
+    if context.bootstrap is None:
+        raise RuntimeError("Conformance fixture requires the composed subject bootstrap")
+    baseline_id = context.bootstrap.baseline.generation_id
+    issue = CapabilityIssue(
+        issue_id="issue-conformance-fixture",
+        subject_generation=baseline_id,
+        created_at=datetime(2026, 1, 1, tzinfo=UTC),
+        title="Conformance fixture capability issue",
+        symptom_summary="The fixture requires an additional capability effect.",
+        classification=IssueClassification(
+            primary=FailureLayer.AFFORDANCE_DISCOVERY,
+            confidence=1.0,
+            rationale="Fixture data for the conformance builder boundary.",
+        ),
+        supporting_evidence=[],
+        required_effect="reveal_contents",
+        blocker_type="opaque_container",
+        proposed_resolution=ResolutionKind.ADD_CAPABILITY,
+        prediction="The candidate should reveal the contents of an opaque container.",
+    )
+    specification = CapabilitySpec(
+        spec_id="spec-conformance-fixture",
+        issue_id=issue.issue_id,
+        parent_generation=baseline_id,
+        capability_name="inspect_container",
+        purpose="Inspect an opaque container.",
+        semantic_effects=["reveal_contents"],
+        owner_component="subject capability",
+        input_schema={"container_id": "string"},
+        output_schema={"inspected": "boolean"},
+        applicability="An opaque container is present and not inspected.",
+        binding_rules=["Use an offered container identity."],
+        execution_route="subject capability dispatch",
+        completion_evidence=["A later observation marks the container inspected."],
+        non_goals=["No unrelated world changes."],
+        prediction="The target can be acquired after inspection.",
+        revealing_cases=list(REVEALING_CASES),
+        structural_variants=list(STRUCTURAL_VARIANTS),
+        regression_suites=list(REGRESSION_SUITES),
+        long_horizon_suites=list(LONG_HORIZON_SUITES),
+    )
+    return SubjectConformanceFixture(
+        scenario_ids=[REVEALING_CASES[0], STRUCTURAL_VARIANTS[0]],
+        seeds=[0, 1],
+        issue=issue,
+        specification=specification,
+    )
 
 
 def build_probe_roles(context: SubjectFactoryContext) -> ProbeRoleBundle:
@@ -157,15 +220,10 @@ def build_bootstrap(context: SubjectFactoryContext) -> SubjectBootstrap:
             "artifact_digests": {"capability_manifest": digest},
         }
     )
-    protected_scenarios = list(
-        dict.fromkeys([*DIAGNOSTIC_SCENARIOS, *EVALUATION_SCENARIOS])
-    )
+    protected_scenarios = list(dict.fromkeys([*DIAGNOSTIC_SCENARIOS, *EVALUATION_SCENARIOS]))
     forbidden_literals = [
         *protected_scenarios,
-        *[
-            get_scenario(identifier).target_item_id
-            for identifier in protected_scenarios
-        ],
+        *[get_scenario(identifier).target_item_id for identifier in protected_scenarios],
     ]
     plan = EvolutionPlan(
         diagnostic_scenarios=DIAGNOSTIC_SCENARIOS,
@@ -286,6 +344,9 @@ class MicroworldSubjectPlugin:
     )
     doctor_factory: Callable[[SubjectFactoryContext], SubjectDoctor] = build_doctor
     bootstrap_factory: Callable[[SubjectFactoryContext], SubjectBootstrap] = build_bootstrap
+    conformance_factory: Callable[[SubjectFactoryContext], SubjectConformanceFixture] = (
+        build_conformance_fixture
+    )
     probe_roles_factory: Callable[[SubjectFactoryContext], ProbeRoleBundle] = build_probe_roles
 
 
@@ -303,5 +364,6 @@ __all__ = [
     "MicroworldSubjectPlugin",
     "build_subject_plugin",
     "build_probe_roles",
+    "build_conformance_fixture",
     "subject_plugin",
 ]

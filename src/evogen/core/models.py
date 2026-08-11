@@ -277,6 +277,31 @@ class CapabilitySpec(StrictModel):
     implementation_constraints: list[str] = Field(default_factory=list)
 
 
+class SubjectConformanceFixture(StrictModel):
+    """Data-only values a subject supplies to exercise generic conformance."""
+
+    scenario_ids: list[str] = Field(min_length=2)
+    seeds: list[StrictInt] = Field(min_length=2)
+    issue: CapabilityIssue
+    specification: CapabilitySpec
+
+    @field_validator("scenario_ids")
+    @classmethod
+    def validate_scenario_ids(cls, value: list[str]) -> list[str]:
+        if any(not _nonblank(item) for item in value):
+            raise ValueError("Conformance scenario IDs must be nonblank")
+        if len(set(value)) != len(value):
+            raise ValueError("Conformance scenario IDs must be unique")
+        return value
+
+    @field_validator("seeds")
+    @classmethod
+    def validate_seeds(cls, value: list[int]) -> list[int]:
+        if len(set(value)) != len(value):
+            raise ValueError("Conformance seeds must be unique")
+        return value
+
+
 class PatchFile(StrictModel):
     path: str
     content: str
@@ -344,9 +369,7 @@ class ScenarioResult(StrictModel):
         return value
 
 
-EvaluationCategory: TypeAlias = Literal[
-    "revealing", "variant", "regression", "long_horizon"
-]
+EvaluationCategory: TypeAlias = Literal["revealing", "variant", "regression", "long_horizon"]
 
 
 class EvaluationCase(StrictModel):
@@ -374,6 +397,7 @@ class EvaluationCase(StrictModel):
         if not isfinite(value) or value <= 0:
             raise ValueError("per-run wall-clock ceiling must be finite and positive")
         return value
+
 
 class ProtectedPathHash(StrictModel):
     logical_name: str
@@ -458,7 +482,8 @@ class EvaluationSuiteManifest(StrictModel):
         if self.evaluator_protected_path not in names:
             raise ValueError("evaluator_protected_path must name one protected path")
         protected = next(
-            path for path in self.protected_paths
+            path
+            for path in self.protected_paths
             if path.logical_name == self.evaluator_protected_path
         )
         if protected.sha256 != self.evaluator.digest:
@@ -549,6 +574,75 @@ class EvaluationOutcome(StrictModel):
         if baseline_names != candidate_names:
             raise ValueError("Baseline and candidate subject metric namespaces must be symmetric")
         return self
+
+
+ConformanceStatus: TypeAlias = Literal["pass", "fail", "blocked"]
+
+
+class SubjectCheck(StrictModel):
+    """One host-owned conformance boundary result."""
+
+    boundary_id: str
+    status: ConformanceStatus
+    message: str
+    evidence: dict[str, JsonValue] = Field(min_length=1)
+    blocked_dependency: str | None = None
+
+    @field_validator("boundary_id", "message")
+    @classmethod
+    def validate_check_text(cls, value: str) -> str:
+        return _nonblank(value)
+
+    @model_validator(mode="after")
+    def validate_blocked_dependency(self) -> SubjectCheck:
+        if self.status == "blocked" and not self.blocked_dependency:
+            raise ValueError("Blocked checks require a blocked dependency")
+        if self.status != "blocked" and self.blocked_dependency is not None:
+            raise ValueError("Only blocked checks may name a blocked dependency")
+        return self
+
+
+class SubjectDiagnostic(StrictModel):
+    """Additional, non-authoritative evidence returned by a subject doctor."""
+
+    code: str
+    message: str
+    evidence: dict[str, JsonValue] = Field(default_factory=dict)
+    boundary_id: str | None = None
+
+    @field_validator("code", "message")
+    @classmethod
+    def validate_diagnostic_text(cls, value: str) -> str:
+        return _nonblank(value)
+
+
+class SubjectConformanceReport(StrictModel):
+    subject: str
+    api_version: str
+    checks: list[SubjectCheck] = Field(min_length=1)
+    diagnostics: BoundedCollection[SubjectDiagnostic]
+    passed: bool = False
+    status: Literal["pass", "fail"] = "fail"
+
+    @field_validator("subject", "api_version")
+    @classmethod
+    def validate_report_identity(cls, value: str) -> str:
+        return _nonblank(value)
+
+    @model_validator(mode="after")
+    def derive_status(self) -> SubjectConformanceReport:
+        derived = (
+            all(check.status == "pass" for check in self.checks)
+            and self.diagnostics.completeness == Completeness.COMPLETE
+            and not self.diagnostics.items
+        )
+        object.__setattr__(self, "passed", derived)
+        object.__setattr__(self, "status", "pass" if derived else "fail")
+        return self
+
+    @property
+    def failed(self) -> bool:
+        return not self.passed
 
 
 class ExperimentResult(EvaluationOutcome):

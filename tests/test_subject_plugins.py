@@ -37,14 +37,21 @@ from evogen.adapters.subjects import (
     run_subject_cycle,
 )
 from evogen.cli import app
+from evogen.core.enums import Completeness, FailureLayer, ResolutionKind
 from evogen.core.ids import sha256_bytes
 from evogen.core.models import (
     ArtifactRef,
+    BoundedCollection,
+    CapabilityIssue,
+    CapabilitySpec,
     EvaluationCase,
     EvaluationSuiteManifest,
     EvolutionPlan,
     GenerationManifest,
+    IssueClassification,
     ProtectedPathHash,
+    SubjectConformanceFixture,
+    SubjectDiagnostic,
 )
 from evogen.storage.artifacts import ArtifactStore
 from evogen.storage.ledger import Ledger
@@ -118,8 +125,10 @@ class _Materializer:
 
 
 class _Doctor:
-    def check(self) -> None:
-        return None
+    def check(self) -> BoundedCollection[SubjectDiagnostic]:
+        return BoundedCollection(
+            items=[], completeness=Completeness.COMPLETE, known_total=0
+        )
 
 
 def _bootstrap(
@@ -199,10 +208,53 @@ def _factories():
         "materializer_factory": lambda context: _Materializer(context.runner),
         "doctor_factory": lambda context: _Doctor(),
         "bootstrap_factory": lambda context: _bootstrap(context),
+        "conformance_factory": lambda context: _fixture(context),
     }
 
 
-def _plugin(*, name: str = "fake", api_version: str = "1.0", **overrides):
+def _fixture(context: SubjectFactoryContext) -> SubjectConformanceFixture:
+    generation = _bootstrap(context).baseline.generation_id
+    issue = CapabilityIssue(
+        issue_id="issue-fake",
+        subject_generation=generation,
+        title="fixture",
+        symptom_summary="fixture",
+        classification=IssueClassification(
+            primary=FailureLayer.AFFORDANCE_DISCOVERY,
+            confidence=1.0,
+            rationale="fixture",
+        ),
+        supporting_evidence=[],
+        proposed_resolution=ResolutionKind.ADD_CAPABILITY,
+        prediction="fixture",
+    )
+    spec = CapabilitySpec(
+        spec_id="spec-fake",
+        issue_id=issue.issue_id,
+        parent_generation=generation,
+        capability_name="fixture_capability",
+        purpose="fixture",
+        semantic_effects=[],
+        owner_component="fixture",
+        input_schema={},
+        output_schema={},
+        applicability="fixture",
+        binding_rules=[],
+        execution_route="fixture",
+        completion_evidence=[],
+        non_goals=[],
+        prediction="fixture",
+        revealing_cases=[],
+        structural_variants=[],
+        regression_suites=[],
+        long_horizon_suites=[],
+    )
+    return SubjectConformanceFixture(
+        scenario_ids=["opaque-a", "opaque-b"], seeds=[0, 1], issue=issue, specification=spec
+    )
+
+
+def _plugin(*, name: str = "fake", api_version: str = "1.1", **overrides):
     values = {"name": name, "api_version": api_version, **_factories()}
     values.update(overrides)
     return SimpleNamespace(**values)
@@ -328,6 +380,16 @@ def test_loaded_plugin_identity_and_version_fail_closed(
         load_subject_plugin("fake")
 
 
+def test_stale_api_1_0_is_rejected_without_compatibility_fallback(monkeypatch) -> None:
+    monkeypatch.setattr(
+        importlib.metadata,
+        "entry_points",
+        _metadata(_EntryPoints([_FakeEntryPoint("fake", lambda: _plugin(api_version="1.0"))])),
+    )
+    with pytest.raises(SubjectPluginVersionError, match="supported version is '1.1'"):
+        load_subject_plugin("fake")
+
+
 @pytest.mark.parametrize(
     "factory_name",
     [
@@ -339,6 +401,7 @@ def test_loaded_plugin_identity_and_version_fail_closed(
         "materializer_factory",
         "doctor_factory",
         "bootstrap_factory",
+        "conformance_factory",
     ],
 )
 def test_all_factory_attributes_are_required_and_callable(monkeypatch, factory_name) -> None:
@@ -366,6 +429,7 @@ def test_all_factory_attributes_are_required_and_callable(monkeypatch, factory_n
         ("materializer_factory", SubjectPluginFactoryError),
         ("doctor_factory", SubjectPluginFactoryError),
         ("bootstrap_factory", SubjectBootstrapError),
+        ("conformance_factory", SubjectPluginFactoryError),
     ],
 )
 def test_all_factories_raise_typed_errors(tmp_path, factory_name, error) -> None:
@@ -389,6 +453,7 @@ def test_all_factories_raise_typed_errors(tmp_path, factory_name, error) -> None
         ("materializer_factory", SubjectPluginFactoryError),
         ("doctor_factory", SubjectPluginFactoryError),
         ("bootstrap_factory", SubjectBootstrapError),
+        ("conformance_factory", SubjectPluginFactoryError),
     ],
 )
 def test_all_factories_return_typed_results(tmp_path, factory_name, error) -> None:
@@ -418,7 +483,7 @@ def test_all_factories_share_context_and_runner_identity(tmp_path) -> None:
     context = _context(tmp_path)
     composition = compose_subject(plugin, context=context)
 
-    assert len(seen) == 8
+    assert len(seen) == 9
     assert set(seen) == {id(context)}
     assert composition.context is context
     assert composition.bootstrap.baseline.subject == "fake"
@@ -516,10 +581,10 @@ def test_external_subject_is_discovered_from_real_metadata(tmp_path, monkeypatch
         "def build_subject_plugin():\n"
         "    f = lambda context: object()\n"
         "    return SimpleNamespace(\n"
-        "        name='external', api_version='1.0', runner_factory=f,\n"
+        "        name='external', api_version='1.1', runner_factory=f,\n"
         "        investigator_factory=f, builder_factory=f, reviewer_factory=f,\n"
         "        evaluator_factory=f, materializer_factory=f, doctor_factory=f,\n"
-        "        bootstrap_factory=f,\n"
+        "        bootstrap_factory=f, conformance_factory=f,\n"
         "    )\n",
         encoding="utf-8",
     )

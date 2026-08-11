@@ -131,13 +131,14 @@ class EvolutionStageOrchestrator:
         plan: EvolutionPlan,
         evaluation_suite: EvaluationSuiteManifest,
         subject_plugin_name: str = "unknown",
-        subject_plugin_api_version: str = "1.0",
+        subject_plugin_api_version: str = "1.1",
         subject_plugin_source: str = "unknown",
         trace_analyst: TraceAnalyst | None = None,
         diagnostician: Diagnostician | None = None,
         architect: CapabilityArchitectRole | None = None,
         retention_policy: RetentionPolicy | None = None,
         release_recommender: ReleaseRecommender | None = None,
+        publish_manifest: bool = True,
     ) -> None:
         self.workspace = workspace.resolve()
         self.artifacts = artifacts
@@ -171,7 +172,9 @@ class EvolutionStageOrchestrator:
         self._validate_authority_separation()
         self.stage_directory = self.workspace / "stages"
         self.manifest_pointer = self.workspace / "cycle-manifest.pointer.json"
-        self.manifest_digest, self.manifest = self._load_or_create_manifest()
+        self.manifest_digest, self.manifest = self._load_or_create_manifest(
+            publish=publish_manifest
+        )
         self.baseline, self.plan = self._load_canonical_bootstrap()
 
     @property
@@ -179,18 +182,21 @@ class EvolutionStageOrchestrator:
         return StageName.ordered()
 
     def _validate_authority_separation(self) -> None:
-        authorities: tuple[object, object, object] = (
+        authorities: tuple[object, object, object, object] = (
             self.builder,
             self.reviewer,
             self.evaluator,
+            self.materializer,
         )
-        if len({id(value) for value in authorities}) != 3:
+        if len({id(value) for value in authorities}) != 4:
             raise StageIntegrityError(
-                "Builder, reviewer, and evaluator must be distinct authorities"
+                "Builder, reviewer, evaluator, and materializer must be distinct authorities"
             )
         ids: dict[str, str] = {}
         backend_owners: dict[int, str] = {}
-        for name, value in zip(("builder", "reviewer", "evaluator"), authorities, strict=True):
+        for name, value in zip(
+            ("builder", "reviewer", "evaluator", "materializer"), authorities, strict=True
+        ):
             invoker = getattr(value, "invoker", None)
             authority_id = getattr(value, "authority_id", None)
             if authority_id is None:
@@ -1309,7 +1315,7 @@ class EvolutionStageOrchestrator:
         if actual_workspace != candidate.workspace_file_digests:
             raise StageArtifactError("Candidate workspace files differ after build")
 
-    def _load_or_create_manifest(self) -> tuple[str, CycleManifest]:
+    def _load_or_create_manifest(self, *, publish: bool = True) -> tuple[str, CycleManifest]:
         fingerprint = stable_digest(
             {
                 "generation_id": self.baseline.generation_id,
@@ -1377,6 +1383,8 @@ class EvolutionStageOrchestrator:
             stage_order=StageName.ordered(),
         )
         reference = self.artifacts.put_model(manifest)
+        if not publish:
+            return reference.digest, manifest
         self.manifest_pointer.parent.mkdir(parents=True, exist_ok=True)
         temporary = self.manifest_pointer.with_name(f".{self.manifest_pointer.name}.tmp")
         temporary.write_text(

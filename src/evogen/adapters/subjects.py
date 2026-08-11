@@ -17,6 +17,7 @@ from evogen.core.models import (
     EvaluationSuiteManifest,
     EvolutionPlan,
     GenerationManifest,
+    SubjectConformanceFixture,
 )
 from evogen.evolution.orchestrator import EvolutionOrchestrator
 from evogen.storage.artifacts import ArtifactStore
@@ -37,48 +38,69 @@ from .protocols import (
     SubjectRunner,
 )
 
-SUBJECT_PLUGIN_API_VERSION = "1.0"
+SUBJECT_PLUGIN_API_VERSION = "1.1"
 SUBJECT_PLUGIN_ENTRY_POINT_GROUP = "evogen.subjects"
 
 
 class SubjectPluginError(RuntimeError):
-    pass
+    boundary_id = "subject.plugin"
+    code = "subject_plugin_error"
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        boundary_id: str | None = None,
+        code: str | None = None,
+    ) -> None:
+        super().__init__(message)
+        if boundary_id is not None:
+            self.boundary_id = boundary_id
+        if code is not None:
+            self.code = code
 
 
 class SubjectPluginDiscoveryError(SubjectPluginError):
-    pass
+    boundary_id = "discovery"
+    code = "subject_discovery_error"
 
 
 class SubjectPluginNotFoundError(SubjectPluginDiscoveryError):
-    pass
+    code = "subject_not_found"
 
 
 class DuplicateSubjectPluginError(SubjectPluginDiscoveryError):
-    pass
+    code = "duplicate_subject"
 
 
 class SubjectPluginLoadError(SubjectPluginError):
-    pass
+    boundary_id = "load"
+    code = "subject_load_error"
 
 
 class SubjectPluginShapeError(SubjectPluginError):
-    pass
+    boundary_id = "plugin_shape"
+    code = "subject_plugin_shape"
 
 
 class SubjectPluginVersionError(SubjectPluginError):
-    pass
+    boundary_id = "api_version"
+    code = "incompatible_api"
 
 
 class SubjectPluginFactoryError(SubjectPluginShapeError):
-    pass
+    boundary_id = "factory"
+    code = "subject_factory_error"
 
 
 class SubjectBootstrapError(SubjectPluginError):
-    pass
+    boundary_id = "bootstrap"
+    code = "subject_bootstrap_error"
 
 
 class SubjectWorkspaceError(SubjectPluginError):
-    pass
+    boundary_id = "workspace"
+    code = "subject_workspace_error"
 
 
 class SubjectPlugin(Protocol):
@@ -117,6 +139,11 @@ class SubjectPlugin(Protocol):
     def bootstrap_factory(self) -> Callable[[SubjectFactoryContext], SubjectBootstrap]: ...
 
     @property
+    def conformance_factory(
+        self,
+    ) -> Callable[[SubjectFactoryContext], SubjectConformanceFixture]: ...
+
+    @property
     def probe_roles_factory(
         self,
     ) -> Callable[[SubjectFactoryContext], ProbeRoleBundle] | None: ...
@@ -149,6 +176,7 @@ class SubjectComposition:
     evaluator: ExperimentEvaluator
     materializer: GenerationMaterializer
     doctor: SubjectDoctor
+    conformance_fixture: SubjectConformanceFixture
     bootstrap: SubjectBootstrap
     orchestrator: EvolutionOrchestrator
     probe_roles: ProbeRoleBundle | None
@@ -274,6 +302,7 @@ def validate_subject_plugin(
         "materializer_factory",
         "doctor_factory",
         "bootstrap_factory",
+        "conformance_factory",
     )
     for factory_name in factory_names:
         try:
@@ -346,7 +375,11 @@ def _call_factory(
     try:
         return factory(context)
     except Exception as exc:
-        raise failure(f"Subject plugin {subject_name!r} {factory_name} raised: {exc}") from exc
+        raise failure(
+            f"Subject plugin {subject_name!r} {factory_name} raised: {exc}",
+            boundary_id=factory_name,
+            code=f"{factory_name}_error",
+        ) from exc
 
 
 def _factory_result(
@@ -369,12 +402,16 @@ def _factory_result(
     except Exception as exc:
         raise SubjectPluginFactoryError(
             f"Subject plugin {subject_name!r} {factory_name} returned an object that "
-            f"could not be validated: {exc}"
+            f"could not be validated: {exc}",
+            boundary_id=factory_name,
+            code=f"{factory_name}_result_invalid",
         ) from exc
     if not conforms_result:
         raise SubjectPluginFactoryError(
             f"Subject plugin {subject_name!r} {factory_name} returned {type(result).__name__}; "
-            f"expected an object implementing {expected_type}."
+            f"expected an object implementing {expected_type}.",
+            boundary_id=factory_name,
+            code=f"{factory_name}_result_invalid",
         )
     return result
 
@@ -389,11 +426,15 @@ def _check_runner_dependency(
         dependency = getattr(behaviour, "runner", None)
     except Exception as exc:
         raise SubjectPluginFactoryError(
-            f"Subject plugin {subject_name!r} {role} has an unreadable runner dependency."
+            f"Subject plugin {subject_name!r} {role} has an unreadable runner dependency.",
+            boundary_id="runner_dependency",
+            code=f"{role}_runner_dependency_unreadable",
         ) from exc
     if dependency is not None and dependency is not runner:
         raise SubjectPluginFactoryError(
-            f"Subject plugin {subject_name!r} {role} is wired to a different runner instance."
+            f"Subject plugin {subject_name!r} {role} is wired to a different runner instance.",
+            boundary_id="runner_dependency",
+            code=f"{role}_runner_dependency_mismatch",
         )
 
 
@@ -456,6 +497,7 @@ def compose_subject(
     plugin: SubjectPlugin,
     *,
     context: SubjectFactoryContext,
+    publish_cycle_manifest: bool = True,
 ) -> SubjectComposition:
     validated = validate_subject_plugin(plugin)
     subject_name = validated.name
@@ -530,6 +572,13 @@ def compose_subject(
         ),
     )
     _check_runner_dependency("materializer_factory", subject_name, materializer, runner)
+    if len({id(builder), id(reviewer), id(evaluator), id(materializer)}) != 4:
+        raise SubjectPluginFactoryError(
+            f"Subject plugin {subject_name!r} builder, reviewer, evaluator, and materializer "
+            "must be distinct authorities.",
+            boundary_id="authority_alias",
+            code="builder_reviewer_evaluator_materializer_alias",
+        )
     doctor = cast(
         SubjectDoctor,
         _factory_result(
@@ -541,6 +590,31 @@ def compose_subject(
             lambda value: isinstance(value, SubjectDoctor),
         ),
     )
+    fixture = cast(
+        SubjectConformanceFixture,
+        _factory_result(
+            validated,
+            context,
+            "conformance_factory",
+            subject_name,
+            "SubjectConformanceFixture",
+            lambda value: isinstance(value, SubjectConformanceFixture),
+        ),
+    )
+    if fixture.issue.subject_generation != bootstrap.baseline.generation_id:
+        raise SubjectPluginFactoryError(
+            f"Subject plugin {subject_name!r} conformance fixture issue subject_generation "
+            "does not match bootstrap baseline.",
+            boundary_id="conformance_fixture",
+            code="fixture_issue_baseline_mismatch",
+        )
+    if fixture.specification.parent_generation != bootstrap.baseline.generation_id:
+        raise SubjectPluginFactoryError(
+            f"Subject plugin {subject_name!r} conformance fixture specification parent "
+            "does not match bootstrap baseline.",
+            boundary_id="conformance_fixture",
+            code="fixture_spec_baseline_mismatch",
+        )
     orchestrator = EvolutionOrchestrator(
         workspace=context.workspace,
         artifacts=context.artifacts,
@@ -557,6 +631,7 @@ def compose_subject(
         subject_plugin_name=subject_name,
         subject_plugin_api_version=validated.api_version,
         subject_plugin_source=_plugin_source_identity(validated),
+        publish_manifest=publish_cycle_manifest,
     )
     probe_roles: ProbeRoleBundle | None = None
     probe_factory = getattr(validated, "probe_roles_factory", None)
@@ -600,6 +675,7 @@ def compose_subject(
         evaluator=evaluator,
         materializer=materializer,
         doctor=doctor,
+        conformance_fixture=fixture,
         bootstrap=bootstrap,
         orchestrator=orchestrator,
         probe_roles=probe_roles,

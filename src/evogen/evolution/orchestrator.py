@@ -46,13 +46,14 @@ class EvolutionOrchestrator:
         plan: EvolutionPlan,
         evaluation_suite: EvaluationSuiteManifest,
         subject_plugin_name: str = "unknown",
-        subject_plugin_api_version: str = "1.0",
+        subject_plugin_api_version: str = "1.1",
         subject_plugin_source: str = "unknown",
         trace_analyst: TraceAnalyst | None = None,
         diagnostician: Diagnostician | None = None,
         architect: CapabilityArchitectRole | None = None,
         retention_policy: RetentionPolicy | None = None,
         release_recommender: ReleaseRecommender | None = None,
+        publish_manifest: bool = True,
     ) -> None:
         self.stages = EvolutionStageOrchestrator(
             workspace=workspace,
@@ -75,6 +76,7 @@ class EvolutionOrchestrator:
             architect=architect,
             retention_policy=retention_policy,
             release_recommender=release_recommender,
+            publish_manifest=publish_manifest,
         )
 
     def invoke(self, stage: str) -> object:

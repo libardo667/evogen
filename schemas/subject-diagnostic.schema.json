@@ -1,0 +1,63 @@
+{
+  "additionalProperties": false,
+  "description": "Additional, non-authoritative evidence returned by a subject doctor.",
+  "properties": {
+    "boundary_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Boundary Id"
+    },
+    "code": {
+      "title": "Code",
+      "type": "string"
+    },
+    "evidence": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "items": {},
+            "type": "array"
+          },
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Evidence",
+      "type": "object"
+    },
+    "message": {
+      "title": "Message",
+      "type": "string"
+    }
+  },
+  "required": [
+    "code",
+    "message"
+  ],
+  "title": "SubjectDiagnostic",
+  "type": "object"
+}

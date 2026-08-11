@@ -36,12 +36,16 @@ class _Authority:
 
 
 def _authority_boundary(
-    builder: object, reviewer: object, evaluator: object,
+    builder: object,
+    reviewer: object,
+    evaluator: object,
+    materializer: object | None = None,
 ) -> EvolutionStageOrchestrator:
     stage = object.__new__(EvolutionStageOrchestrator)
     stage.builder = builder
     stage.reviewer = reviewer
     stage.evaluator = evaluator
+    stage.materializer = materializer if materializer is not None else _Authority("materializer")
     return stage
 
 
@@ -54,25 +58,30 @@ def test_builder_reviewer_evaluator_must_be_distinct_objects() -> None:
 
 
 @pytest.mark.parametrize(
-    ("builder", "reviewer", "evaluator"),
+    ("builder", "reviewer", "evaluator", "materializer"),
     [
-        (_Authority("shared"), _Authority("shared"), _Authority("evaluator")),
+        (_Authority("shared"), _Authority("shared"), _Authority("evaluator"), None),
         (
             _Authority(invoker_id="shared"),
             _Authority("shared"),
             _Authority("evaluator"),
+            None,
         ),
         (
             _Authority("builder"),
             _Authority(invoker_id="shared"),
             _Authority("shared"),
+            None,
         ),
     ],
 )
 def test_exposed_duplicate_authority_ids_are_rejected(
-    builder: object, reviewer: object, evaluator: object,
+    builder: object,
+    reviewer: object,
+    evaluator: object,
+    materializer: object | None,
 ) -> None:
-    stage = _authority_boundary(builder, reviewer, evaluator)
+    stage = _authority_boundary(builder, reviewer, evaluator, materializer)
 
     with pytest.raises(StageIntegrityError, match="shares authority_id"):
         stage._validate_authority_separation()
@@ -84,8 +93,39 @@ def test_distinct_role_ids_cannot_hide_a_shared_backend() -> None:
         _Authority(invoker_id="builder", backend=shared_backend),
         _Authority(invoker_id="reviewer", backend=shared_backend),
         _Authority("evaluator"),
+        _Authority("materializer"),
     )
 
+    with pytest.raises(StageIntegrityError, match="shares role backend"):
+        stage._validate_authority_separation()
+
+
+def test_materializer_aliases_are_rejected() -> None:
+    shared = _Authority("shared")
+    stage = _authority_boundary(_Authority("builder"), _Authority("reviewer"), shared, shared)
+    with pytest.raises(StageIntegrityError, match="distinct authorities"):
+        stage._validate_authority_separation()
+
+
+def test_materializer_authority_id_alias_is_rejected() -> None:
+    stage = _authority_boundary(
+        _Authority("builder"),
+        _Authority("reviewer"),
+        _Authority("shared"),
+        _Authority("shared"),
+    )
+    with pytest.raises(StageIntegrityError, match="shares authority_id"):
+        stage._validate_authority_separation()
+
+
+def test_materializer_backend_alias_is_rejected() -> None:
+    shared_backend = object()
+    stage = _authority_boundary(
+        _Authority("builder"),
+        _Authority("reviewer"),
+        _Authority(invoker_id="evaluator", backend=shared_backend),
+        _Authority(invoker_id="materializer", backend=shared_backend),
+    )
     with pytest.raises(StageIntegrityError, match="shares role backend"):
         stage._validate_authority_separation()
 
@@ -142,17 +182,23 @@ def _experiment(*, review_passed: bool, improved: bool) -> ExperimentResult:
         evaluation_suite_ref=ArtifactRef(digest="a" * 64, model="EvaluationSuiteManifest"),
         pre_authority_snapshot=EvaluationAuthoritySnapshot(
             suite_ref=ArtifactRef(digest="a" * 64, model="EvaluationSuiteManifest"),
-            suite_id="suite", evaluator_version="v1", protected_path_digests={}
+            suite_id="suite",
+            evaluator_version="v1",
+            protected_path_digests={},
         ),
         post_authority_snapshot=EvaluationAuthoritySnapshot(
             suite_ref=ArtifactRef(digest="a" * 64, model="EvaluationSuiteManifest"),
-            suite_id="suite", evaluator_version="v1", protected_path_digests={}
+            suite_id="suite",
+            evaluator_version="v1",
+            protected_path_digests={},
         ),
     )
 
 
 def _select_stage(
-    *, experiment: ExperimentResult, recommendation: GateDecision,
+    *,
+    experiment: ExperimentResult,
+    recommendation: GateDecision,
 ) -> EvolutionStageOrchestrator:
     candidate = _candidate()
     review = ReviewReport(
@@ -169,6 +215,7 @@ def _select_stage(
     stage.builder = _Authority("builder")
     stage.reviewer = _Authority("reviewer")
     stage.evaluator = _Authority("evaluator")
+    stage.materializer = _Authority("materializer")
     stage._read_input = lambda _inputs, key, _model: {
         "build": candidate,
         "review": review,

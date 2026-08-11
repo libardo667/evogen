@@ -10,7 +10,7 @@ from evogen.core.models import (
     GenerationManifest,
 )
 
-_INSPECT_CONTAINER_PLUGIN = '''from __future__ import annotations
+_INSPECT_CONTAINER_PLUGIN = """from __future__ import annotations
 
 from evogen.core.enums import ProofClass
 from evogen.core.models import CapabilityDefinition
@@ -65,7 +65,7 @@ class InspectContainerCapability:
 
 def build_plugin() -> InspectContainerCapability:
     return InspectContainerCapability()
-'''
+"""
 
 
 class ReferenceMicroworldBuilder:
@@ -114,6 +114,7 @@ class ReferenceMicroworldBuilder:
             },
             changed_files=["plugins/inspect_container.py"],
             claimed_capabilities=["inspect_container"],
+            file_digests={"plugins/inspect_container.py": source_digest},
             workspace_file_digests={"plugins/inspect_container.py": source_digest},
             metadata={
                 "builder": "ReferenceMicroworldBuilder",

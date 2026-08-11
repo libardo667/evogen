@@ -120,6 +120,22 @@ result. Candidate deployment authority remains separate from agent authorship.
 
 ## Integrating a subject
 
+Inspect installed subjects without loading them, or run the subject-neutral
+API 1.1 conformance kit in disposable scratch storage. An explicit doctor
+workspace must be a brand-new path; existing paths, symlinks, repositories,
+and protected locations are refused:
+
+```bash
+evogen subject list
+evogen subject doctor microworld
+evogen subject doctor microworld --json
+```
+
+The doctor checks authority manifests, deterministic capabilities, trajectory
+and scenario isolation, candidate workspace safety, evaluation symmetry, and
+direct retained-generation materialization. Subject doctor output is
+additional evidence only and cannot certify generic checks.
+
 A practical first integration uses observer mode:
 
 1. normalize the subject's trajectory events;

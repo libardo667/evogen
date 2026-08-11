@@ -53,6 +53,10 @@ from evogen.core.models import (
     ScenarioResult,
     StagePointer,
     StageReceipt,
+    SubjectCheck,
+    SubjectConformanceFixture,
+    SubjectConformanceReport,
+    SubjectDiagnostic,
     SubjectMetricVector,
     TrajectoryEvent,
 )
@@ -106,6 +110,10 @@ MODEL_REGISTRY: dict[str, type[BaseModel]] = {
     "stage-pointer": StagePointer,
     "stage-receipt": StageReceipt,
     "subject-metric-vector": SubjectMetricVector,
+    "subject-check": SubjectCheck,
+    "subject-conformance-fixture": SubjectConformanceFixture,
+    "subject-conformance-report": SubjectConformanceReport,
+    "subject-diagnostic": SubjectDiagnostic,
     "trajectory-event": TrajectoryEvent,
 }
 

@@ -6,6 +6,7 @@ from typing import Any, Protocol, runtime_checkable
 
 from evogen.core.models import (
     ArtifactRef,
+    BoundedCollection,
     CandidateManifest,
     CapabilityIssue,
     CapabilityManifest,
@@ -25,6 +26,7 @@ from evogen.core.models import (
     ProbeReviewReport,
     ReviewReport,
     RunRecord,
+    SubjectDiagnostic,
     TrajectoryEvent,
 )
 
@@ -132,9 +134,9 @@ class GenerationMaterializer(Protocol):
 
 @runtime_checkable
 class SubjectDoctor(Protocol):
-    """Minimal generic diagnostic boundary reserved for a later goal."""
+    """Additional subject evidence; host checks remain authoritative."""
 
-    def check(self) -> None: ...
+    def check(self) -> BoundedCollection[SubjectDiagnostic]: ...
 
 
 @runtime_checkable

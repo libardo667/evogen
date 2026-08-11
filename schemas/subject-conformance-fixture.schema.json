@@ -1,0 +1,395 @@
+{
+  "$defs": {
+    "CapabilityIssue": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_hints": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Acceptance Hints",
+          "type": "object"
+        },
+        "blocker_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blocker Type"
+        },
+        "classification": {
+          "$ref": "#/$defs/IssueClassification"
+        },
+        "contradicting_evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Contradicting Evidence",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "issue_id": {
+          "title": "Issue Id",
+          "type": "string"
+        },
+        "known_unknowns": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Known Unknowns",
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "prediction": {
+          "title": "Prediction",
+          "type": "string"
+        },
+        "proposed_resolution": {
+          "$ref": "#/$defs/ResolutionKind"
+        },
+        "required_effect": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Required Effect"
+        },
+        "status": {
+          "$ref": "#/$defs/IssueStatus",
+          "default": "open"
+        },
+        "subject_generation": {
+          "title": "Subject Generation",
+          "type": "string"
+        },
+        "supporting_evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "title": "Supporting Evidence",
+          "type": "array"
+        },
+        "symptom_summary": {
+          "title": "Symptom Summary",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "issue_id",
+        "subject_generation",
+        "title",
+        "symptom_summary",
+        "classification",
+        "supporting_evidence",
+        "proposed_resolution",
+        "prediction"
+      ],
+      "title": "CapabilityIssue",
+      "type": "object"
+    },
+    "CapabilitySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "applicability": {
+          "title": "Applicability",
+          "type": "string"
+        },
+        "binding_rules": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Binding Rules",
+          "type": "array"
+        },
+        "capability_name": {
+          "title": "Capability Name",
+          "type": "string"
+        },
+        "completion_evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Completion Evidence",
+          "type": "array"
+        },
+        "execution_route": {
+          "title": "Execution Route",
+          "type": "string"
+        },
+        "implementation_constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Implementation Constraints",
+          "type": "array"
+        },
+        "input_schema": {
+          "additionalProperties": true,
+          "title": "Input Schema",
+          "type": "object"
+        },
+        "issue_id": {
+          "title": "Issue Id",
+          "type": "string"
+        },
+        "long_horizon_suites": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Long Horizon Suites",
+          "type": "array"
+        },
+        "non_goals": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Non Goals",
+          "type": "array"
+        },
+        "output_schema": {
+          "additionalProperties": true,
+          "title": "Output Schema",
+          "type": "object"
+        },
+        "owner_component": {
+          "title": "Owner Component",
+          "type": "string"
+        },
+        "parent_generation": {
+          "title": "Parent Generation",
+          "type": "string"
+        },
+        "prediction": {
+          "title": "Prediction",
+          "type": "string"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        },
+        "regression_suites": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Regression Suites",
+          "type": "array"
+        },
+        "revealing_cases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Revealing Cases",
+          "type": "array"
+        },
+        "semantic_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Semantic Effects",
+          "type": "array"
+        },
+        "spec_id": {
+          "title": "Spec Id",
+          "type": "string"
+        },
+        "structural_variants": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Structural Variants",
+          "type": "array"
+        }
+      },
+      "required": [
+        "spec_id",
+        "issue_id",
+        "parent_generation",
+        "capability_name",
+        "purpose",
+        "semantic_effects",
+        "owner_component",
+        "input_schema",
+        "output_schema",
+        "applicability",
+        "binding_rules",
+        "execution_route",
+        "completion_evidence",
+        "non_goals",
+        "prediction",
+        "revealing_cases",
+        "structural_variants",
+        "regression_suites",
+        "long_horizon_suites"
+      ],
+      "title": "CapabilitySpec",
+      "type": "object"
+    },
+    "EvidenceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "title": "Event Id",
+          "type": "string"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "event_id",
+        "note"
+      ],
+      "title": "EvidenceRef",
+      "type": "object"
+    },
+    "FailureLayer": {
+      "enum": [
+        "perception",
+        "observability",
+        "world_representation",
+        "identity_topology",
+        "affordance_discovery",
+        "binding_preconditions",
+        "execution",
+        "outcome_verification",
+        "causal_attribution",
+        "memory_continuity",
+        "planning_strategy",
+        "recovery",
+        "runtime_infrastructure",
+        "environment_limitation",
+        "insufficient_evidence",
+        "not_reproducible"
+      ],
+      "title": "FailureLayer",
+      "type": "string"
+    },
+    "IssueClassification": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "items": {
+            "$ref": "#/$defs/FailureLayer"
+          },
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "primary": {
+          "$ref": "#/$defs/FailureLayer"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "primary",
+        "confidence",
+        "rationale"
+      ],
+      "title": "IssueClassification",
+      "type": "object"
+    },
+    "IssueStatus": {
+      "enum": [
+        "open",
+        "specified",
+        "implemented",
+        "resolved",
+        "rejected"
+      ],
+      "title": "IssueStatus",
+      "type": "string"
+    },
+    "ResolutionKind": {
+      "enum": [
+        "add_capability",
+        "correct_capability",
+        "remove_unsafe_capability",
+        "add_observation",
+        "add_outcome_evidence",
+        "add_recovery_path",
+        "change_memory_representation",
+        "change_planner_policy",
+        "add_knowledge",
+        "build_probe",
+        "fix_infrastructure",
+        "no_change_environment_refused",
+        "no_change_existing_capability"
+      ],
+      "title": "ResolutionKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Data-only values a subject supplies to exercise generic conformance.",
+  "properties": {
+    "issue": {
+      "$ref": "#/$defs/CapabilityIssue"
+    },
+    "scenario_ids": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 2,
+      "title": "Scenario Ids",
+      "type": "array"
+    },
+    "seeds": {
+      "items": {
+        "type": "integer"
+      },
+      "minItems": 2,
+      "title": "Seeds",
+      "type": "array"
+    },
+    "specification": {
+      "$ref": "#/$defs/CapabilitySpec"
+    }
+  },
+  "required": [
+    "scenario_ids",
+    "seeds",
+    "issue",
+    "specification"
+  ],
+  "title": "SubjectConformanceFixture",
+  "type": "object"
+}

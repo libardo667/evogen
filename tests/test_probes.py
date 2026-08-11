@@ -1318,7 +1318,7 @@ def test_probe_enters_from_persisted_single_case_chain_and_guards_specify(
         plan=plan,
         evaluation_suite=cycle.composition.bootstrap.evaluation_suite,
         subject_plugin_name="microworld",
-        subject_plugin_api_version="1.0",
+        subject_plugin_api_version="1.1",
         subject_plugin_source="test-causal-chain",
         architect=architect,
     )
