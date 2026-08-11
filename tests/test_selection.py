@@ -3,7 +3,13 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from evogen.core.enums import GateVerdict
-from evogen.core.models import ExperimentResult, MetricVector
+from evogen.core.models import (
+    ArtifactRef,
+    EvaluationAuthoritySnapshot,
+    ExperimentResult,
+    MetricVector,
+    SubjectMetricVector,
+)
 from evogen.evolution.selection import RetentionPolicy
 
 
@@ -42,6 +48,17 @@ def experiment(candidate_metrics: MetricVector) -> ExperimentResult:
         candidate_metrics=candidate_metrics,
         prediction_matched=True,
         review_passed=True,
+        baseline_subject_metrics=[SubjectMetricVector(namespace="test", metrics={})],
+        candidate_subject_metrics=[SubjectMetricVector(namespace="test", metrics={})],
+        evaluation_suite_ref=ArtifactRef(digest="a" * 64, model="EvaluationSuiteManifest"),
+        pre_authority_snapshot=EvaluationAuthoritySnapshot(
+            suite_ref=ArtifactRef(digest="a" * 64, model="EvaluationSuiteManifest"),
+            suite_id="suite", evaluator_version="v1", protected_path_digests={}
+        ),
+        post_authority_snapshot=EvaluationAuthoritySnapshot(
+            suite_ref=ArtifactRef(digest="a" * 64, model="EvaluationSuiteManifest"),
+            suite_id="suite", evaluator_version="v1", protected_path_digests={}
+        ),
     )
 
 

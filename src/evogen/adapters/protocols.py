@@ -11,6 +11,8 @@ from evogen.core.models import (
     CapabilityManifest,
     CapabilitySpec,
     DistilledTrace,
+    EvaluationOutcome,
+    EvaluationSuiteManifest,
     ExperimentResult,
     GateDecision,
     GenerationManifest,
@@ -34,6 +36,7 @@ class SubjectRunner(Protocol):
         *,
         generation: GenerationManifest,
         scenario_id: str,
+        seed: int = 0,
         trace_directory: Path,
     ) -> tuple[RunRecord, list[TrajectoryEvent]]: ...
 
@@ -64,9 +67,10 @@ class ExperimentEvaluator(Protocol):
         *,
         baseline: GenerationManifest,
         candidate: CandidateManifest,
+        evaluation_suite: EvaluationSuiteManifest,
         trace_directory: Path,
         review_passed: bool,
-    ) -> ExperimentResult: ...
+    ) -> EvaluationOutcome: ...
 
 
 @runtime_checkable

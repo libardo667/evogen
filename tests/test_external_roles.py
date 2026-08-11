@@ -37,6 +37,7 @@ from evogen.core.models import (
     CapabilityManifest,
     CapabilitySpec,
     DistilledTrace,
+    EvaluationAuthoritySnapshot,
     ExperimentResult,
     GateDecision,
     GenerationManifest,
@@ -48,6 +49,7 @@ from evogen.core.models import (
     RoleResponse,
     StagePointer,
     StageReceipt,
+    SubjectMetricVector,
 )
 from evogen.demo.microworld.cycle import MicroworldEvolutionCycle
 from evogen.demo.microworld.scenarios import get_scenario
@@ -157,6 +159,7 @@ def _clone_orchestrator(
         materializer=original.materializer,
         baseline=original.bootstrap.baseline,
         plan=original.bootstrap.plan,
+        evaluation_suite=original.bootstrap.evaluation_suite,
         subject_plugin_name=original_stages.subject_plugin_name,
         subject_plugin_api_version=original_stages.subject_plugin_api_version,
         subject_plugin_source=original_stages.subject_plugin_source,
@@ -243,6 +246,7 @@ def test_all_six_typed_adapters_share_retained_executor(tmp_path: Path) -> None:
         changed_files=["plugin.py"],
         file_digests={"plugin.py": sha256_bytes(source)},
         claimed_capabilities=[],
+        workspace_file_digests={"plugin.py": sha256_bytes(source)},
     )
     review = ReviewReport(
         review_id="review-1", candidate_id=candidate.candidate_id, passed=True, checks={}
@@ -269,6 +273,17 @@ def test_all_six_typed_adapters_share_retained_executor(tmp_path: Path) -> None:
         candidate_metrics=metrics,
         prediction_matched=True,
         review_passed=True,
+        baseline_subject_metrics=[SubjectMetricVector(namespace="test", metrics={})],
+        candidate_subject_metrics=[SubjectMetricVector(namespace="test", metrics={})],
+        evaluation_suite_ref=ArtifactRef(digest="a" * 64, model="EvaluationSuiteManifest"),
+        pre_authority_snapshot=EvaluationAuthoritySnapshot(
+            suite_ref=ArtifactRef(digest="a" * 64, model="EvaluationSuiteManifest"),
+            suite_id="suite", evaluator_version="v1", protected_path_digests={}
+        ),
+        post_authority_snapshot=EvaluationAuthoritySnapshot(
+            suite_ref=ArtifactRef(digest="a" * 64, model="EvaluationSuiteManifest"),
+            suite_id="suite", evaluator_version="v1", protected_path_digests={}
+        ),
     )
     decision = GateDecision(
         decision_id="decision-1",

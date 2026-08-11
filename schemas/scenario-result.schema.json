@@ -1,0 +1,76 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "blocked": {
+      "title": "Blocked",
+      "type": "boolean"
+    },
+    "category": {
+      "title": "Category",
+      "type": "string"
+    },
+    "elapsed_seconds": {
+      "minimum": 0.0,
+      "title": "Elapsed Seconds",
+      "type": "number"
+    },
+    "interventions": {
+      "title": "Interventions",
+      "type": "integer"
+    },
+    "invalid_actions": {
+      "title": "Invalid Actions",
+      "type": "integer"
+    },
+    "repeat_index": {
+      "minimum": 0,
+      "title": "Repeat Index",
+      "type": "integer"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "steps": {
+      "title": "Steps",
+      "type": "integer"
+    },
+    "success": {
+      "title": "Success",
+      "type": "boolean"
+    },
+    "termination": {
+      "title": "Termination",
+      "type": "string"
+    },
+    "trace_digest": {
+      "title": "Trace Digest",
+      "type": "string"
+    }
+  },
+  "required": [
+    "scenario_id",
+    "category",
+    "seed",
+    "repeat_index",
+    "elapsed_seconds",
+    "success",
+    "steps",
+    "interventions",
+    "invalid_actions",
+    "blocked",
+    "termination",
+    "run_id",
+    "trace_digest"
+  ],
+  "title": "ScenarioResult",
+  "type": "object"
+}

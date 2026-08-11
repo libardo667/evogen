@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from math import isfinite
+from pathlib import Path
 from typing import Annotated, Any, Generic, Literal, TypeAlias, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
@@ -53,6 +54,24 @@ def _json_value(value: object) -> JsonValue:
     if isinstance(value, dict) and all(isinstance(key, str) for key in value):
         return {key: _json_value(item) for key, item in value.items()}
     raise ValueError("role input values must be JSON values")
+
+
+class ArtifactRef(StrictModel):
+    """A typed reference to one immutable content-addressed artifact."""
+
+    digest: DigestStr
+    model: str
+
+    @field_validator("model")
+    @classmethod
+    def validate_model_identity(cls, value: str) -> str:
+        if (
+            not value
+            or not value[0].isalpha()
+            or not all(character.isalnum() or character == "_" for character in value)
+        ):
+            raise ValueError("Artifact model identity must be a controlled identifier")
+        return value
 
 
 _ItemT = TypeVar("_ItemT")
@@ -282,6 +301,7 @@ class CandidateManifest(StrictModel):
     changed_files: list[str]
     claimed_capabilities: list[str]
     file_digests: dict[str, str] = Field(default_factory=dict)
+    workspace_file_digests: dict[str, str]
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -304,6 +324,9 @@ class ReviewReport(StrictModel):
 class ScenarioResult(StrictModel):
     scenario_id: str
     category: str
+    seed: StrictInt
+    repeat_index: StrictInt = Field(ge=0)
+    elapsed_seconds: float = Field(ge=0.0)
     success: bool
     steps: int
     interventions: int
@@ -312,6 +335,179 @@ class ScenarioResult(StrictModel):
     termination: str
     run_id: str
     trace_digest: str
+
+    @field_validator("elapsed_seconds")
+    @classmethod
+    def validate_elapsed_seconds(cls, value: float) -> float:
+        if not isfinite(value) or value < 0:
+            raise ValueError("elapsed_seconds must be finite and non-negative")
+        return value
+
+
+EvaluationCategory: TypeAlias = Literal[
+    "revealing", "variant", "regression", "long_horizon"
+]
+
+
+class EvaluationCase(StrictModel):
+    scenario_id: str
+    category: EvaluationCategory
+    seeds: list[StrictInt] = Field(min_length=1)
+    repeat_count: StrictInt = Field(ge=1)
+    per_run_wall_clock_ceiling_seconds: float
+
+    @field_validator("scenario_id")
+    @classmethod
+    def validate_scenario_id(cls, value: str) -> str:
+        return _nonblank(value)
+
+    @field_validator("seeds")
+    @classmethod
+    def validate_seeds(cls, value: list[int]) -> list[int]:
+        if len(set(value)) != len(value):
+            raise ValueError("Evaluation case seeds must be unique")
+        return value
+
+    @field_validator("per_run_wall_clock_ceiling_seconds")
+    @classmethod
+    def validate_run_ceiling(cls, value: float) -> float:
+        if not isfinite(value) or value <= 0:
+            raise ValueError("per-run wall-clock ceiling must be finite and positive")
+        return value
+
+class ProtectedPathHash(StrictModel):
+    logical_name: str
+    absolute_path: str
+    sha256: DigestStr
+
+    @field_validator("logical_name")
+    @classmethod
+    def validate_logical_name(cls, value: str) -> str:
+        return _nonblank(value)
+
+    @field_validator("absolute_path")
+    @classmethod
+    def validate_absolute_path(cls, value: str) -> str:
+        value = _nonblank(value)
+        if not Path(value).is_absolute():
+            raise ValueError("Protected path must be absolute")
+        return value
+
+
+class EvaluationSuiteManifest(StrictModel):
+    """Frozen, content-addressed authority for one complete evaluation."""
+
+    manifest_version: Literal["1.0"] = "1.0"
+    suite_id: str
+    revealing_cases: list[EvaluationCase] = Field(min_length=1)
+    structural_variants: list[EvaluationCase] = Field(min_length=1)
+    regression_suites: list[EvaluationCase] = Field(min_length=1)
+    long_horizon_suites: list[EvaluationCase] = Field(min_length=1)
+    total_wall_clock_ceiling_seconds: float
+    evaluator_version: str
+    evaluator: ArtifactRef
+    evaluator_protected_path: str
+    environment_artifacts: dict[str, ArtifactRef] = Field(min_length=1)
+    protected_paths: list[ProtectedPathHash] = Field(min_length=1)
+    subject_metric_namespace: str
+    candidate_tests_authoritative: Literal[False] = False
+
+    @field_validator("suite_id", "evaluator_version", "subject_metric_namespace")
+    @classmethod
+    def validate_nonblank_fields(cls, value: str) -> str:
+        return _nonblank(value)
+
+    @field_validator("total_wall_clock_ceiling_seconds")
+    @classmethod
+    def validate_total_ceiling(cls, value: float) -> float:
+        if not isfinite(value) or value <= 0:
+            raise ValueError("total wall-clock ceiling must be finite and positive")
+        return value
+
+    @field_validator("environment_artifacts")
+    @classmethod
+    def validate_environment_artifacts(
+        cls, value: dict[str, ArtifactRef]
+    ) -> dict[str, ArtifactRef]:
+        if any(not _nonblank(name) for name in value):
+            raise ValueError("Environment artifact names must be nonblank")
+        return value
+
+    @model_validator(mode="after")
+    def validate_authority(self) -> EvaluationSuiteManifest:
+        lists = (
+            ("revealing", self.revealing_cases),
+            ("variant", self.structural_variants),
+            ("regression", self.regression_suites),
+            ("long_horizon", self.long_horizon_suites),
+        )
+        identifiers: list[str] = []
+        for expected_category, cases in lists:
+            for case in cases:
+                if case.category != expected_category:
+                    raise ValueError(
+                        f"Case {case.scenario_id!r} category does not match "
+                        f"{expected_category!r} list"
+                    )
+                identifiers.append(case.scenario_id)
+        if len(set(identifiers)) != len(identifiers):
+            raise ValueError("Evaluation suite scenario IDs must be unique")
+        names = [path.logical_name for path in self.protected_paths]
+        if len(set(names)) != len(names):
+            raise ValueError("Protected path logical names must be unique")
+        if self.evaluator_protected_path not in names:
+            raise ValueError("evaluator_protected_path must name one protected path")
+        protected = next(
+            path for path in self.protected_paths
+            if path.logical_name == self.evaluator_protected_path
+        )
+        if protected.sha256 != self.evaluator.digest:
+            raise ValueError("Evaluator artifact digest must match its protected path")
+        for name, reference in self.environment_artifacts.items():
+            if name in names:
+                protected = next(path for path in self.protected_paths if path.logical_name == name)
+                if protected.sha256 != reference.digest:
+                    raise ValueError(f"Environment artifact {name!r} differs from protected path")
+        return self
+
+
+class EvaluationAuthoritySnapshot(StrictModel):
+    suite_ref: ArtifactRef
+    suite_id: str
+    evaluator_version: str
+    protected_path_digests: dict[str, DigestStr]
+    timestamp: datetime = Field(default_factory=utc_now)
+
+    @field_validator("suite_id", "evaluator_version")
+    @classmethod
+    def validate_snapshot_ids(cls, value: str) -> str:
+        return _nonblank(value)
+
+    @field_validator("protected_path_digests")
+    @classmethod
+    def validate_snapshot_paths(cls, value: dict[str, str]) -> dict[str, str]:
+        if any(not _nonblank(key) for key in value):
+            raise ValueError("Snapshot protected path names must be nonblank")
+        return value
+
+    @property
+    def captured_at(self) -> datetime:
+        return self.timestamp
+
+
+class SubjectMetricVector(StrictModel):
+    namespace: str
+    metrics: dict[str, JsonValue]
+
+    @field_validator("namespace")
+    @classmethod
+    def validate_namespace(cls, value: str) -> str:
+        return _nonblank(value)
+
+    @field_validator("metrics", mode="before")
+    @classmethod
+    def validate_metrics(cls, value: object) -> JsonValue:
+        return _json_value(value)
 
 
 class MetricVector(StrictModel):
@@ -326,7 +522,7 @@ class MetricVector(StrictModel):
     new_high_severity_issues: int = Field(default=0, ge=0)
 
 
-class ExperimentResult(StrictModel):
+class EvaluationOutcome(StrictModel):
     experiment_id: str
     candidate_id: str
     baseline_generation: str
@@ -338,7 +534,27 @@ class ExperimentResult(StrictModel):
     candidate_metrics: MetricVector
     prediction_matched: bool
     review_passed: bool
+    baseline_subject_metrics: list[SubjectMetricVector] = Field(min_length=1)
+    candidate_subject_metrics: list[SubjectMetricVector] = Field(min_length=1)
     notes: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_subject_metric_symmetry(self) -> EvaluationOutcome:
+        baseline_names = [metric.namespace for metric in self.baseline_subject_metrics]
+        candidate_names = [metric.namespace for metric in self.candidate_subject_metrics]
+        if len(set(baseline_names)) != len(baseline_names):
+            raise ValueError("Baseline subject metric namespaces must be unique")
+        if len(set(candidate_names)) != len(candidate_names):
+            raise ValueError("Candidate subject metric namespaces must be unique")
+        if baseline_names != candidate_names:
+            raise ValueError("Baseline and candidate subject metric namespaces must be symmetric")
+        return self
+
+
+class ExperimentResult(EvaluationOutcome):
+    evaluation_suite_ref: ArtifactRef
+    pre_authority_snapshot: EvaluationAuthoritySnapshot
+    post_authority_snapshot: EvaluationAuthoritySnapshot
 
 
 class GateDecision(StrictModel):
@@ -355,24 +571,6 @@ class GateDecision(StrictModel):
         if self.retained_generation_id is not None and self.verdict != GateVerdict.RETAIN:
             raise ValueError("retained_generation_id is valid only for a retain verdict")
         return self
-
-
-class ArtifactRef(StrictModel):
-    """A typed reference to one immutable content-addressed artifact."""
-
-    digest: DigestStr
-    model: str
-
-    @field_validator("model")
-    @classmethod
-    def validate_model_identity(cls, value: str) -> str:
-        if (
-            not value
-            or not value[0].isalpha()
-            or not all(character.isalnum() or character == "_" for character in value)
-        ):
-            raise ValueError("Artifact model identity must be a controlled identifier")
-        return value
 
 
 class RoleRequest(StrictModel):
@@ -602,7 +800,7 @@ class EvolutionPlan(StrictModel):
 class CycleManifest(StrictModel):
     """Immutable composition identity shared by every stage receipt."""
 
-    manifest_version: Literal["1.0"]
+    manifest_version: Literal["1.1"]
     cycle_id: str
     subject: str
     subject_plugin_api_version: str
@@ -612,6 +810,7 @@ class CycleManifest(StrictModel):
     plan_digest: str
     baseline_ref: ArtifactRef
     plan_ref: ArtifactRef
+    evaluation_suite_ref: ArtifactRef
     stage_order: tuple[StageName, ...]
     created_at: datetime = Field(default_factory=utc_now)
 

@@ -203,12 +203,14 @@ class MicroworldRunner:
         *,
         generation: GenerationManifest,
         scenario_id: str,
+        seed: int = 0,
         trace_directory: Path,
     ) -> tuple[RunRecord, list[TrajectoryEvent]]:
         scenario = get_scenario(scenario_id)
         return self.run_scenario(
             generation=generation,
             scenario=scenario,
+            seed=seed,
             trace_directory=trace_directory,
         )
 
@@ -217,6 +219,7 @@ class MicroworldRunner:
         *,
         generation: GenerationManifest,
         scenario: ScenarioSpec,
+        seed: int = 0,
         trace_directory: Path,
     ) -> tuple[RunRecord, list[TrajectoryEvent]]:
         run_id = new_id("run")
@@ -377,7 +380,11 @@ class MicroworldRunner:
             steps=steps,
             interventions=0,
             invalid_actions=invalid_actions,
-            metadata={"category": scenario.category, "trace_path": str(path)},
+            metadata={
+                "category": scenario.category,
+                "trace_path": str(path),
+                "seed": seed,
+            },
         )
         return record, recorder.events
 

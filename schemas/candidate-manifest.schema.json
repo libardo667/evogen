@@ -76,6 +76,13 @@
       "$ref": "#/$defs/CandidateStatus",
       "default": "created"
     },
+    "workspace_file_digests": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Workspace File Digests",
+      "type": "object"
+    },
     "workspace_path": {
       "title": "Workspace Path",
       "type": "string"
@@ -90,7 +97,8 @@
     "source_digest",
     "artifact_digests",
     "changed_files",
-    "claimed_capabilities"
+    "claimed_capabilities",
+    "workspace_file_digests"
   ],
   "title": "CandidateManifest",
   "type": "object"

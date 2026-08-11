@@ -14,7 +14,12 @@ from evogen.adapters.protocols import (
     SubjectRunner,
     TraceAnalyst,
 )
-from evogen.core.models import CycleResult, EvolutionPlan, GenerationManifest
+from evogen.core.models import (
+    CycleResult,
+    EvaluationSuiteManifest,
+    EvolutionPlan,
+    GenerationManifest,
+)
 from evogen.evolution.selection import RetentionPolicy
 from evogen.storage.artifacts import ArtifactStore
 from evogen.storage.ledger import Ledger
@@ -39,6 +44,7 @@ class EvolutionOrchestrator:
         materializer: GenerationMaterializer,
         baseline: GenerationManifest,
         plan: EvolutionPlan,
+        evaluation_suite: EvaluationSuiteManifest,
         subject_plugin_name: str = "unknown",
         subject_plugin_api_version: str = "1.0",
         subject_plugin_source: str = "unknown",
@@ -60,6 +66,7 @@ class EvolutionOrchestrator:
             materializer=materializer,
             baseline=baseline,
             plan=plan,
+            evaluation_suite=evaluation_suite,
             subject_plugin_name=subject_plugin_name,
             subject_plugin_api_version=subject_plugin_api_version,
             subject_plugin_source=subject_plugin_source,

@@ -1,0 +1,45 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "category": {
+      "enum": [
+        "revealing",
+        "variant",
+        "regression",
+        "long_horizon"
+      ],
+      "title": "Category",
+      "type": "string"
+    },
+    "per_run_wall_clock_ceiling_seconds": {
+      "title": "Per Run Wall Clock Ceiling Seconds",
+      "type": "number"
+    },
+    "repeat_count": {
+      "minimum": 1,
+      "title": "Repeat Count",
+      "type": "integer"
+    },
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "seeds": {
+      "items": {
+        "type": "integer"
+      },
+      "minItems": 1,
+      "title": "Seeds",
+      "type": "array"
+    }
+  },
+  "required": [
+    "scenario_id",
+    "category",
+    "seeds",
+    "repeat_count",
+    "per_run_wall_clock_ceiling_seconds"
+  ],
+  "title": "EvaluationCase",
+  "type": "object"
+}

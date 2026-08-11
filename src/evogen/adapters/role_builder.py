@@ -158,6 +158,7 @@ class RoleBackedDirectoryBuilder:
             },
             changed_files=sorted(changed_files),
             claimed_capabilities=patch_set.claimed_capabilities,
+            workspace_file_digests=file_digests,
             metadata={
                 "builder": type(self).__name__,
                 "implementation_summary": patch_set.summary,

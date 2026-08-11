@@ -37,7 +37,15 @@ from evogen.adapters.subjects import (
     run_subject_cycle,
 )
 from evogen.cli import app
-from evogen.core.models import EvolutionPlan, GenerationManifest
+from evogen.core.ids import sha256_bytes
+from evogen.core.models import (
+    ArtifactRef,
+    EvaluationCase,
+    EvaluationSuiteManifest,
+    EvolutionPlan,
+    GenerationManifest,
+    ProtectedPathHash,
+)
 from evogen.storage.artifacts import ArtifactStore
 from evogen.storage.ledger import Ledger
 
@@ -114,7 +122,55 @@ class _Doctor:
         return None
 
 
-def _bootstrap(*, subject: str = "fake") -> SubjectBootstrap:
+def _bootstrap(
+    context: SubjectFactoryContext,
+    *,
+    subject: str = "fake",
+) -> SubjectBootstrap:
+    authority_path = (context.workspace / "fake-evaluator.py").resolve()
+    authority_path.write_bytes(b"# immutable fake evaluator authority\n")
+    authority_digest = sha256_bytes(authority_path.read_bytes())
+    source_ref = ArtifactRef(
+        digest=context.artifacts.put_bytes(authority_path.read_bytes()),
+        model="SourceArtifact",
+    )
+    case_ids = {
+        "revealing": "fake-revealing",
+        "variant": "fake-variant",
+        "regression": "fake-regression",
+        "long_horizon": "fake-long-horizon",
+    }
+
+    def evaluation_case(category: str) -> EvaluationCase:
+        return EvaluationCase(
+            scenario_id=case_ids[category],
+            category=category,
+            seeds=[0],
+            repeat_count=1,
+            per_run_wall_clock_ceiling_seconds=1.0,
+        )
+
+    evaluation_suite = EvaluationSuiteManifest(
+        suite_id="fake-suite-v1",
+        revealing_cases=[evaluation_case("revealing")],
+        structural_variants=[evaluation_case("variant")],
+        regression_suites=[evaluation_case("regression")],
+        long_horizon_suites=[evaluation_case("long_horizon")],
+        total_wall_clock_ceiling_seconds=10.0,
+            evaluator_version="fake-evaluator-v1",
+            evaluator=source_ref,
+            evaluator_protected_path="fake-evaluator.py",
+        environment_artifacts={"fake-evaluator.py": source_ref},
+        protected_paths=[
+            ProtectedPathHash(
+                logical_name="fake-evaluator.py",
+                absolute_path=str(authority_path),
+                sha256=authority_digest,
+            )
+        ],
+        subject_metric_namespace="fake",
+        candidate_tests_authoritative=False,
+    )
     return SubjectBootstrap(
         baseline=GenerationManifest(
             generation_id="gen-fake-0001",
@@ -124,11 +180,12 @@ def _bootstrap(*, subject: str = "fake") -> SubjectBootstrap:
         ),
         plan=EvolutionPlan(
             diagnostic_scenarios=[],
-            revealing_cases=[],
-            structural_variants=[],
-            regression_suites=[],
-            long_horizon_suites=[],
+            revealing_cases=[case_ids["revealing"]],
+            structural_variants=[case_ids["variant"]],
+            regression_suites=[case_ids["regression"]],
+            long_horizon_suites=[case_ids["long_horizon"]],
         ),
+        evaluation_suite=evaluation_suite,
     )
 
 
@@ -141,7 +198,7 @@ def _factories():
         "evaluator_factory": lambda context: _Evaluator(context.runner),
         "materializer_factory": lambda context: _Materializer(context.runner),
         "doctor_factory": lambda context: _Doctor(),
-        "bootstrap_factory": lambda context: _bootstrap(),
+        "bootstrap_factory": lambda context: _bootstrap(context),
     }
 
 
@@ -341,7 +398,9 @@ def test_all_factories_return_typed_results(tmp_path, factory_name, error) -> No
 
 
 def test_bootstrap_subject_mismatch_is_rejected(tmp_path) -> None:
-    plugin = _plugin(bootstrap_factory=lambda context: _bootstrap(subject="other"))
+    plugin = _plugin(
+        bootstrap_factory=lambda context: _bootstrap(context, subject="other")
+    )
     with pytest.raises(SubjectBootstrapError, match="does not match plugin identity"):
         compose_subject(plugin, context=_context(tmp_path))
 

@@ -1263,6 +1263,7 @@ def test_persisted_unknown_error_chain_keeps_named_unknowns_and_refuses_probe(
         materializer=cycle.composition.materializer,
         baseline=cycle._baseline_generation(),
         plan=plan,
+        evaluation_suite=cycle.composition.bootstrap.evaluation_suite,
         subject_plugin_name="microworld",
         subject_plugin_source="test-unknown-chain",
     )
@@ -1315,6 +1316,7 @@ def test_probe_enters_from_persisted_single_case_chain_and_guards_specify(
         materializer=cycle.composition.materializer,
         baseline=baseline,
         plan=plan,
+        evaluation_suite=cycle.composition.bootstrap.evaluation_suite,
         subject_plugin_name="microworld",
         subject_plugin_api_version="1.0",
         subject_plugin_source="test-causal-chain",

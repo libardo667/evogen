@@ -1,5 +1,28 @@
 {
   "$defs": {
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "A typed reference to one immutable content-addressed artifact.",
+      "properties": {
+        "digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "model"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
     "CandidateManifest": {
       "additionalProperties": false,
       "properties": {
@@ -65,6 +88,13 @@
           "$ref": "#/$defs/CandidateStatus",
           "default": "created"
         },
+        "workspace_file_digests": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Workspace File Digests",
+          "type": "object"
+        },
         "workspace_path": {
           "title": "Workspace Path",
           "type": "string"
@@ -79,7 +109,8 @@
         "source_digest",
         "artifact_digests",
         "changed_files",
-        "claimed_capabilities"
+        "claimed_capabilities",
+        "workspace_file_digests"
       ],
       "title": "CandidateManifest",
       "type": "object"
@@ -393,6 +424,45 @@
       "title": "EnvironmentOperation",
       "type": "object"
     },
+    "EvaluationAuthoritySnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "evaluator_version": {
+          "title": "Evaluator Version",
+          "type": "string"
+        },
+        "protected_path_digests": {
+          "additionalProperties": {
+            "maxLength": 64,
+            "minLength": 64,
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "title": "Protected Path Digests",
+          "type": "object"
+        },
+        "suite_id": {
+          "title": "Suite Id",
+          "type": "string"
+        },
+        "suite_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "suite_ref",
+        "suite_id",
+        "evaluator_version",
+        "protected_path_digests"
+      ],
+      "title": "EvaluationAuthoritySnapshot",
+      "type": "object"
+    },
     "EvidenceRef": {
       "additionalProperties": false,
       "properties": {
@@ -434,6 +504,14 @@
           "title": "Baseline Results",
           "type": "array"
         },
+        "baseline_subject_metrics": {
+          "items": {
+            "$ref": "#/$defs/SubjectMetricVector"
+          },
+          "minItems": 1,
+          "title": "Baseline Subject Metrics",
+          "type": "array"
+        },
         "candidate_id": {
           "title": "Candidate Id",
           "type": "string"
@@ -447,6 +525,17 @@
           },
           "title": "Candidate Results",
           "type": "array"
+        },
+        "candidate_subject_metrics": {
+          "items": {
+            "$ref": "#/$defs/SubjectMetricVector"
+          },
+          "minItems": 1,
+          "title": "Candidate Subject Metrics",
+          "type": "array"
+        },
+        "evaluation_suite_ref": {
+          "$ref": "#/$defs/ArtifactRef"
         },
         "experiment_id": {
           "title": "Experiment Id",
@@ -463,6 +552,12 @@
           },
           "title": "Notes",
           "type": "array"
+        },
+        "post_authority_snapshot": {
+          "$ref": "#/$defs/EvaluationAuthoritySnapshot"
+        },
+        "pre_authority_snapshot": {
+          "$ref": "#/$defs/EvaluationAuthoritySnapshot"
         },
         "prediction_matched": {
           "title": "Prediction Matched",
@@ -489,7 +584,12 @@
         "baseline_metrics",
         "candidate_metrics",
         "prediction_matched",
-        "review_passed"
+        "review_passed",
+        "baseline_subject_metrics",
+        "candidate_subject_metrics",
+        "evaluation_suite_ref",
+        "pre_authority_snapshot",
+        "post_authority_snapshot"
       ],
       "title": "ExperimentResult",
       "type": "object"
@@ -1004,12 +1104,22 @@
           "title": "Category",
           "type": "string"
         },
+        "elapsed_seconds": {
+          "minimum": 0.0,
+          "title": "Elapsed Seconds",
+          "type": "number"
+        },
         "interventions": {
           "title": "Interventions",
           "type": "integer"
         },
         "invalid_actions": {
           "title": "Invalid Actions",
+          "type": "integer"
+        },
+        "repeat_index": {
+          "minimum": 0,
+          "title": "Repeat Index",
           "type": "integer"
         },
         "run_id": {
@@ -1019,6 +1129,10 @@
         "scenario_id": {
           "title": "Scenario Id",
           "type": "string"
+        },
+        "seed": {
+          "title": "Seed",
+          "type": "integer"
         },
         "steps": {
           "title": "Steps",
@@ -1040,6 +1154,9 @@
       "required": [
         "scenario_id",
         "category",
+        "seed",
+        "repeat_index",
+        "elapsed_seconds",
         "success",
         "steps",
         "interventions",
@@ -1062,6 +1179,52 @@
       ],
       "title": "Severity",
       "type": "string"
+    },
+    "SubjectMetricVector": {
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Metrics",
+          "type": "object"
+        },
+        "namespace": {
+          "title": "Namespace",
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "metrics"
+      ],
+      "title": "SubjectMetricVector",
+      "type": "object"
     }
   },
   "additionalProperties": false,

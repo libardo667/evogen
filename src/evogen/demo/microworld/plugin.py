@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import inspect
 from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
+from types import ModuleType
 
 from evogen.adapters.protocols import (
     CandidateBuilder,
@@ -21,7 +24,16 @@ from evogen.adapters.subjects import (
     SubjectFactoryContext,
     SubjectPlugin,
 )
-from evogen.core.models import EvolutionPlan, GenerationManifest
+from evogen.core.ids import sha256_bytes
+from evogen.core.models import (
+    ArtifactRef,
+    EvaluationCase,
+    EvaluationCategory,
+    EvaluationSuiteManifest,
+    EvolutionPlan,
+    GenerationManifest,
+    ProtectedPathHash,
+)
 from evogen.evolution.review import PythonCandidateReviewer
 
 from .builder import ReferenceMicroworldBuilder
@@ -163,7 +175,97 @@ def build_bootstrap(context: SubjectFactoryContext) -> SubjectBootstrap:
         long_horizon_suites=LONG_HORIZON_SUITES,
         forbidden_literals=forbidden_literals,
     )
-    return SubjectBootstrap(baseline=baseline, plan=plan)
+    suite = _build_evaluation_suite(context)
+    return SubjectBootstrap(baseline=baseline, plan=plan, evaluation_suite=suite)
+
+
+def _source_path(module: ModuleType) -> Path:
+    source = inspect.getsourcefile(module)
+    if source is None:
+        raise RuntimeError(f"Cannot locate source for {module!r}")
+    path = Path(source).resolve()
+    if not path.is_file() or not path.is_absolute():
+        raise RuntimeError(f"Subject authority source is not an absolute file: {path}")
+    return path
+
+
+def _build_evaluation_suite(context: SubjectFactoryContext) -> EvaluationSuiteManifest:
+    from . import environment, evaluator, scenarios, subject
+
+    source_modules = {
+        "evaluator.py": evaluator,
+        "scenarios.py": scenarios,
+        "environment.py": environment,
+        "subject.py": subject,
+    }
+    refs = {
+        name: ArtifactRef(
+            digest=context.artifacts.put_bytes(_source_path(module).read_bytes()),
+            model="SourceArtifact",
+        )
+        for name, module in source_modules.items()
+    }
+    refs["scenario_specs.json"] = ArtifactRef(
+        digest=context.artifacts.put_json(
+            {
+                identifier: spec.model_dump(mode="json")
+                for identifier, spec in scenarios.SCENARIOS.items()
+            }
+        ),
+        model="SourceArtifact",
+    )
+    refs["environment_operations.json"] = ArtifactRef(
+        digest=context.artifacts.put_json(
+            [operation.model_dump(mode="json") for operation in environment.ENVIRONMENT_OPERATIONS]
+        ),
+        model="SourceArtifact",
+    )
+    cases: dict[EvaluationCategory, list[str]] = {
+        "revealing": REVEALING_CASES,
+        "variant": STRUCTURAL_VARIANTS,
+        "regression": REGRESSION_SUITES,
+        "long_horizon": LONG_HORIZON_SUITES,
+    }
+    built: dict[str, list[EvaluationCase]] = {}
+    for category, scenario_ids in cases.items():
+        for scenario_id in scenario_ids:
+            if get_scenario(scenario_id).category != category:
+                raise RuntimeError(
+                    f"Scenario {scenario_id!r} category differs from evaluation suite"
+                )
+        built[category] = [
+            EvaluationCase(
+                scenario_id=scenario_id,
+                category=category,
+                seeds=[0],
+                repeat_count=1,
+                per_run_wall_clock_ceiling_seconds=10.0,
+            )
+            for scenario_id in scenario_ids
+        ]
+    protected = [
+        ProtectedPathHash(
+            logical_name=name,
+            absolute_path=str(_source_path(module)),
+            sha256=sha256_bytes(_source_path(module).read_bytes()),
+        )
+        for name, module in source_modules.items()
+    ]
+    return EvaluationSuiteManifest(
+        suite_id="microworld-suite-v1",
+        revealing_cases=built["revealing"],
+        structural_variants=built["variant"],
+        regression_suites=built["regression"],
+        long_horizon_suites=built["long_horizon"],
+        total_wall_clock_ceiling_seconds=120.0,
+        evaluator_version="microworld-evaluator-1",
+        evaluator=refs["evaluator.py"],
+        evaluator_protected_path="evaluator.py",
+        environment_artifacts=refs,
+        protected_paths=protected,
+        subject_metric_namespace="microworld",
+        candidate_tests_authoritative=False,
+    )
 
 
 @dataclass(frozen=True)

@@ -114,6 +114,7 @@ class ReferenceMicroworldBuilder:
             },
             changed_files=["plugins/inspect_container.py"],
             claimed_capabilities=["inspect_container"],
+            workspace_file_digests={"plugins/inspect_container.py": source_digest},
             metadata={
                 "builder": "ReferenceMicroworldBuilder",
                 "implementation_mode": "deterministic_reference",

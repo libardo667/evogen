@@ -1,67 +1,5 @@
 {
   "$defs": {
-    "ArtifactRef": {
-      "additionalProperties": false,
-      "description": "A typed reference to one immutable content-addressed artifact.",
-      "properties": {
-        "digest": {
-          "maxLength": 64,
-          "minLength": 64,
-          "pattern": "^[0-9a-f]{64}$",
-          "title": "Digest",
-          "type": "string"
-        },
-        "model": {
-          "title": "Model",
-          "type": "string"
-        }
-      },
-      "required": [
-        "digest",
-        "model"
-      ],
-      "title": "ArtifactRef",
-      "type": "object"
-    },
-    "EvaluationAuthoritySnapshot": {
-      "additionalProperties": false,
-      "properties": {
-        "evaluator_version": {
-          "title": "Evaluator Version",
-          "type": "string"
-        },
-        "protected_path_digests": {
-          "additionalProperties": {
-            "maxLength": 64,
-            "minLength": 64,
-            "pattern": "^[0-9a-f]{64}$",
-            "type": "string"
-          },
-          "title": "Protected Path Digests",
-          "type": "object"
-        },
-        "suite_id": {
-          "title": "Suite Id",
-          "type": "string"
-        },
-        "suite_ref": {
-          "$ref": "#/$defs/ArtifactRef"
-        },
-        "timestamp": {
-          "format": "date-time",
-          "title": "Timestamp",
-          "type": "string"
-        }
-      },
-      "required": [
-        "suite_ref",
-        "suite_id",
-        "evaluator_version",
-        "protected_path_digests"
-      ],
-      "title": "EvaluationAuthoritySnapshot",
-      "type": "object"
-    },
     "MetricVector": {
       "additionalProperties": false,
       "properties": {
@@ -298,9 +236,6 @@
       "title": "Candidate Subject Metrics",
       "type": "array"
     },
-    "evaluation_suite_ref": {
-      "$ref": "#/$defs/ArtifactRef"
-    },
     "experiment_id": {
       "title": "Experiment Id",
       "type": "string"
@@ -316,12 +251,6 @@
       },
       "title": "Notes",
       "type": "array"
-    },
-    "post_authority_snapshot": {
-      "$ref": "#/$defs/EvaluationAuthoritySnapshot"
-    },
-    "pre_authority_snapshot": {
-      "$ref": "#/$defs/EvaluationAuthoritySnapshot"
     },
     "prediction_matched": {
       "title": "Prediction Matched",
@@ -350,11 +279,8 @@
     "prediction_matched",
     "review_passed",
     "baseline_subject_metrics",
-    "candidate_subject_metrics",
-    "evaluation_suite_ref",
-    "pre_authority_snapshot",
-    "post_authority_snapshot"
+    "candidate_subject_metrics"
   ],
-  "title": "ExperimentResult",
+  "title": "EvaluationOutcome",
   "type": "object"
 }

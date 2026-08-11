@@ -1,19 +1,23 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
+from time import perf_counter
 
 from evogen.core.ids import new_id, stable_digest
 from evogen.core.models import (
     CandidateManifest,
-    ExperimentResult,
+    EvaluationCase,
+    EvaluationOutcome,
+    EvaluationSuiteManifest,
     GenerationManifest,
     MetricVector,
     ScenarioResult,
+    SubjectMetricVector,
 )
 from evogen.storage.ledger import Ledger
 
-from .scenarios import EVALUATION_SCENARIOS, get_scenario
 from .subject import MicroworldRunner
 
 
@@ -27,10 +31,12 @@ class MicroworldEvaluator:
         *,
         baseline: GenerationManifest,
         candidate: CandidateManifest,
+        evaluation_suite: EvaluationSuiteManifest,
         trace_directory: Path,
         review_passed: bool,
-    ) -> ExperimentResult:
+    ) -> EvaluationOutcome:
         started = datetime.now(UTC)
+        evaluation_started = perf_counter()
         candidate_generation = GenerationManifest(
             generation_id=candidate.candidate_id,
             parent_generation_id=baseline.generation_id,
@@ -57,10 +63,14 @@ class MicroworldEvaluator:
 
         baseline_results = self._run_suite(
             generation=baseline,
+            evaluation_suite=evaluation_suite,
+            evaluation_started=evaluation_started,
             trace_directory=trace_directory / "baseline",
         )
         candidate_results = self._run_suite(
             generation=candidate_generation,
+            evaluation_suite=evaluation_suite,
+            evaluation_started=evaluation_started,
             trace_directory=trace_directory / "candidate",
         )
         baseline_metrics = _metrics(baseline_results)
@@ -72,7 +82,7 @@ class MicroworldEvaluator:
             and candidate_metrics.variant_success_rate
             > baseline_metrics.variant_success_rate
         )
-        return ExperimentResult(
+        return EvaluationOutcome(
             experiment_id=new_id("experiment"),
             candidate_id=candidate.candidate_id,
             baseline_generation=baseline.generation_id,
@@ -84,6 +94,8 @@ class MicroworldEvaluator:
             candidate_metrics=candidate_metrics,
             prediction_matched=prediction_matched,
             review_passed=review_passed,
+            baseline_subject_metrics=[_subject_metrics(baseline_results, evaluation_suite)],
+            candidate_subject_metrics=[_subject_metrics(candidate_results, evaluation_suite)],
             notes=[
                 "Every scenario was rerun from a fresh deterministic world.",
                 "Baseline and candidate used the same executor policy and evaluator.",
@@ -95,33 +107,70 @@ class MicroworldEvaluator:
         self,
         *,
         generation: GenerationManifest,
+        evaluation_suite: EvaluationSuiteManifest,
+        evaluation_started: float,
         trace_directory: Path,
     ) -> list[ScenarioResult]:
         results: list[ScenarioResult] = []
-        for scenario_id in EVALUATION_SCENARIOS:
-            record, events = self.runner.run(
-                generation=generation,
-                scenario_id=scenario_id,
-                trace_directory=trace_directory,
-            )
-            if self.ledger is not None:
-                self.ledger.add_run(record, events)
-            scenario = get_scenario(scenario_id)
-            results.append(
-                ScenarioResult(
-                    scenario_id=scenario_id,
-                    category=scenario.category,
-                    success=record.success,
-                    steps=record.steps,
-                    interventions=record.interventions,
-                    invalid_actions=record.invalid_actions,
-                    blocked=record.termination == "goal_blocked",
-                    termination=record.termination,
-                    run_id=record.run_id,
-                    trace_digest=record.trace_digest,
-                )
-            )
+        for case in _suite_cases(evaluation_suite):
+            for seed in case.seeds:
+                for repeat_index in range(case.repeat_count):
+                    run_started = perf_counter()
+                    record, events = self.runner.run(
+                        generation=generation,
+                        scenario_id=case.scenario_id,
+                        seed=seed,
+                        trace_directory=trace_directory,
+                    )
+                    elapsed = perf_counter() - run_started
+                    if elapsed > case.per_run_wall_clock_ceiling_seconds:
+                        raise TimeoutError(
+                            f"Evaluation case {case.scenario_id} exceeded its wall-clock ceiling"
+                        )
+                    if self.ledger is not None:
+                        self.ledger.add_run(record, events)
+                    results.append(
+                        ScenarioResult(
+                            scenario_id=case.scenario_id,
+                            category=case.category,
+                            seed=seed,
+                            repeat_index=repeat_index,
+                            elapsed_seconds=elapsed,
+                            success=record.success,
+                            steps=record.steps,
+                            interventions=record.interventions,
+                            invalid_actions=record.invalid_actions,
+                            blocked=record.termination == "goal_blocked",
+                            termination=record.termination,
+                            run_id=record.run_id,
+                            trace_digest=record.trace_digest,
+                        )
+                    )
+                    if (
+                        perf_counter() - evaluation_started
+                        > evaluation_suite.total_wall_clock_ceiling_seconds
+                    ):
+                        raise TimeoutError("Evaluation suite exceeded its total wall-clock ceiling")
         return results
+
+
+def _suite_cases(suite: EvaluationSuiteManifest) -> Iterator[EvaluationCase]:
+    yield from suite.revealing_cases
+    yield from suite.structural_variants
+    yield from suite.regression_suites
+    yield from suite.long_horizon_suites
+
+
+def _subject_metrics(
+    results: list[ScenarioResult], suite: EvaluationSuiteManifest
+) -> SubjectMetricVector:
+    return SubjectMetricVector(
+        namespace=suite.subject_metric_namespace,
+        metrics={
+            "evaluated_runs": len(results),
+            "successful_runs": sum(result.success for result in results),
+        },
+    )
 
 
 def _metrics(results: list[ScenarioResult]) -> MetricVector:

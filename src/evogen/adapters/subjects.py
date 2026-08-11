@@ -12,7 +12,12 @@ from typing import Protocol, cast
 
 from evogen.core.enums import StageName
 from evogen.core.ids import sha256_bytes
-from evogen.core.models import CycleResult, EvolutionPlan, GenerationManifest
+from evogen.core.models import (
+    CycleResult,
+    EvaluationSuiteManifest,
+    EvolutionPlan,
+    GenerationManifest,
+)
 from evogen.evolution.orchestrator import EvolutionOrchestrator
 from evogen.storage.artifacts import ArtifactStore
 from evogen.storage.ledger import Ledger
@@ -130,6 +135,7 @@ class SubjectFactoryContext:
 class SubjectBootstrap:
     baseline: GenerationManifest
     plan: EvolutionPlan
+    evaluation_suite: EvaluationSuiteManifest
 
 
 @dataclass(frozen=True)
@@ -411,6 +417,7 @@ def _bootstrap_result(
     try:
         baseline = result.baseline
         plan = result.plan
+        evaluation_suite = result.evaluation_suite
     except Exception as exc:
         raise SubjectBootstrapError(
             f"Subject plugin {subject_name!r} bootstrap_factory returned a bootstrap "
@@ -425,6 +432,11 @@ def _bootstrap_result(
         raise SubjectBootstrapError(
             f"Subject plugin {subject_name!r} bootstrap_factory returned a bootstrap "
             "with an invalid plan; expected EvolutionPlan."
+        )
+    if not isinstance(evaluation_suite, EvaluationSuiteManifest):
+        raise SubjectBootstrapError(
+            f"Subject plugin {subject_name!r} bootstrap_factory returned a bootstrap "
+            "with an invalid evaluation_suite; expected EvaluationSuiteManifest."
         )
     try:
         baseline_subject = baseline.subject
@@ -541,6 +553,7 @@ def compose_subject(
         materializer=materializer,
         baseline=bootstrap.baseline,
         plan=bootstrap.plan,
+        evaluation_suite=bootstrap.evaluation_suite,
         subject_plugin_name=subject_name,
         subject_plugin_api_version=validated.api_version,
         subject_plugin_source=_plugin_source_identity(validated),

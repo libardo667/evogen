@@ -1,0 +1,27 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "absolute_path": {
+      "title": "Absolute Path",
+      "type": "string"
+    },
+    "logical_name": {
+      "title": "Logical Name",
+      "type": "string"
+    },
+    "sha256": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "logical_name",
+    "absolute_path",
+    "sha256"
+  ],
+  "title": "ProtectedPathHash",
+  "type": "object"
+}

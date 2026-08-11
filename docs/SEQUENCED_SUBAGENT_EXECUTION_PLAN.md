@@ -23,8 +23,8 @@ Current execution state:
 - Public remote: `https://github.com/libardo667/evogen`
 - Hosted proof: branch run `31439981915` and tag run `31439981992` each passed
   Python 3.11, 3.12, and 3.13 at the exact release commit
-- Goal 6 state: completed in the current bounded goal commit
-- Next unstarted goal: Goal 7
+- Goal 7 state: completed in the current bounded goal commit
+- Next unstarted goal: Goal 8
 
 ## 1. What this plan controls
 
@@ -374,7 +374,7 @@ independent and the extra handoff creates more evidence than coordination risk.
 
 ### G07 — Frozen evaluation authority
 
-- State: next; implementation remains unstarted.
+- State: completed in the current bounded goal commit.
 - Depends on: G06 and persisted artifacts.
 - Pre-write fan-out: evaluator threat model; suite-manifest contract design.
 - Independent proof: candidate tampering with evaluator or held-out scenario is
@@ -383,6 +383,7 @@ independent and the extra handoff creates more evidence than coordination risk.
 
 ### G08 — Subject conformance and doctor
 
+- State: next; implementation remains unstarted.
 - Depends on: G02–G07.
 - Pre-write fan-out: public plugin contract matrix; doctor diagnostic UX.
 - Independent proof: microworld passes the kit and each deliberately broken
@@ -667,8 +668,8 @@ goals:
   - {id: G04, repo: [evogen], depends: [G03], profile: orchestration_state, state: complete, human_gate: []}
   - {id: G05, repo: [evogen], depends: [G04], profile: lifecycle_contract, state: complete, human_gate: []}
   - {id: G06, repo: [evogen], depends: [G05], profile: role_contract, state: complete, human_gate: []}
-  - {id: G07, repo: [evogen], depends: [G06], profile: evaluator_security, state: next, human_gate: []}
-  - {id: G08, repo: [evogen], depends: [G07], profile: conformance, state: unstarted, human_gate: []}
+  - {id: G07, repo: [evogen], depends: [G06], profile: evaluator_security, state: complete, human_gate: []}
+  - {id: G08, repo: [evogen], depends: [G07], profile: conformance, state: next, human_gate: []}
   - {id: G09, repo: [kenshi-agent-env], depends: [G08], profile: source_inventory, state: unstarted, human_gate: []}
   - {id: G10, repo: [kenshi-agent-env], depends: [G09], profile: logger_migration, state: unstarted, human_gate: []}
   - {id: G11, repo: [kenshi-agent-env], depends: [G10], profile: generation_manifest, state: unstarted, human_gate: []}
@@ -714,29 +715,25 @@ goals:
 
 ## 16. Immediate next execution packet
 
-The next permitted packet is G07 only. It remains unstarted until the Goal 6
+The next permitted packet is G08 only. It remains unstarted until the Goal 7
 gate, commit, clean checkpoint ratchet, public push, and stop are complete.
 
-Before any G07 edit, the root must:
+Before any G08 edit, the root must:
 
 1. re-read EvoGen `AGENTS.md` and `docs/INTEGRATION_CHECKPOINT.md`;
-2. confirm `main` starts at the reviewed, committed G06 result with a clean
+2. confirm `main` starts at the reviewed, committed G07 result with a clean
    checkpoint ratchet;
-3. inventory every suite, scenario, evaluator, seed, repeat count, wall-clock
-   ceiling, environment artifact, metric namespace, and protected path that
-   currently influences evaluation or retention;
-4. dispatch an evaluator-authority threat modeller and a baseline/candidate
-   symmetry plus pre/post hash proof designer read-only;
-5. freeze a typed suite manifest containing revealing cases, structural
-   variants, regressions, long-horizon suites, seeds, repeat counts, wall-clock
-   ceilings, environment artifacts, evaluator version, and protected-path
-   hashes;
-6. extend experiment results with namespaced subject metrics while preserving
-   the generic metric vector and deterministic retention authority;
-7. assign one writer to add pre- and post-execution evaluator/scenario hash
-   verification without giving candidates access to held-out authority;
-8. independently prove that a candidate which edits a held-out scenario or
-   evaluator is rejected even when its reported scores improve, and that a
-   candidate's own tests never become retention evidence;
-9. refresh the checkpoint with the exact G07 parent and next G08; and
-10. commit and stop without beginning G08.
+3. inventory the public subject-plugin contract, every factory and protocol,
+   bootstrap authority, CLI composition route, and existing doctor behavior;
+4. dispatch a public plugin-contract matrix auditor and a doctor diagnostic-UX
+   proof designer read-only;
+5. freeze one subject-neutral conformance kit that checks the complete plugin
+   surface without importing real subject ontology into generic core;
+6. add a doctor command whose typed results name the exact failed contract,
+   missing artifact, incompatible version, or unsafe authority boundary;
+7. independently prove that microworld passes and deliberately broken plugins
+   each fail at their exact violated boundary;
+8. verify the core doctor contains no Kenshi, OpenTTD, or microworld-specific
+   checks and does not silently fall back to demo composition;
+9. refresh the checkpoint with the exact G08 parent and next G09; and
+10. commit and stop without beginning G09.

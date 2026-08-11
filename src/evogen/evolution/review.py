@@ -19,7 +19,20 @@ class PythonCandidateReviewer:
         forbidden_literals: list[str] | None = None,
     ) -> ReviewReport:
         root = Path(candidate.workspace_path)
-        files = [root / relative for relative in candidate.changed_files]
+        files: list[Path] = []
+        unsafe_paths: list[str] = []
+        resolved_root = root.resolve()
+        for relative in sorted(candidate.workspace_file_digests):
+            candidate_path = Path(relative)
+            full = (root / candidate_path).resolve()
+            if (
+                candidate_path.is_absolute()
+                or ".." in candidate_path.parts
+                or resolved_root not in full.parents
+            ):
+                unsafe_paths.append(relative)
+            else:
+                files.append(root / candidate_path)
         findings: list[ReviewFinding] = []
         checks: dict[str, bool] = {}
 
@@ -40,13 +53,22 @@ class PythonCandidateReviewer:
                 findings=findings,
             )
 
-        checks["changed_files_present"] = bool(files) and all(path.is_file() for path in files)
-        if not checks["changed_files_present"]:
+        checks["workspace_files_present"] = bool(files) and all(path.is_file() for path in files)
+        checks["workspace_paths_safe"] = not unsafe_paths
+        if unsafe_paths:
+            findings.append(
+                ReviewFinding(
+                    severity=Severity.CRITICAL,
+                    code="unsafe_workspace_path",
+                    message=f"Candidate workspace declares unsafe paths: {unsafe_paths!r}",
+                )
+            )
+        if not checks["workspace_files_present"]:
             findings.append(
                 ReviewFinding(
                     severity=Severity.HIGH,
-                    code="missing_changed_file",
-                    message="One or more declared changed files are absent.",
+                    code="missing_workspace_file",
+                    message="One or more declared workspace files are absent.",
                 )
             )
 
@@ -103,7 +125,7 @@ class PythonCandidateReviewer:
 
         changed_scope_ok = all(
             Path(relative).parts and Path(relative).parts[0] == "plugins"
-            for relative in candidate.changed_files
+            for relative in candidate.workspace_file_digests
         )
         checks["change_scope_limited"] = changed_scope_ok
         if not changed_scope_ok:

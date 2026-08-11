@@ -56,6 +56,8 @@ def _semantic_result(workspace: Path) -> dict[str, object]:
         "created_at",
         "started_at",
         "finished_at",
+        "timestamp",
+        "elapsed_seconds",
         "issue_id",
         "report_id",
         "spec_id",

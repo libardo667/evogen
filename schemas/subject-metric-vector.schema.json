@@ -1,0 +1,46 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "metrics": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "items": {},
+            "type": "array"
+          },
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Metrics",
+      "type": "object"
+    },
+    "namespace": {
+      "title": "Namespace",
+      "type": "string"
+    }
+  },
+  "required": [
+    "namespace",
+    "metrics"
+  ],
+  "title": "SubjectMetricVector",
+  "type": "object"
+}

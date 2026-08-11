@@ -1,0 +1,202 @@
+{
+  "$defs": {
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "A typed reference to one immutable content-addressed artifact.",
+      "properties": {
+        "digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "model"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "EvaluationCase": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "revealing",
+            "variant",
+            "regression",
+            "long_horizon"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "per_run_wall_clock_ceiling_seconds": {
+          "title": "Per Run Wall Clock Ceiling Seconds",
+          "type": "number"
+        },
+        "repeat_count": {
+          "minimum": 1,
+          "title": "Repeat Count",
+          "type": "integer"
+        },
+        "scenario_id": {
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "seeds": {
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1,
+          "title": "Seeds",
+          "type": "array"
+        }
+      },
+      "required": [
+        "scenario_id",
+        "category",
+        "seeds",
+        "repeat_count",
+        "per_run_wall_clock_ceiling_seconds"
+      ],
+      "title": "EvaluationCase",
+      "type": "object"
+    },
+    "ProtectedPathHash": {
+      "additionalProperties": false,
+      "properties": {
+        "absolute_path": {
+          "title": "Absolute Path",
+          "type": "string"
+        },
+        "logical_name": {
+          "title": "Logical Name",
+          "type": "string"
+        },
+        "sha256": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "logical_name",
+        "absolute_path",
+        "sha256"
+      ],
+      "title": "ProtectedPathHash",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Frozen, content-addressed authority for one complete evaluation.",
+  "properties": {
+    "candidate_tests_authoritative": {
+      "const": false,
+      "default": false,
+      "title": "Candidate Tests Authoritative",
+      "type": "boolean"
+    },
+    "environment_artifacts": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ArtifactRef"
+      },
+      "minProperties": 1,
+      "title": "Environment Artifacts",
+      "type": "object"
+    },
+    "evaluator": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "evaluator_protected_path": {
+      "title": "Evaluator Protected Path",
+      "type": "string"
+    },
+    "evaluator_version": {
+      "title": "Evaluator Version",
+      "type": "string"
+    },
+    "long_horizon_suites": {
+      "items": {
+        "$ref": "#/$defs/EvaluationCase"
+      },
+      "minItems": 1,
+      "title": "Long Horizon Suites",
+      "type": "array"
+    },
+    "manifest_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Manifest Version",
+      "type": "string"
+    },
+    "protected_paths": {
+      "items": {
+        "$ref": "#/$defs/ProtectedPathHash"
+      },
+      "minItems": 1,
+      "title": "Protected Paths",
+      "type": "array"
+    },
+    "regression_suites": {
+      "items": {
+        "$ref": "#/$defs/EvaluationCase"
+      },
+      "minItems": 1,
+      "title": "Regression Suites",
+      "type": "array"
+    },
+    "revealing_cases": {
+      "items": {
+        "$ref": "#/$defs/EvaluationCase"
+      },
+      "minItems": 1,
+      "title": "Revealing Cases",
+      "type": "array"
+    },
+    "structural_variants": {
+      "items": {
+        "$ref": "#/$defs/EvaluationCase"
+      },
+      "minItems": 1,
+      "title": "Structural Variants",
+      "type": "array"
+    },
+    "subject_metric_namespace": {
+      "title": "Subject Metric Namespace",
+      "type": "string"
+    },
+    "suite_id": {
+      "title": "Suite Id",
+      "type": "string"
+    },
+    "total_wall_clock_ceiling_seconds": {
+      "title": "Total Wall Clock Ceiling Seconds",
+      "type": "number"
+    }
+  },
+  "required": [
+    "suite_id",
+    "revealing_cases",
+    "structural_variants",
+    "regression_suites",
+    "long_horizon_suites",
+    "total_wall_clock_ceiling_seconds",
+    "evaluator_version",
+    "evaluator",
+    "evaluator_protected_path",
+    "environment_artifacts",
+    "protected_paths",
+    "subject_metric_namespace"
+  ],
+  "title": "EvaluationSuiteManifest",
+  "type": "object"
+}

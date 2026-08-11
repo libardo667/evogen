@@ -11,10 +11,12 @@ from evogen.core.ids import stable_digest
 from evogen.core.models import (
     ArtifactRef,
     CandidateManifest,
+    EvaluationAuthoritySnapshot,
     ExperimentResult,
     GateDecision,
     MetricVector,
     ReviewReport,
+    SubjectMetricVector,
 )
 from evogen.evolution.selection import RetentionPolicy
 from evogen.evolution.stages import EvolutionStageOrchestrator, StageIntegrityError
@@ -100,6 +102,7 @@ def _candidate() -> CandidateManifest:
         changed_files=["plugin.py"],
         file_digests={"plugin.py": "a" * 64},
         claimed_capabilities=[],
+        workspace_file_digests={"plugin.py": "a" * 64},
         status=CandidateStatus.EVALUATED,
     )
 
@@ -134,6 +137,17 @@ def _experiment(*, review_passed: bool, improved: bool) -> ExperimentResult:
         candidate_metrics=candidate,
         prediction_matched=True,
         review_passed=review_passed,
+        baseline_subject_metrics=[SubjectMetricVector(namespace="test", metrics={})],
+        candidate_subject_metrics=[SubjectMetricVector(namespace="test", metrics={})],
+        evaluation_suite_ref=ArtifactRef(digest="a" * 64, model="EvaluationSuiteManifest"),
+        pre_authority_snapshot=EvaluationAuthoritySnapshot(
+            suite_ref=ArtifactRef(digest="a" * 64, model="EvaluationSuiteManifest"),
+            suite_id="suite", evaluator_version="v1", protected_path_digests={}
+        ),
+        post_authority_snapshot=EvaluationAuthoritySnapshot(
+            suite_ref=ArtifactRef(digest="a" * 64, model="EvaluationSuiteManifest"),
+            suite_id="suite", evaluator_version="v1", protected_path_digests={}
+        ),
     )
 
 

@@ -59,8 +59,11 @@
       "title": "Cycle Id",
       "type": "string"
     },
+    "evaluation_suite_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
     "manifest_version": {
-      "const": "1.0",
+      "const": "1.1",
       "title": "Manifest Version",
       "type": "string"
     },
@@ -106,6 +109,7 @@
     "plan_digest",
     "baseline_ref",
     "plan_ref",
+    "evaluation_suite_ref",
     "stage_order"
   ],
   "title": "CycleManifest",

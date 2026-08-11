@@ -8,6 +8,7 @@ identity, and the integrity boundary.
 from __future__ import annotations
 
 import json
+import stat
 from pathlib import Path
 from typing import Any, cast
 
@@ -43,14 +44,20 @@ from evogen.core.models import (
     CycleManifest,
     CycleResult,
     DistilledTrace,
+    EvaluationAuthoritySnapshot,
+    EvaluationCase,
+    EvaluationOutcome,
+    EvaluationSuiteManifest,
     EvolutionPlan,
     ExperimentResult,
     GenerationManifest,
     IngestResult,
     InvestigationReport,
+    MetricVector,
     ProbeRequiredResult,
     ReviewReport,
     RunRecord,
+    ScenarioResult,
     StagePointer,
     StageReceipt,
     TrajectoryEvent,
@@ -122,6 +129,7 @@ class EvolutionStageOrchestrator:
         materializer: GenerationMaterializer,
         baseline: GenerationManifest,
         plan: EvolutionPlan,
+        evaluation_suite: EvaluationSuiteManifest,
         subject_plugin_name: str = "unknown",
         subject_plugin_api_version: str = "1.0",
         subject_plugin_source: str = "unknown",
@@ -142,6 +150,16 @@ class EvolutionStageOrchestrator:
         self.materializer = materializer
         self.baseline = baseline
         self.plan = plan
+        self.evaluation_suite = evaluation_suite
+        self._validate_suite_plan_alignment()
+        if self.artifacts.read_only:
+            self.evaluation_suite_ref = ArtifactRef(
+                digest=stable_digest(evaluation_suite.model_dump(mode="json")),
+                model="EvaluationSuiteManifest",
+            )
+        else:
+            self.evaluation_suite_ref = self.artifacts.put_model(evaluation_suite)
+        self._verify_suite_artifacts()
         self.subject_plugin_name = subject_plugin_name
         self.subject_plugin_api_version = subject_plugin_api_version
         self.subject_plugin_source = subject_plugin_source
@@ -382,8 +400,12 @@ class EvolutionStageOrchestrator:
             return
         if stage == StageName.REVIEW:
             candidate = self._read_input(inputs, "build", CandidateManifest)
-            if cast(ReviewReport, output).candidate_id != candidate.candidate_id:
+            review = cast(ReviewReport, output)
+            if review.candidate_id != candidate.candidate_id:
                 raise StageIntegrityError("Review candidate link mismatch")
+            expected_files = sorted(candidate.workspace_file_digests)
+            if sorted(review.reviewed_files) != expected_files:
+                raise StageIntegrityError("Review did not cover the complete candidate workspace")
             return
         if stage == StageName.EVALUATE:
             candidate = self._read_input(inputs, "build", CandidateManifest)
@@ -395,6 +417,47 @@ class EvolutionStageOrchestrator:
                 or experiment.review_passed != review.passed
             ):
                 raise StageIntegrityError("Experiment candidate or baseline link mismatch")
+            if (
+                experiment.evaluation_suite_ref != self.evaluation_suite_ref
+                or experiment.pre_authority_snapshot is None
+                or experiment.post_authority_snapshot is None
+            ):
+                raise StageIntegrityError("Experiment is missing canonical evaluation authority")
+            expected = self._authority_digests()
+            for snapshot in (experiment.pre_authority_snapshot, experiment.post_authority_snapshot):
+                if (
+                    snapshot.suite_ref != self.evaluation_suite_ref
+                    or snapshot.suite_id != self.evaluation_suite.suite_id
+                    or snapshot.evaluator_version != self.evaluation_suite.evaluator_version
+                    or snapshot.protected_path_digests != expected
+                ):
+                    raise StageIntegrityError("Experiment authority snapshot is not canonical")
+            expected_coordinates = [
+                (case.scenario_id, case.category, seed, repeat_index)
+                for case in (
+                    *self.evaluation_suite.revealing_cases,
+                    *self.evaluation_suite.structural_variants,
+                    *self.evaluation_suite.regression_suites,
+                    *self.evaluation_suite.long_horizon_suites,
+                )
+                for seed in case.seeds
+                for repeat_index in range(case.repeat_count)
+            ]
+            for results in (experiment.baseline_results, experiment.candidate_results):
+                coordinates = [
+                    (item.scenario_id, item.category, item.seed, item.repeat_index)
+                    for item in results
+                ]
+                if coordinates != expected_coordinates:
+                    raise StageIntegrityError("Experiment results do not match suite expansion")
+            self._validate_experiment_evidence(experiment)
+            if (
+                [metric.namespace for metric in experiment.baseline_subject_metrics]
+                != [self.evaluation_suite.subject_metric_namespace]
+                or [metric.namespace for metric in experiment.candidate_subject_metrics]
+                != [self.evaluation_suite.subject_metric_namespace]
+            ):
+                raise StageIntegrityError("Experiment subject metrics are not suite-namespaced")
             return
         if stage == StageName.SELECT:
             result = cast(CycleResult, output)
@@ -507,6 +570,7 @@ class EvolutionStageOrchestrator:
             persisted_candidate = candidate.model_copy(
                 update={
                     "file_digests": file_digests,
+                    "workspace_file_digests": self._workspace_file_digests(candidate),
                     "artifact_digests": {
                         **candidate.artifact_digests,
                         "issue_object": inputs["diagnose"].digest,
@@ -535,12 +599,55 @@ class EvolutionStageOrchestrator:
             if review.candidate_id != candidate.candidate_id:
                 raise StageIntegrityError("Review does not belong to candidate")
             self._verify_candidate_files(candidate)
-            result = self.evaluator.evaluate(
-                baseline=self.baseline,
-                candidate=candidate,
-                trace_directory=self.workspace / "traces" / "evaluation",
-                review_passed=review.passed,
+            before = self._capture_authority()
+            authority_error: Exception | None = None
+            candidate_file_error: Exception | None = None
+            evaluation_error: Exception | None = None
+            outcome: EvaluationOutcome | None = None
+            try:
+                outcome = self.evaluator.evaluate(
+                    baseline=self.baseline,
+                    candidate=candidate,
+                    evaluation_suite=self.evaluation_suite,
+                    trace_directory=self.workspace / "traces" / "evaluation",
+                    review_passed=review.passed,
+                )
+            except Exception as exc:
+                evaluation_error = exc
+            finally:
+                try:
+                    after = self._capture_authority()
+                except Exception as exc:  # pragma: no cover - exercised by hostile evaluators
+                    authority_error = exc
+                try:
+                    self._verify_candidate_files(candidate)
+                except Exception as exc:  # pragma: no cover - exercised by hostile evaluators
+                    candidate_file_error = exc
+            if authority_error is not None:
+                raise StageIntegrityError(
+                    "Evaluation authority changed during evaluation"
+                ) from authority_error
+            if before.protected_path_digests != after.protected_path_digests:
+                raise StageIntegrityError("Evaluation authority changed during evaluation")
+            if candidate_file_error is not None:
+                raise StageIntegrityError(
+                    "Candidate workspace changed during evaluation"
+                ) from candidate_file_error
+            if evaluation_error is not None:
+                raise evaluation_error
+            if outcome is None:
+                raise StageIntegrityError("Evaluator returned no evaluation outcome")
+            result = ExperimentResult(
+                **outcome.model_dump(mode="python"),
+                evaluation_suite_ref=self.evaluation_suite_ref,
+                pre_authority_snapshot=before,
+                post_authority_snapshot=after,
             )
+            # Evaluation has ledger side effects beyond the stage receipt. Validate the
+            # complete root-owned authority envelope before publishing any experiment or
+            # advancing the candidate lifecycle; invoke() validates again before its CAS
+            # pointer is committed.
+            self._validate_stage_output(StageName.EVALUATE, result, inputs)
             self.ledger.add_experiment(result)
             self.ledger.add_candidate(
                 candidate.model_copy(update={"status": CandidateStatus.EVALUATED})
@@ -893,6 +1000,9 @@ class EvolutionStageOrchestrator:
         if stage in {StageName.REVIEW, StageName.EVALUATE, StageName.SELECT}:
             candidate = self._read_input(expected_inputs, "build", CandidateManifest)
             self._verify_candidate_files(candidate)
+        if stage in {StageName.EVALUATE, StageName.SELECT}:
+            self._verify_suite_artifacts()
+            self._authority_digests()
         output_type = _OUTPUT_MODELS[stage]
         output = self.artifacts.read_model(receipt.output_ref, output_type)
         self._validate_stage_output(stage, output, expected_inputs)
@@ -976,6 +1086,186 @@ class EvolutionStageOrchestrator:
     def _ref_for_model(self, model: BaseModel) -> ArtifactRef:
         return self.artifacts.put_model(model)
 
+    def _authority_digests(self) -> dict[str, str]:
+        observed: dict[str, str] = {}
+        for protected in self.evaluation_suite.protected_paths:
+            path = Path(protected.absolute_path)
+            if path.is_symlink() or not path.is_file() or not stat.S_ISREG(path.stat().st_mode):
+                raise StageIntegrityError(
+                    f"Protected evaluation authority is not a regular file: {path}"
+                )
+            try:
+                digest = sha256_bytes(path.read_bytes())
+            except OSError as exc:
+                raise StageIntegrityError(
+                    f"Protected evaluation authority is unreadable: {path}"
+                ) from exc
+            if digest != protected.sha256:
+                raise StageIntegrityError(
+                    f"Protected evaluation authority differs: {protected.logical_name}"
+                )
+            observed[protected.logical_name] = digest
+        return observed
+
+    def _validate_experiment_evidence(self, experiment: ExperimentResult) -> None:
+        if (
+            experiment.pre_authority_snapshot.timestamp > experiment.started_at
+            or experiment.post_authority_snapshot.timestamp < experiment.finished_at
+            or experiment.started_at > experiment.finished_at
+            or experiment.pre_authority_snapshot.timestamp
+            > experiment.post_authority_snapshot.timestamp
+        ):
+            raise StageIntegrityError("Experiment timestamps escape the authority window")
+        total_elapsed = (
+            experiment.post_authority_snapshot.timestamp
+            - experiment.pre_authority_snapshot.timestamp
+        ).total_seconds()
+        if total_elapsed > self.evaluation_suite.total_wall_clock_ceiling_seconds:
+            raise StageIntegrityError("Experiment exceeded the suite wall-clock ceiling")
+        cases: dict[tuple[str, str], EvaluationCase] = {
+            (case.scenario_id, case.category): case
+            for case in (
+                *self.evaluation_suite.revealing_cases,
+                *self.evaluation_suite.structural_variants,
+                *self.evaluation_suite.regression_suites,
+                *self.evaluation_suite.long_horizon_suites,
+            )
+        }
+        seen_run_ids: set[str] = set()
+        for results, generation_id, expected_metrics in (
+            (experiment.baseline_results, self.baseline.generation_id, experiment.baseline_metrics),
+            (experiment.candidate_results, experiment.candidate_id, experiment.candidate_metrics),
+        ):
+            for item in results:
+                if item.run_id in seen_run_ids:
+                    raise StageIntegrityError(f"Experiment reuses run ID {item.run_id}")
+                seen_run_ids.add(item.run_id)
+                try:
+                    record = self.ledger.get_run(item.run_id)
+                except KeyError as exc:
+                    raise StageIntegrityError(
+                        f"Experiment references unknown run {item.run_id}"
+                    ) from exc
+                if (
+                    record.generation_id != generation_id
+                    or record.scenario_id != item.scenario_id
+                    or record.success != item.success
+                    or record.steps != item.steps
+                    or record.interventions != item.interventions
+                    or record.invalid_actions != item.invalid_actions
+                    or record.termination != item.termination
+                    or record.trace_digest != item.trace_digest
+                    or (record.termination == "goal_blocked") != item.blocked
+                    or record.metadata.get("category") != item.category
+                    or record.metadata.get("seed") != item.seed
+                ):
+                    raise StageIntegrityError(f"Experiment result disagrees with run {item.run_id}")
+                if (
+                    record.started_at < experiment.pre_authority_snapshot.timestamp
+                    or record.finished_at > experiment.post_authority_snapshot.timestamp
+                    or record.finished_at < record.started_at
+                    or record.started_at < experiment.started_at
+                    or record.finished_at > experiment.finished_at
+                ):
+                    raise StageIntegrityError(
+                        f"Run falls outside the evaluation authority window: {item.run_id}"
+                    )
+                run_elapsed = (record.finished_at - record.started_at).total_seconds()
+                case = cases[(item.scenario_id, item.category)]
+                # The evaluator uses a monotonic clock around the runner while the
+                # persisted record uses UTC timestamps inside the runner. The elapsed
+                # value must agree within a small scheduling/clock-read tolerance and
+                # both independent measurements must satisfy the frozen case ceiling.
+                if (
+                    run_elapsed > case.per_run_wall_clock_ceiling_seconds
+                    or item.elapsed_seconds > case.per_run_wall_clock_ceiling_seconds
+                    or abs(item.elapsed_seconds - run_elapsed) > 0.05
+                ):
+                    raise StageIntegrityError(
+                        f"Run wall-clock evidence is not canonical: {item.run_id}"
+                    )
+                trace_path = record.metadata.get("trace_path")
+                if (
+                    not isinstance(trace_path, str)
+                    or not Path(trace_path).is_file()
+                    or sha256_bytes(Path(trace_path).read_bytes()) != record.trace_digest
+                ):
+                    raise StageIntegrityError(f"Run trace bytes are not canonical: {item.run_id}")
+            if self._metrics_for_results(results) != expected_metrics:
+                raise StageIntegrityError(
+                    "Evaluator metrics do not match persisted scenario evidence"
+                )
+
+    @staticmethod
+    def _metrics_for_results(results: list[ScenarioResult]) -> MetricVector:
+        def rate(category: str) -> float:
+            selected = [result for result in results if result.category == category]
+            if not selected:
+                return 1.0
+            return sum(result.success for result in selected) / len(selected)
+
+        return MetricVector(
+            revealing_success_rate=rate("revealing"),
+            variant_success_rate=rate("variant"),
+            regression_success_rate=rate("regression"),
+            long_horizon_success_rate=rate("long_horizon"),
+            intervention_count=sum(result.interventions for result in results),
+            invalid_action_count=sum(result.invalid_actions for result in results),
+            blocked_run_count=sum(result.blocked for result in results),
+            average_steps=(
+                sum(result.steps for result in results) / len(results)
+                if results
+                else 0.0
+            ),
+            new_high_severity_issues=0,
+        )
+
+    def _verify_suite_artifacts(self) -> None:
+        references = [
+            self.evaluation_suite.evaluator,
+            *self.evaluation_suite.environment_artifacts.values(),
+        ]
+        try:
+            for reference in references:
+                self.artifacts.read_bytes(reference.digest)
+        except (FileNotFoundError, RuntimeError) as exc:
+            raise ManifestIntegrityError(
+                "Evaluation suite references a missing or corrupt artifact"
+            ) from exc
+        protected_digests = {path.sha256 for path in self.evaluation_suite.protected_paths}
+        if self.evaluation_suite.evaluator.digest not in protected_digests:
+            raise ManifestIntegrityError(
+                "Evaluator artifact is not bound to a protected authority path"
+            )
+
+    def _validate_suite_plan_alignment(self) -> None:
+        suite_ids = {
+            "revealing_cases": [case.scenario_id for case in self.evaluation_suite.revealing_cases],
+            "structural_variants": [
+                case.scenario_id for case in self.evaluation_suite.structural_variants
+            ],
+            "regression_suites": [
+                case.scenario_id for case in self.evaluation_suite.regression_suites
+            ],
+            "long_horizon_suites": [
+                case.scenario_id for case in self.evaluation_suite.long_horizon_suites
+            ],
+        }
+        for field_name, expected in suite_ids.items():
+            if getattr(self.plan, field_name) != expected:
+                raise ManifestIntegrityError(
+                    f"Evaluation suite and evolution plan differ for {field_name}"
+                )
+
+    def _capture_authority(self) -> EvaluationAuthoritySnapshot:
+        self._verify_suite_artifacts()
+        return EvaluationAuthoritySnapshot(
+            suite_ref=self.evaluation_suite_ref,
+            suite_id=self.evaluation_suite.suite_id,
+            evaluator_version=self.evaluation_suite.evaluator_version,
+            protected_path_digests=self._authority_digests(),
+        )
+
     def _candidate_file_digests(self, candidate: CandidateManifest) -> dict[str, str]:
         root = Path(candidate.workspace_path).resolve()
         result: dict[str, str] = {}
@@ -986,6 +1276,27 @@ class EvolutionStageOrchestrator:
             result[relative] = sha256_bytes(path.read_bytes())
         return result
 
+    def _workspace_file_digests(self, candidate: CandidateManifest) -> dict[str, str]:
+        raw_root = Path(candidate.workspace_path)
+        if raw_root.is_symlink():
+            raise StageArtifactError(f"Candidate workspace is a symlink: {raw_root}")
+        root = raw_root.resolve()
+        if not root.is_dir():
+            raise StageArtifactError(f"Candidate workspace is not a regular directory: {root}")
+        result: dict[str, str] = {}
+        for path in sorted(root.rglob("*")):
+            if path.is_symlink():
+                raise StageArtifactError(f"Candidate workspace contains symlink: {path}")
+            relative = path.relative_to(root)
+            if "__pycache__" in relative.parts or path.suffix == ".pyc":
+                continue
+            if path.is_dir():
+                continue
+            if not stat.S_ISREG(path.stat().st_mode):
+                raise StageArtifactError(f"Candidate workspace contains non-regular file: {path}")
+            result[relative.as_posix()] = sha256_bytes(path.read_bytes())
+        return result
+
     def _verify_candidate_files(self, candidate: CandidateManifest) -> None:
         if set(candidate.file_digests) != set(candidate.changed_files):
             raise StageArtifactError("Candidate changed-file digest map is incomplete")
@@ -994,6 +1305,9 @@ class EvolutionStageOrchestrator:
             raise StageArtifactError(
                 f"Candidate changed-file bytes differ after build: {sorted(actual)}"
             )
+        actual_workspace = self._workspace_file_digests(candidate)
+        if actual_workspace != candidate.workspace_file_digests:
+            raise StageArtifactError("Candidate workspace files differ after build")
 
     def _load_or_create_manifest(self) -> tuple[str, CycleManifest]:
         fingerprint = stable_digest(
@@ -1034,6 +1348,10 @@ class EvolutionStageOrchestrator:
                     manifest.plan_digest,
                     stable_digest(self.plan.model_dump(mode="json")),
                 ),
+                "evaluation_suite": (
+                    manifest.evaluation_suite_ref,
+                    self.evaluation_suite_ref,
+                ),
             }
             changed = [name for name, (old, new) in mismatches.items() if old != new]
             if changed:
@@ -1045,7 +1363,7 @@ class EvolutionStageOrchestrator:
         baseline_ref = self._ref_for_model(self.baseline)
         plan_ref = self._ref_for_model(self.plan)
         manifest = CycleManifest(
-            manifest_version="1.0",
+            manifest_version="1.1",
             cycle_id=new_id("cycle"),
             subject=self.subject_plugin_name,
             subject_plugin_api_version=self.subject_plugin_api_version,
@@ -1055,6 +1373,7 @@ class EvolutionStageOrchestrator:
             plan_digest=plan_ref.digest,
             baseline_ref=baseline_ref,
             plan_ref=plan_ref,
+            evaluation_suite_ref=self.evaluation_suite_ref,
             stage_order=StageName.ordered(),
         )
         reference = self.artifacts.put_model(manifest)
@@ -1070,12 +1389,17 @@ class EvolutionStageOrchestrator:
     def _load_canonical_bootstrap(self) -> tuple[GenerationManifest, EvolutionPlan]:
         baseline = self.artifacts.read_model(self.manifest.baseline_ref, GenerationManifest)
         plan = self.artifacts.read_model(self.manifest.plan_ref, EvolutionPlan)
+        suite = self.artifacts.read_model(
+            self.manifest.evaluation_suite_ref, EvaluationSuiteManifest
+        )
         if baseline.generation_id != self.manifest.baseline_generation_id:
             raise ManifestIntegrityError("Manifest baseline reference has the wrong generation")
         if baseline.subject != self.manifest.subject:
             raise ManifestIntegrityError("Manifest baseline reference has the wrong subject")
         if stable_digest(plan.model_dump(mode="json")) != self.manifest.plan_digest:
             raise ManifestIntegrityError("Manifest plan reference failed digest validation")
+        if suite != self.evaluation_suite:
+            raise ManifestIntegrityError("Manifest evaluation suite differs from bootstrap")
         return baseline, plan
 
     def _read_input(self, inputs: dict[str, ArtifactRef], name: str, model: type[Any]) -> Any:
