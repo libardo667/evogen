@@ -23,8 +23,11 @@ Current execution state:
 - Public remote: `https://github.com/libardo667/evogen`
 - Hosted proof: branch run `31439981915` and tag run `31439981992` each passed
   Python 3.11, 3.12, and 3.13 at the exact release commit
-- Goal 7 state: completed in the current bounded goal commit
-- Next unstarted goal: Goal 9
+- Goal 9 state: completed at KAE commit
+  `b8544b88b8c610f2859298308b0adaca290c9ddc`
+- Goal 9 hosted proof: KAE run `31536027613` passed Python 3.11, 3.12,
+  3.13, and 3.14 at the exact completion commit
+- Next unstarted goal: Goal 10
 
 ## 1. What this plan controls
 
@@ -397,8 +400,11 @@ and no real subject imports in core.
 
 ### G09–G13 — Exact KAE export authorities
 
-- G09 inventory is read-first and generates the event disposition map from
-  `SessionLogger.write` source; unmapped source changes fail freshness.
+- G09 is complete at KAE commit
+  `b8544b88b8c610f2859298308b0adaca290c9ddc`. Its read-first inventory
+  generates the event disposition map from `SessionLogger.write` source;
+  unmapped source changes fail freshness. The reviewed authority contains 89
+  event types, 127 producer records, and 16 open boundaries.
 - G10 is a serial logger migration with a concurrency stress test; log sequence
   remains distinct from step and telemetry revision.
 - G11 pairs provenance/config auditors; secrets and unrelated environment are
@@ -670,8 +676,8 @@ goals:
   - {id: G06, repo: [evogen], depends: [G05], profile: role_contract, state: complete, human_gate: []}
   - {id: G07, repo: [evogen], depends: [G06], profile: evaluator_security, state: complete, human_gate: []}
   - {id: G08, repo: [evogen], depends: [G07], profile: conformance, state: complete, human_gate: []}
-  - {id: G09, repo: [kenshi-agent-env], depends: [G08], profile: source_inventory, state: next, human_gate: []}
-  - {id: G10, repo: [kenshi-agent-env], depends: [G09], profile: logger_migration, state: unstarted, human_gate: []}
+  - {id: G09, repo: [kenshi-agent-env], depends: [G08], profile: source_inventory, state: complete, human_gate: []}
+  - {id: G10, repo: [kenshi-agent-env], depends: [G09], profile: logger_migration, state: next, human_gate: []}
   - {id: G11, repo: [kenshi-agent-env], depends: [G10], profile: generation_manifest, state: unstarted, human_gate: []}
   - {id: G12, repo: [kenshi-agent-env], depends: [G11], profile: event_contract, state: unstarted, human_gate: []}
   - {id: G13, repo: [kenshi-agent-env], depends: [G12], profile: generated_manifest, state: unstarted, human_gate: []}
@@ -715,8 +721,8 @@ goals:
 
 ## 16. Immediate next execution packet
 
-The next permitted packet is G09 only. It remains unstarted until the Goal 8
-gate, commit, clean checkpoint ratchet, public push, hosted matrix, and stop are
-complete. Goal 9 begins in `kenshi-agent-env` with a read-only source inventory;
-no KAE source, fixture, logger, protocol, or generated authority belongs in the
-Goal 8 closure commit.
+The next permitted packet is G10 only. It remains unstarted until the Goal 9
+KAE commit, clean checkpoint ratchet, public push, hosted matrix, and this
+central planning ratchet are complete. Goal 10 begins in `kenshi-agent-env`
+with a read-only concurrency and logger-authority audit; no G11 provenance,
+configuration, or generation-manifest change belongs in its logger migration.

@@ -1,4 +1,4 @@
-# Integration checkpoint: subject conformance and doctor
+# Integration checkpoint: KAE session-event disposition inventory
 
 This document is the current repository authority for one bounded integration
 goal. It is replaced in the same commit as every completed goal; Git history
@@ -7,150 +7,105 @@ retains older checkpoints.
 ## Repository and planning authority
 
 ```text
-parent commit          32b7a3ed114f4dfc837fc819fc2885954a79fc8d
-integration branch     main
-current goal           Goal 8 - Add subject conformance kit and doctor command
-next unstarted goal    Goal 9 - Inventory exact KAE export authorities
-alpha source commit    88c169d46e3eaf5c0b0cc87f31e05c95ea9356b4
-alpha release commit   9c8d94c59a95222a719e20fac5a61d2ec712743d
-alpha tag              v0.1.0
-public remote          https://github.com/libardo667/evogen
-plan file              EVOGEN_KENSHI_OPENTTD_BOUNDED_GOALS.md
-plan file id           1IcZkzsjmsdtPqxxj4NxSiKWIBzB8In3D
-plan updated           2026-08-10T21:25:08.835Z
-execution plan         docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
+parent commit                    f53298ff15ca1bfc2c9559c8c77568b153c5649e
+integration branch               main
+current goal                     Goal 9 - Inventory exact KAE export authorities
+next unstarted goal              Goal 10 - Add logger-owned event sequence
+KAE parent commit                a18af271634a767f90a9e9356f1f8bbc50411e8f
+KAE completion commit            b8544b88b8c610f2859298308b0adaca290c9ddc
+KAE-recorded EvoGen counterpart  f53298ff15ca1bfc2c9559c8c77568b153c5649e
+KAE public remote                https://github.com/libardo667/kenshi-agent-env
+KAE hosted run                   31536027613
+alpha release commit             9c8d94c59a95222a719e20fac5a61d2ec712743d
+execution plan                   docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
 ```
 
-Goal 8 began from the reviewed, public Goal 7 closure commit shown as the exact
-`parent commit`. Goal 9 remains unstarted and no Kenshi repository was edited.
+Goal 9 began from clean, synchronized KAE `main` after the complete Goal 8
+EvoGen conformance boundary. This EvoGen commit changes only the durable
+planning ratchet; the implementation and its evidence live in the exact KAE
+completion commit above.
 
 ## Behavioral change and authority
 
-Source-proven:
+Source-proven in KAE:
 
-- subject plugin API 1.1 requires one data-only `SubjectConformanceFixture`
-  factory and a typed `SubjectDoctor.check()` returning
-  `BoundedCollection[SubjectDiagnostic]`; API 1.0 fails closed without a
-  compatibility fallback;
-- `evogen subject list` reads installed entry-point metadata without loading or
-  composing plugins;
-- `evogen subject doctor NAME` loads exactly the requested plugin in disposable
-  storage by default and never falls back to microworld composition;
-- an explicit doctor workspace must be a brand-new path; existing paths,
-  repositories, filesystem roots, home/current directories, direct symlinks,
-  and ancestor symlinks fail before any write;
-- one subject-neutral host runner checks generation manifest authority,
-  generation-bound capability manifests, canonical trajectory ordering,
-  A/B/A scenario isolation, candidate workspace isolation, symmetric frozen
-  evaluation, and retained-generation materialization without stage dispatch;
-- typed reports serialize `status`, `passed`, nonempty structured evidence,
-  exact failure boundary/code, blocked dependencies, and complete diagnostics;
-  missing, unknown, truncated, or nonempty subject diagnostics cannot certify a
-  report;
-- normal discovery, API, load, factory, bootstrap, composition, workspace, and
-  endpoint exceptions use the same typed report shape and nonzero CLI exit;
-- runner evidence is independently bound to requested generation/scenario/seed,
-  regular in-workspace trace bytes, canonical event identity/order, digest,
-  timestamps, and ledger read-back;
-- builder, reviewer, evaluator, and materializer are distinct authorities at
-  both plugin composition and lower-level orchestration boundaries;
-- candidate file inventory and digests are host-recomputed before review and
-  rechecked after reviewer, evaluator, and materializer execution;
-- evaluation binds the canonical suite expansion, baseline/candidate/review
-  identities, ledger records and events, trace bytes, per-run and total timing,
-  suite metric namespace, generic metrics, and independently captured pre/post
-  suite authority;
-- materialization uses the real experiment object and retention policy, verifies
-  protected/CAS authority again afterward, validates a typed generation-bound
-  child capability manifest, and rejects cycle, stage, decision, generation,
-  lineage, or report publication; and
-- generic conformance code imports no Kenshi, OpenTTD, microworld, or demo
-  ontology and contains no game-specific checks or scenario literals.
+- a deterministic AST inventory follows current direct `SessionLogger.write`
+  producers, plan/callback wrappers, operation progress, control-ownership enum
+  values, bound methods, and open string boundaries;
+- the source-derived denominator is 89 event types across 127 producer records
+  and 16 reviewed open boundaries;
+- repeated producers and open boundaries remain in the canonical fingerprint,
+  so a second emission cannot hide behind an unchanged event-name set;
+- a separate reviewed authority assigns every event exactly one disposition:
+  22 exact EvoGen projections, 54 subject-only raw records, 9 derived summaries,
+  and 4 intentionally ignored normalized records;
+- the generated artifact combines the reviewed dispositions, exact producer
+  records, open boundaries, and deterministic content fingerprint;
+- the KAE portable gate regenerates the artifact and rejects stale checked-in
+  bytes; and
+- G09 changes no logger record shape, protocol, runtime behavior, environment,
+  evaluator, fixture, or live installation.
 
-Test-proven:
+The semantic map remains conservative:
 
-- the bundled microworld passes all seven public conformance boundaries with
-  complete-empty diagnostics and structured evidence;
-- deliberately broken public plugin specimens fail at each exact boundary:
-  coherent wrong-generation capability CAS, post-bootstrap capability
-  instability, ignored requested scenario, returned/on-disk isolation
-  divergence, candidate mutation, evaluator identity/timing/namespace forgery,
-  and protected-authority materializer mutation;
-- dependency failures suppress downstream role invocation and report blocked
-  boundaries rather than unrelated failures;
-- outside/symlink traces, forged ledger generations, candidate siblings,
-  post-build mutations, inverted windows, zero elapsed time, total-ceiling
-  violations, and symmetric fake subject namespaces fail closed;
-- existing evolution workspaces and direct/ancestor symlink paths remain
-  byte-identical after doctor refusal;
-- unexpected endpoint failures retain typed JSON and human output;
-- four-way object, authority-ID, and backend alias tests cover direct lower-level
-  orchestrator use; and
-- a fresh doctor creates no cycle/stage/lineage pointer or generation/lineage
-  ledger authority, while the complete persisted microworld cycle still retains
-  the expected candidate.
-
-Generated authority:
-
-- the schema registry and committed schema index include subject conformance
-  fixture, check, diagnostic, and report schemas;
-- generated schemas require nonempty structured check evidence, typed bounded
-  diagnostics, and serialized report status; and
-- schema freshness covers every new public model.
-
-Not proven:
-
-- the conformance kit is not an operating-system sandbox; subject code executes
-  in the EvoGen process and can inspect ambient process/filesystem state;
-- pre/post hashing cannot detect a hostile component that mutates and restores
-  authority entirely between snapshots;
-- timing violations fail after a role returns; the doctor does not hard-kill a
-  hung runner or evaluator subprocess;
-- a subject-supplied fixture identifies opaque scenarios and typed builder
-  inputs; passing still depends on host-observed behavior and does not prove the
-  fixture is representative of every subject behavior;
-- no Kenshi or OpenTTD subject is installed, registered, controlled, or
-  live-proven by this goal; and
-- OpenTTD installation availability remains only the prior host observation,
-  not pinned-source or subject-conformance evidence.
+- `planner_context_prepared` is not an exact affordance set;
+- input-boundary records need an action/target join before exact binding;
+- continuity and fieldbook receipts need status-aware interpretation before a
+  memory update can be projected;
+- `world_state_update` is observation-delta metadata, not a complete effect;
+- plan, option, affordance, and run success do not prove a goal/world effect;
+  and
+- current KAE outer events prove neither native dispatch nor `goal_blocked` nor
+  `goal_achieved`.
 
 ## Verification and independent review
 
-The local and CI authority remains:
+Root verification passed the final KAE portable gate:
 
 ```bash
-uv run --frozen --extra dev python scripts/verify.py
+UV_CACHE_DIR=/tmp/kae-uv-cache \
+RUFF_CACHE_DIR=/tmp/kae-ruff-cache \
+MYPY_CACHE_DIR=/tmp/kae-mypy-cache \
+./dev verify-portable
 ```
 
-Before checkpoint refresh, root verification passed the focused conformance,
-subject-plugin, CLI, schema, probe, and four-way policy suites; repository-wide
-Ruff; strict mypy over 47 source files; schema freshness; doctor JSON/human
-smokes; the retained microworld demo; and whitespace checks. The complete suite
-had only the expected checkpoint-freshness failure.
+That gate covered locked dependency sync, Ruff, strict mypy over 150 source
+files, research validation, event-map/schema/document generation, the complete
+pytest suite, and whitespace checks.
 
-Faraday audited plugin API migration, error taxonomy, scratch safety, public
-specimens, authority separation, docs, and genericity. Nightingale attacked
-trace identity, A/B/A isolation, evaluator/ledger binding, timing, namespaces,
-authority snapshots, materialization, CLI output, and workspace symlinks. Both
-initially rejected the candidate with reproducible passing forgeries; Franklin
-repaired them on the Luna model. After root added full pre/post suite identity
-and authority-window validation, Faraday and Nightingale independently returned
-final PASS verdicts. Candidate-author diagnostics were not used as
-certification.
+Raman independently reviewed all semantic dispositions against their KAE
+payload producers and current EvoGen meanings. Lovelace and Gauss attacked the
+source denominator and freshness logic. Their initial reviews found real
+mixed-condition, malformed/splatted, duplicate-open-sink, function-default,
+annotated-enum, bound-method, destructured, and dynamic-`getattr` escapes. The
+root repaired each one, explicitly named the existing bound callback into
+`OperationMonitor`, and returned the candidate for re-review.
 
-The first sandboxed authoritative-gate attempt reached the isolated wheel build
-and failed DNS resolution for pinned `setuptools==80.9.0`. The authorized rerun
-resolved that dependency and passed compile, Ruff, strict mypy, fresh wheel
-build and entry-point inspection, the entire checkpoint-fresh suite, the
-retained microworld demo, and whitespace checks.
+Final independent verification reported:
+
+```text
+focused tests       29 passed
+full pytest         1686 passed, 2 xfailed
+Ruff                passed
+strict mypy         150 source files passed
+generated bytes     exact match
+git diff --check    passed
+```
+
+The KAE completion commit passes hosted run
+`https://github.com/libardo667/kenshi-agent-env/actions/runs/31536027613` on
+Python 3.11, 3.12, 3.13, and 3.14. Candidate-author diagnostics were not used
+as certification.
 
 ## Completion boundary
 
-This checkpoint is part of the Goal 8 closure candidate. Goal 8 is complete only
-after the authoritative dirty-candidate gate passes with this checkpoint, the
-final diff is committed, the clean-state checkpoint ratchet passes, the tree is
-clean and synchronized with the public remote, and the hosted Python 3.11, 3.12,
-and 3.13 matrix is green.
+Goal 9 is complete at KAE commit
+`b8544b88b8c610f2859298308b0adaca290c9ddc`. This planning-ratchet candidate is
+complete only after EvoGen verification, commit, clean checkpoint mode, public
+push, and hosted Python 3.11-3.13 matrix are green.
 
-Goal 9 is the sole next packet and remains unstarted. No KAE inventory or source
-change may be smuggled into this conformance commit.
+Goal 10 is the sole next packet. It remains unstarted here. Goal 10 owns the
+logger-serialized event sequence and concurrency stress proof while keeping log
+sequence distinct from environment step index and telemetry revision. No Goal
+11 provenance/configuration or generation-manifest work is authorized in that
+slice.
