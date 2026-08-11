@@ -8,6 +8,11 @@ from typing import Any
 from evogen.core.enums import EventKind
 from evogen.core.ids import new_id
 from evogen.core.models import TrajectoryEvent
+from evogen.trace.io import (
+    TrajectoryRecordMode,
+    classify_trajectory_record,
+    parse_trajectory_event_record,
+)
 
 _RAW_KIND_MAP: dict[str, EventKind] = {
     "run_started": EventKind.RUN_STARTED,
@@ -56,6 +61,9 @@ class KenshiJsonlAdapter:
     ) -> list[TrajectoryEvent]:
         resolved_run_id = run_id or new_id("kae-run")
         events: list[TrajectoryEvent] = []
+        observed_mode: TrajectoryRecordMode | None = None
+        normalized_source_run_ids: set[str] = set()
+        normalized_event_ids: set[str] = set()
         with source.open("r", encoding="utf-8") as handle:
             for line_number, line in enumerate(handle, start=1):
                 stripped = line.strip()
@@ -67,12 +75,39 @@ class KenshiJsonlAdapter:
                     raise ValueError(f"Invalid JSON at {source}:{line_number}: {exc}") from exc
                 if not isinstance(raw, dict):
                     raise ValueError(f"Expected object at {source}:{line_number}")
-                if _already_normalized(raw):
-                    normalized = TrajectoryEvent.model_validate(raw)
+                try:
+                    mode = classify_trajectory_record(raw)
+                except ValueError as exc:
+                    raise ValueError(f"Invalid event at {source}:{line_number}: {exc}") from exc
+                if observed_mode is not None and mode != observed_mode:
+                    raise ValueError(
+                        f"Invalid event at {source}:{line_number}: mixed KAE record modes; "
+                        f"observed {observed_mode}, found {mode}"
+                    )
+                observed_mode = mode
+                if mode in {"alpha", "current"}:
+                    try:
+                        normalized = parse_trajectory_event_record(raw)
+                    except ValueError as exc:
+                        raise ValueError(
+                            f"Invalid normalized event at {source}:{line_number}: {exc}"
+                        ) from exc
                     if normalized.generation_id != generation_id:
                         normalized = normalized.model_copy(
                             update={"generation_id": generation_id}
                         )
+                    normalized_source_run_ids.add(normalized.run_id)
+                    if len(normalized_source_run_ids) > 1:
+                        raise ValueError(
+                            f"Invalid event at {source}:{line_number}: normalized source "
+                            f"contains multiple run IDs {sorted(normalized_source_run_ids)}"
+                        )
+                    if normalized.event_id in normalized_event_ids:
+                        raise ValueError(
+                            f"Invalid event at {source}:{line_number}: duplicate normalized "
+                            f"event_id {normalized.event_id!r}"
+                        )
+                    normalized_event_ids.add(normalized.event_id)
                     if normalized.scenario_id != scenario_id:
                         normalized = normalized.model_copy(update={"scenario_id": scenario_id})
                     if run_id is not None and normalized.run_id != resolved_run_id:
@@ -92,22 +127,36 @@ class KenshiJsonlAdapter:
                 if not isinstance(payload, dict):
                     payload = {}
                 normalized_payload = {**payload, "raw": raw}
-                sequence = _sequence(raw, fallback=len(events))
+                try:
+                    world_revision = _world_revision(raw)
+                    source_event_id = _source_id(raw)
+                    source_sequence = _source_sequence(raw)
+                    source_step_index = _source_step_index(raw)
+                except ValueError as exc:
+                    raise ValueError(
+                        f"Malformed KAE source metadata at {source}:{line_number}: {exc}"
+                    ) from exc
                 events.append(
                     TrajectoryEvent(
-                        event_id=str(raw.get("event_id") or raw.get("id") or new_id("kae-evt")),
+                        envelope_version="1.0",
+                        event_id=new_id("kae-evt"),
                         run_id=resolved_run_id,
                         generation_id=generation_id,
                         scenario_id=scenario_id,
-                        sequence=sequence,
+                        sequence=len(events),
                         recorded_at=_timestamp(raw),
                         kind=kind,
-                        world_revision=_world_revision(raw),
+                        world_revision=world_revision,
+                        source_event_type=raw_kind,
+                        source_event_id=source_event_id,
+                        source_sequence=source_sequence,
+                        source_step_index=source_step_index,
+                        source_world_revision=world_revision,
                         payload=normalized_payload,
                     )
                 )
-        events.sort(key=lambda event: (event.sequence, event.event_id))
-        _assert_unique_sequences(events)
+        _assert_strictly_increasing_sequences(events)
+        _assert_single_run(events)
         return events
 
     def convert_to_file(
@@ -125,19 +174,6 @@ class KenshiJsonlAdapter:
         return events
 
 
-def _already_normalized(raw: dict[str, Any]) -> bool:
-    required = {
-        "event_id",
-        "run_id",
-        "generation_id",
-        "scenario_id",
-        "sequence",
-        "kind",
-        "payload",
-    }
-    return required.issubset(raw)
-
-
 def _raw_kind(raw: dict[str, Any]) -> str:
     for key in ("event_type", "type", "kind", "name"):
         value = raw.get(key)
@@ -146,12 +182,35 @@ def _raw_kind(raw: dict[str, Any]) -> str:
     return "unknown"
 
 
-def _sequence(raw: dict[str, Any], *, fallback: int) -> int:
-    for key in ("sequence", "event_sequence", "index", "step_index"):
-        value = raw.get(key)
-        if isinstance(value, int) and value >= 0:
+def _source_sequence(raw: dict[str, Any]) -> int | None:
+    for key in ("event_sequence", "sequence", "index"):
+        if key not in raw or raw[key] is None:
+            continue
+        value = raw[key]
+        if isinstance(value, int) and not isinstance(value, bool):
             return value
-    return fallback
+        raise ValueError(f"{key} must be an integer or null")
+    return None
+
+
+def _source_step_index(raw: dict[str, Any]) -> int | None:
+    if "step_index" not in raw or raw["step_index"] is None:
+        return None
+    value = raw["step_index"]
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    raise ValueError("step_index must be an integer or null")
+
+
+def _source_id(raw: dict[str, Any]) -> str | None:
+    for key in ("event_id", "id"):
+        if key not in raw or raw[key] is None:
+            continue
+        value = raw[key]
+        if isinstance(value, (str, int)) and not isinstance(value, bool):
+            return str(value)
+        raise ValueError(f"{key} must be a string, integer, or null")
+    return None
 
 
 def _timestamp(raw: dict[str, Any]) -> datetime:
@@ -168,23 +227,36 @@ def _timestamp(raw: dict[str, Any]) -> datetime:
 
 def _world_revision(raw: dict[str, Any]) -> str | None:
     for key in ("world_revision", "telemetry_sequence", "revision"):
-        value = raw.get(key)
-        if isinstance(value, (str, int)):
+        if key not in raw or raw[key] is None:
+            continue
+        value = raw[key]
+        if isinstance(value, (str, int)) and not isinstance(value, bool):
             return str(value)
+        raise ValueError(f"{key} must be a string, integer, or null")
     payload = raw.get("payload")
     if isinstance(payload, dict):
         for key in ("world_revision", "telemetry_sequence", "revision"):
-            value = payload.get(key)
-            if isinstance(value, (str, int)):
+            if key not in payload or payload[key] is None:
+                continue
+            value = payload[key]
+            if isinstance(value, (str, int)) and not isinstance(value, bool):
                 return str(value)
+            raise ValueError(f"payload.{key} must be a string, integer, or null")
     return None
 
 
-def _assert_unique_sequences(events: list[TrajectoryEvent]) -> None:
-    seen: set[int] = set()
+def _assert_strictly_increasing_sequences(events: list[TrajectoryEvent]) -> None:
+    previous: int | None = None
     for event in events:
-        if event.sequence in seen:
+        if previous is not None and event.sequence <= previous:
             raise ValueError(
-                f"Converted KAE trajectory contains duplicate sequence {event.sequence}"
+                "Converted KAE trajectory contains non-increasing normalized sequence "
+                f"{event.sequence} after {previous}"
             )
-        seen.add(event.sequence)
+        previous = event.sequence
+
+
+def _assert_single_run(events: list[TrajectoryEvent]) -> None:
+    run_ids = {event.run_id for event in events}
+    if len(run_ids) > 1:
+        raise ValueError(f"Converted KAE trajectory contains multiple run IDs: {sorted(run_ids)}")

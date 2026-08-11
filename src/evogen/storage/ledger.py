@@ -16,6 +16,7 @@ from evogen.core.models import (
     RunRecord,
     TrajectoryEvent,
 )
+from evogen.trace.io import parse_trajectory_event_json
 
 _ModelT = TypeVar("_ModelT", bound=BaseModel)
 
@@ -165,10 +166,37 @@ class Ledger:
 
     def add_run(self, record: RunRecord, events: Iterable[TrajectoryEvent]) -> None:
         event_list = list(events)
+        seen_event_ids: set[str] = set()
+        previous_sequence: int | None = None
+        for event in event_list:
+            if event.run_id != record.run_id:
+                raise ValueError(
+                    f"Event {event.event_id!r} belongs to run {event.run_id!r}, "
+                    f"not {record.run_id!r}"
+                )
+            if event.generation_id != record.generation_id:
+                raise ValueError(
+                    f"Event {event.event_id!r} belongs to generation {event.generation_id!r}, "
+                    f"not {record.generation_id!r}"
+                )
+            if event.scenario_id != record.scenario_id:
+                raise ValueError(
+                    f"Event {event.event_id!r} belongs to scenario {event.scenario_id!r}, "
+                    f"not {record.scenario_id!r}"
+                )
+            if event.event_id in seen_event_ids:
+                raise ValueError(f"Duplicate event ID {event.event_id!r} in run")
+            if previous_sequence is not None and event.sequence <= previous_sequence:
+                raise ValueError(
+                    f"Run events must have strictly increasing sequence values; "
+                    f"got {event.sequence} after {previous_sequence}"
+                )
+            seen_event_ids.add(event.event_id)
+            previous_sequence = event.sequence
         with self.connect() as connection:
             connection.execute(
                 """
-                INSERT OR REPLACE INTO runs(
+                INSERT INTO runs(
                     run_id, generation_id, scenario_id, finished_at, record_json
                 ) VALUES (?, ?, ?, ?, ?)
                 """,
@@ -182,7 +210,7 @@ class Ledger:
             )
             connection.executemany(
                 """
-                INSERT OR REPLACE INTO events(
+                INSERT INTO events(
                     event_id, run_id, sequence, kind, event_json
                 ) VALUES (?, ?, ?, ?, ?)
                 """,
@@ -229,7 +257,7 @@ class Ledger:
         )
         with self.connect() as connection:
             rows = connection.execute(sql, ids).fetchall()
-        return [self._parse(TrajectoryEvent, row["event_json"]) for row in rows]
+        return [parse_trajectory_event_json(row["event_json"]) for row in rows]
 
     def add_issue(self, issue: CapabilityIssue) -> None:
         with self.connect() as connection:

@@ -1,0 +1,4 @@
+{"event_type":"native_command","event_id":"duplicate-source","event_sequence":99,"sequence":10,"index":1,"step_index":7,"world_revision":42,"payload":{"command":"open"}}
+{"event_type":"action_result","id":"duplicate-source","event_sequence":1,"sequence":20,"index":2,"step_index":7,"telemetry_sequence":43,"payload":{"accepted":true,"executed":true}}
+{"event_type":"world_state_update","event_id":"outcome-source","sequence":0,"step_index":7,"payload":{"revision":44,"state":"open"}}
+{"event_type":"observation","event_id":"observation-source","index":77,"step_index":7,"payload":{"state":"open"}}

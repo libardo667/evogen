@@ -39,8 +39,14 @@ kenshi-agent-env
 The included `KenshiJsonlAdapter` is intentionally modest. It maps a conservative
 alias vocabulary and preserves every original event under `payload.raw`. Unknown
 event kinds are skipped or rejected; they are not laundered into outcome proof.
-A production KAE adapter should live close to KAE's current event models and emit
-EvoGen events directly.
+Known raw events receive fresh, distinct EvoGen event IDs, even when source IDs
+are duplicated. Raw records are emitted in accepted file encounter order with
+contiguous EvoGen sequences (`0..n-1`); source sequence and step values are
+retained as provenance and never used to sort events. Source event type, ID, and
+world revision preserve the selected raw metadata (including payload revision
+fallbacks), while dispatch, execution receipt, and later outcome observations
+remain separate events. A production KAE adapter should live close to KAE's
+current event models and emit EvoGen events directly.
 
 ## Historical-case corpus
 

@@ -60,8 +60,15 @@ artifacts may all alter behavior.
 
 ### TrajectoryEvent
 
-An append-only normalized event. The event owns run, generation, scenario,
-sequence, timestamp, world revision, kind, and payload.
+An append-only normalized event with envelope version `1.0`. The event owns run,
+generation, scenario, and an EvoGen-owned `sequence`: the unique, strictly
+monotonic normalized order within a run. Source systems may provide independent
+provenance (`source_event_type`, `source_event_id`, `source_sequence`,
+`source_step_index`, and `source_world_revision`), but those fields never define
+normalized order. `world_revision` remains the normalized correlation field;
+source provenance is nullable when unavailable. The alpha JSONL reader upgrades
+unversioned records only when all six new envelope/provenance fields are absent;
+partially migrated records are rejected.
 
 ### CapabilityManifest
 

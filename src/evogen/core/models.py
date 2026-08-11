@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, Literal, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
 
 from .enums import (
     AgentRole,
@@ -128,14 +128,20 @@ class RunRecord(StrictModel):
 
 
 class TrajectoryEvent(StrictModel):
+    envelope_version: Literal["1.0"]
     event_id: str
     run_id: str
     generation_id: str
     scenario_id: str
-    sequence: int = Field(ge=0)
+    sequence: StrictInt = Field(ge=0)
     recorded_at: datetime = Field(default_factory=utc_now)
     kind: EventKind
     world_revision: str | None = None
+    source_event_type: str | None
+    source_event_id: str | None
+    source_sequence: StrictInt | None
+    source_step_index: StrictInt | None
+    source_world_revision: str | None
     payload: dict[str, Any] = Field(default_factory=dict)
 
 

@@ -25,6 +25,11 @@
   },
   "additionalProperties": false,
   "properties": {
+    "envelope_version": {
+      "const": "1.0",
+      "title": "Envelope Version",
+      "type": "string"
+    },
     "event_id": {
       "title": "Event Id",
       "type": "string"
@@ -59,6 +64,61 @@
       "title": "Sequence",
       "type": "integer"
     },
+    "source_event_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Source Event Id"
+    },
+    "source_event_type": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Source Event Type"
+    },
+    "source_sequence": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Source Sequence"
+    },
+    "source_step_index": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Source Step Index"
+    },
+    "source_world_revision": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Source World Revision"
+    },
     "world_revision": {
       "anyOf": [
         {
@@ -73,12 +133,18 @@
     }
   },
   "required": [
+    "envelope_version",
     "event_id",
     "run_id",
     "generation_id",
     "scenario_id",
     "sequence",
-    "kind"
+    "kind",
+    "source_event_type",
+    "source_event_id",
+    "source_sequence",
+    "source_step_index",
+    "source_world_revision"
   ],
   "title": "TrajectoryEvent",
   "type": "object"

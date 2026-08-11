@@ -1,4 +1,4 @@
-# Integration checkpoint: versioned subject plugin boundary
+# Integration checkpoint: versioned trajectory identity
 
 This document is the current repository authority for one bounded integration
 goal. It is replaced in the same commit as every completed goal; Git history
@@ -7,10 +7,10 @@ retains older checkpoints.
 ## Repository and planning authority
 
 ```text
-parent commit          f924dcee37b0a5e67bf667385e132796ce5bf505
+parent commit          8f567cf84ce4de9998b4a652964bdbb98da0e49a
 integration branch     main
-current goal           Goal 2 - Give subjects a real plugin boundary
-next unstarted goal    Goal 3 - Fix trajectory identity before importing real logs
+current goal           Goal 3 - Fix trajectory identity before importing real logs
+next unstarted goal    Goal 4 - Make the evolution cycle resumable
 alpha source commit    88c169d46e3eaf5c0b0cc87f31e05c95ea9356b4
 alpha release commit   9c8d94c59a95222a719e20fac5a61d2ec712743d
 alpha tag              v0.1.0
@@ -21,61 +21,77 @@ plan updated           2026-08-10T21:25:08.835Z
 execution plan         docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
 ```
 
-Goal 2 began from the published planning commit named by `parent commit`. The
-alpha remains anchored at the release commit and tag above; this goal changes
-subject composition and packaging authority without changing the deterministic
-microworld environment, evaluator, candidate, or retention outcome.
+Goal 3 began from the reviewed Goal 2 commit named by `parent commit`. The alpha
+release remains anchored above. This goal changes trajectory identity,
+provenance, parsing, and persistence authority without changing the microworld
+environment, evaluator, candidate implementation, selection rule, or retention
+outcome.
 
 ## Behavioral change and authority
 
 Source-proven:
 
-- `evogen.adapters.subjects` owns the versioned `SubjectPlugin` 1.0 contract
-  and discovers installed subjects only from the `evogen.subjects` Python
-  entry-point group;
-- the contract preserves the existing runner, investigator, builder, reviewer,
-  evaluator, and materializer protocols, adds a minimal doctor protocol, and
-  requires a subject-neutral baseline/plan bootstrap factory;
-- all factories receive one shared workspace/artifact/ledger context, and the
-  evaluator and materializer use the exact runner supplied to the orchestrator;
-- missing, duplicate, malformed, failing, mismatched, and incompatible plugins
-  fail closed through typed errors, with no built-in registry or import fallback;
-- the bundled microworld is registered in installed distribution metadata and
-  `evogen demo` reaches it through the same public loader available to a
-  separately installed subject;
-- generic source contains no microworld imports, while generated capability
-  files remain a separate subject-owned runtime boundary; and
-- recursive `--clean` refuses roots, home/current directories, repositories,
-  files, and unrecognized directories instead of deleting an arbitrary path.
+- `TrajectoryEvent` is a strict normalized envelope at version `1.0`; all new
+  records carry five required nullable source fields for event type, event ID,
+  source sequence, source step index, and source world revision;
+- EvoGen `sequence` is a strict nonnegative integer owned by the normalized run,
+  while subject sequence and step remain provenance and never establish EvoGen
+  identity or ordering;
+- `TrajectoryRecorder` emits complete current envelopes and retains dispatch,
+  execution receipt, later outcome observation, and ordinary observation as
+  separate events;
+- `KenshiJsonlAdapter` gives accepted raw records contiguous encounter-order
+  EvoGen sequences and distinct generated event IDs, even when source IDs or
+  source steps repeat, while preserving the exact raw object under
+  `payload.raw`;
+- normalized JSONL is homogeneous: alpha/current mixing, normalized/raw mixing,
+  duplicate normalized event IDs, non-increasing sequence, and multiple source
+  runs fail closed with location context;
+- the explicit alpha compatibility reader upgrades only wholly unversioned
+  records, leaves unavailable source provenance null, and rejects partial or
+  unsupported envelopes;
+- source sequence and step accept exact integers only; source IDs and revisions
+  accept strings or integers excluding booleans; malformed present provenance
+  is rejected rather than coerced, hidden as missing, or replaced by a
+  lower-precedence alias; and
+- ledger run/event writes validate run, generation, scenario, event identity,
+  and monotonic order, then insert transactionally without replacement. Old
+  alpha event JSON remains readable through the same compatibility boundary.
 
 Test-proven:
 
-- all eight factories are exercised for missing/non-callable attributes,
-  exceptions, wrong result shapes, shared context, runner identity, malformed
-  bootstrap data, and subject mismatch;
-- real temporary `.dist-info` metadata proves discovery without monkeypatching
-  the metadata API, while no-metadata and duplicate-metadata cases fail closed;
-- the generic import-isolation ratchet passes; and
-- the microworld still produces exact baseline rates of 0% revealing, 0%
-  variant, 100% regression, and 0% long-horizon with five blocked runs, followed
-  by 100% candidate success in all four suites, zero blocked runs, and `retain`.
+- a four-event fixture at one subject step preserves dispatch, receipt, outcome,
+  and later observation order as EvoGen sequences `0..3` while retaining
+  out-of-order source sequences, exact source metadata, duplicate source IDs,
+  and distinct normalized event IDs;
+- physical alpha normalized fixtures upgrade without inventing source metadata;
+- direct model and reader tests reject unsupported, partial, mixed, duplicate,
+  multi-run, nonmonotonic, coercible, and negative normalized identities;
+- malformed source booleans, floats, strings, and containers fail closed, and a
+  malformed higher-precedence revision cannot fall through to payload data;
+- payload omission remains consistent across the model, generated schema,
+  current reader, and alpha reader, defaulting only the generic payload object;
+- ledger collision and wrong-context tests preserve transaction atomicity and
+  prove failed writes leave no partial evidence; and
+- the historical missing-close fixture still normalizes, distills, and produces
+  the same evidence-backed affordance-discovery diagnosis.
 
-Built and portable evidence:
+Generated authority:
 
-- setuptools `80.9.0` is exact in both build authority and the locked dev
-  environment;
-- a fresh CPython 3.12 environment and empty uv cache resolved the frozen lock,
-  built the wheel, and verified the exact `evogen.subjects` metadata before the
-  expected dirty-checkpoint stop; and
-- an independent verifier installed the candidate wheel outside the checkout,
-  discovered `microworld`, and reproduced the exact retention result.
+- `schemas/trajectory-event.schema.json` is regenerated from the Pydantic model;
+  its freshness test owns the projection; and
+- the schema requires envelope version and all five nullable source fields while
+  preserving the existing optional payload contract.
 
 Not proven:
 
-- Kenshi or OpenTTD is registered as a subject plugin;
-- the minimal doctor factory performs the conformance checks owned by Goal 8;
-- the evolution cycle can resume stage-by-stage across processes; or
-- any generated candidate has changed either game or passed live evaluation.
+- the modest KAE alias vocabulary matches current Kenshi Agent Environment log
+  authority or can import a current real run without a subject-owned adapter;
+- skipped unknown non-strict KAE records provide a complete source trajectory;
+- a receipt or normalized world revision proves any live game effect;
+- evolution stages can resume across processes or hash mismatches, which remains
+  Goal 4; or
+- OpenTTD or Kenshi is registered, controlled, or live-proven as a subject.
 
 ## Verification and independent review
 
@@ -85,26 +101,23 @@ The one local and CI authority remains:
 uv run --frozen --extra dev python scripts/verify.py
 ```
 
-It compiles source and tests, runs Ruff and strict mypy, builds a wheel and
-checks its exact entry-point metadata, runs the complete pytest suite including
-schema/checkpoint/goal-queue freshness, executes the full microworld cycle in a
-temporary workspace, and checks whitespace errors.
+Before checkpoint refresh, 96 non-checkpoint tests passed together with Ruff,
+strict mypy, schema freshness, and whitespace checks. The focused trajectory,
+KAE, ledger, schema, and model surface passed 33 tests in the final independent
+replay. With this checkpoint present, the authoritative dirty-candidate gate
+passed compile, Ruff, strict mypy, a fresh wheel build and entry-point metadata
+check, all 97 tests, the exact retained microworld cycle, and whitespace checks.
+The checkpoint ratchet is rerun once more from the clean commit.
 
-Before the checkpoint update, 67 non-checkpoint tests passed. The focused
-subject-plugin module contributed 47 tests. Independent verification also
-passed the installed-wheel demo outside the checkout. After this checkpoint
-advanced the queue to Goal 3, the complete dirty-candidate gate passed with 68
-tests, the pinned wheel build and metadata check, exact microworld retention,
-and no Ruff, mypy, freshness, or whitespace failure.
-
-Pre-write authority and falsifier design were delegated read-only. A separate
-Luna writer produced the candidate without checkpoint or commit authority.
-Independent adversarial review rejected its first form for an optional hidden
-bootstrap dependency, unsafe generic cleanup, speculative public aliases,
-incomplete durable falsifiers, and a warm-cache-only wheel gate. Those findings
-were re-delegated, corrected, and independently rechecked. The final adversarial
-handback reported no blocking findings. Candidate-author diagnostics were not
-used as certification.
+Pre-write authority mapping and adversarial fixture design were delegated to two
+read-only Luna agents. A separate Luna writer produced the candidate without
+checkpoint or commit authority. Independent adversarial review rejected the
+first candidate for mixed-envelope acceptance, duplicate normalized IDs,
+multi-run laundering, malformed provenance coercion, normalized-sequence
+coercion, and a model/schema/parser requiredness mismatch. Each finding was
+re-delegated with a durable falsifier. The independent reviewer replayed every
+failure after correction and returned an explicit pass with no remaining G03
+blocker. Candidate-author diagnostics were not used as certification.
 
 ## External subject availability
 
@@ -119,11 +132,12 @@ upstream source, configured for headless execution, or accepted as a subject.
 
 ## Completion boundary
 
-This checkpoint is part of the coherent Goal 2 candidate. Goal 2 is complete
+This checkpoint is part of the coherent Goal 3 candidate. Goal 3 is complete
 only after the authoritative gate passes with this dirty checkpoint, the final
 diff is reviewed and committed, the clean-state checkpoint ratchet passes, and
-the tree is clean. No Goal 3 implementation has begun.
+the tree is clean and synchronized with the public remote.
 
-`EvolutionOrchestrator.run()` intentionally remains the alpha's synchronous
-one-shot composition. Goal 2 changes how subject behavior reaches it; Goal 4
-still owns persisted, independently invokable, resumable stages.
+Goal 4 is the sole next packet and remains unstarted. `TrajectoryRecorder`
+rejects a reopened trace that appends a second sequence zero when it is read;
+persisted cross-process writer/resume ownership belongs to Goal 4 and must not be
+smuggled into this identity commit.
