@@ -27,7 +27,13 @@ Current execution state:
   `b8544b88b8c610f2859298308b0adaca290c9ddc`
 - Goal 9 hosted proof: KAE run `31536027613` passed Python 3.11, 3.12,
   3.13, and 3.14 at the exact completion commit
-- Next unstarted goal: Goal 10
+- Goal 10 state: completed at KAE commit
+  `7e25459c992572b0f102297420f7117fbc2146d7`
+- Goal 11 state: completed at KAE commit
+  `bfaa4d55ae10a34d33e7a06ee3959fc6659eceb4`
+- Goal 11 hosted proof: KAE run `31542719034` passed the portable gate on
+  Python 3.11, 3.12, 3.13, and 3.14 at the exact completion commit
+- Next unstarted goal: Goal 12
 
 ## 1. What this plan controls
 
@@ -410,8 +416,15 @@ and no real subject imports in core.
   adds a run-local, append-safe event sequence under the physical write lock;
   a 1,024-write concurrency stress test proves ordered identities with no loss
   while step and telemetry revision remain distinct.
-- G11 pairs provenance/config auditors; secrets and unrelated environment are
-  negative fixtures.
+- G11 is complete at KAE commit
+  `bfaa4d55ae10a34d33e7a06ee3959fc6659eceb4`. Its read-only manifest command
+  records stable source, lock, model, prompt/corpus, redacted config, protocol,
+  schema, operation, proof, memory, scenario/start, Kenshi, and independent
+  native-binary evidence. Mutation falsifiers cover every source-plan trigger;
+  secrets and unrelated environment are negative fixtures. The output parses
+  as EvoGen's current `GenerationManifest`, while its native-capability digest
+  remains explicitly provisional until G13 rather than claiming subject
+  conformance early. Hosted run `31542719034` passed Python 3.11–3.14.
 - G12 captures the planner-visible offer set at the authoritative enumeration
   boundary, not by prompt parsing.
 - G13 derives the capability manifest from existing KAE registries/protocol and
@@ -681,8 +694,8 @@ goals:
   - {id: G08, repo: [evogen], depends: [G07], profile: conformance, state: complete, human_gate: []}
   - {id: G09, repo: [kenshi-agent-env], depends: [G08], profile: source_inventory, state: complete, human_gate: []}
   - {id: G10, repo: [kenshi-agent-env], depends: [G09], profile: logger_migration, state: complete, human_gate: []}
-  - {id: G11, repo: [kenshi-agent-env], depends: [G10], profile: generation_manifest, state: next, human_gate: []}
-  - {id: G12, repo: [kenshi-agent-env], depends: [G11], profile: event_contract, state: unstarted, human_gate: []}
+  - {id: G11, repo: [kenshi-agent-env], depends: [G10], profile: generation_manifest, state: complete, human_gate: []}
+  - {id: G12, repo: [kenshi-agent-env], depends: [G11], profile: event_contract, state: next, human_gate: []}
   - {id: G13, repo: [kenshi-agent-env], depends: [G12], profile: generated_manifest, state: unstarted, human_gate: []}
   - {id: G14, repo: [kenshi-agent-env, evogen], depends: [G13], profile: cross_repo_adapter, state: unstarted, human_gate: []}
   - {id: G15, repo: [kenshi-agent-env], depends: [G14], profile: subject_plugin, state: unstarted, human_gate: []}
@@ -724,9 +737,20 @@ goals:
 
 ## 16. Immediate next execution packet
 
-The next permitted packet is G11 only. It remains unstarted until the Goal 10
+The next permitted packet is G12 only. It remains unstarted until the Goal 11
 KAE commit, clean checkpoint, public push, hosted Python matrix, and this
-central planning ratchet are complete. Goal 11 begins in `kenshi-agent-env`
-with paired provenance and effective-configuration audits. Secrets and
-unrelated environment remain negative fixtures; no G12 affordance-event or
-G14 exporter work belongs in its generation-manifest slice.
+central planning ratchet are complete. Goal 12 begins in `kenshi-agent-env`
+with a read-only map of the authoritative affordance-enumeration path and the
+planner-delivery boundary, plus a proof design for exact replay reconstruction.
+
+The eventual writer emits one dedicated `affordance_set` event immediately
+before planner delivery. Its typed payload includes opaque offer identity,
+operation kind, source adapter, semantic parameters, applicable target
+identities, source completeness, withheld categories, and authored world
+revision. `planner_context_prepared` remains planner-delivery accounting rather
+than becoming the only affordance evidence.
+
+The completion falsifier must reconstruct exactly what the planner could choose
+without parsing prompt text or human-readable labels. Executor mechanics, keys,
+coordinates, and unoffered native commands remain forbidden from planner
+affordances. No G13 capability-manifest or G14 exporter work belongs in G12.
