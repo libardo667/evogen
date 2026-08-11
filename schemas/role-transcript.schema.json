@@ -1,0 +1,224 @@
+{
+  "$defs": {
+    "AgentRole": {
+      "enum": [
+        "trace_analyst",
+        "diagnostician",
+        "investigator",
+        "capability_architect",
+        "implementer",
+        "adversarial_reviewer",
+        "evaluator",
+        "release_steward"
+      ],
+      "title": "AgentRole",
+      "type": "string"
+    },
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "A typed reference to one immutable content-addressed artifact.",
+      "properties": {
+        "digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "model"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "RoleOutcome": {
+      "description": "Terminal disposition of one attempted external role invocation.",
+      "enum": [
+        "success",
+        "timeout",
+        "nonzero_exit",
+        "malformed_envelope",
+        "request_mismatch",
+        "role_mismatch",
+        "backend_exception",
+        "unsuccessful_response",
+        "invalid_typed_output",
+        "semantic_link_failure"
+      ],
+      "title": "RoleOutcome",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Content-addressed references for all bytes and typed role values.",
+  "properties": {
+    "authority_id": {
+      "title": "Authority Id",
+      "type": "string"
+    },
+    "backend": {
+      "title": "Backend",
+      "type": "string"
+    },
+    "failure": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Failure"
+    },
+    "input_digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Input Digest",
+      "type": "string"
+    },
+    "invocation_id": {
+      "title": "Invocation Id",
+      "type": "string"
+    },
+    "model": {
+      "title": "Model",
+      "type": "string"
+    },
+    "outcome": {
+      "$ref": "#/$defs/RoleOutcome"
+    },
+    "output_contract_digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Output Contract Digest",
+      "type": "string"
+    },
+    "output_digest": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Output Digest"
+    },
+    "process_status": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Process Status"
+    },
+    "provider": {
+      "title": "Provider",
+      "type": "string"
+    },
+    "request_id": {
+      "title": "Request Id",
+      "type": "string"
+    },
+    "request_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "response_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Response Id"
+    },
+    "response_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "role": {
+      "$ref": "#/$defs/AgentRole"
+    },
+    "stderr_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "stdout_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "timeout_seconds": {
+      "title": "Timeout Seconds",
+      "type": "number"
+    },
+    "typed_output_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "invocation_id",
+    "request_id",
+    "role",
+    "request_ref",
+    "input_digest",
+    "output_contract_digest",
+    "provider",
+    "model",
+    "backend",
+    "authority_id",
+    "outcome",
+    "timeout_seconds"
+  ],
+  "title": "RoleTranscript",
+  "type": "object"
+}

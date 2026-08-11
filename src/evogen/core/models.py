@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Annotated, Any, Generic, Literal, TypeVar
+from math import isfinite
+from typing import Annotated, Any, Generic, Literal, TypeAlias, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
 
@@ -17,6 +18,7 @@ from .enums import (
     ProbeStageName,
     ProofClass,
     ResolutionKind,
+    RoleOutcome,
     Severity,
     StageName,
 )
@@ -31,6 +33,26 @@ class StrictModel(BaseModel):
 
 
 DigestStr = Annotated[str, Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")]
+JsonPrimitive: TypeAlias = str | int | float | bool | None
+JsonValue: TypeAlias = JsonPrimitive | list[object] | dict[str, object]
+
+
+def _nonblank(value: str) -> str:
+    if not value.strip():
+        raise ValueError("value must be nonblank")
+    return value
+
+
+def _json_value(value: object) -> JsonValue:
+    if isinstance(value, float) and not isfinite(value):
+        raise ValueError("role input values cannot contain non-finite floats")
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, list):
+        return [_json_value(item) for item in value]
+    if isinstance(value, dict) and all(isinstance(key, str) for key in value):
+        return {key: _json_value(item) for key, item in value.items()}
+    raise ValueError("role input values must be JSON values")
 
 
 _ItemT = TypeVar("_ItemT")
@@ -335,37 +357,10 @@ class GateDecision(StrictModel):
         return self
 
 
-class RoleRequest(StrictModel):
-    request_id: str
-    role: AgentRole
-    objective: str
-    input_artifacts: dict[str, str]
-    output_contract: dict[str, Any]
-    constraints: list[str] = Field(default_factory=list)
-
-
-class RoleResponse(StrictModel):
-    response_id: str
-    request_id: str
-    role: AgentRole
-    success: bool
-    output: dict[str, Any]
-    notes: list[str] = Field(default_factory=list)
-
-
-class EvolutionPlan(StrictModel):
-    diagnostic_scenarios: list[str]
-    revealing_cases: list[str]
-    structural_variants: list[str]
-    regression_suites: list[str]
-    long_horizon_suites: list[str]
-    forbidden_literals: list[str] = Field(default_factory=list)
-
-
 class ArtifactRef(StrictModel):
     """A typed reference to one immutable content-addressed artifact."""
 
-    digest: str = Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
+    digest: DigestStr
     model: str
 
     @field_validator("model")
@@ -378,6 +373,230 @@ class ArtifactRef(StrictModel):
         ):
             raise ValueError("Artifact model identity must be a controlled identifier")
         return value
+
+
+class RoleRequest(StrictModel):
+    request_id: str
+    role: AgentRole
+    objective: str
+    # Values are self-contained JSON, never paths that a child process can use
+    # to obtain mutable workspace state.
+    input_artifacts: dict[str, JsonValue]
+    output_contract: dict[str, JsonValue]
+    constraints: list[str] = Field(default_factory=list)
+
+    _validate_ids = field_validator("request_id", "objective")(_nonblank)
+    _validate_inputs = field_validator("input_artifacts", "output_contract", mode="before")(
+        _json_value
+    )
+
+
+class RoleResponse(StrictModel):
+    response_id: str
+    request_id: str
+    role: AgentRole
+    success: bool
+    output: dict[str, JsonValue]
+    notes: list[str] = Field(default_factory=list)
+
+    _validate_ids = field_validator("response_id", "request_id")(_nonblank)
+    _validate_output = field_validator("output", mode="before")(_json_value)
+
+
+class RoleTranscript(StrictModel):
+    """Content-addressed references for all bytes and typed role values."""
+
+    invocation_id: str
+    request_id: str
+    role: AgentRole
+    response_id: str | None = None
+    request_ref: ArtifactRef
+    response_ref: ArtifactRef | None = None
+    typed_output_ref: ArtifactRef | None = None
+    stdout_ref: ArtifactRef | None = None
+    stderr_ref: ArtifactRef | None = None
+    input_digest: DigestStr
+    output_contract_digest: DigestStr
+    output_digest: DigestStr | None = None
+    provider: str
+    model: str
+    backend: str
+    authority_id: str
+    outcome: RoleOutcome
+    timeout_seconds: float
+    process_status: int | None = None
+    failure: str | None = None
+
+    _validate_ids = field_validator(
+        "invocation_id", "request_id", "provider", "model", "backend", "authority_id"
+    )(_nonblank)
+
+    @field_validator("timeout_seconds")
+    @classmethod
+    def validate_timeout(cls, value: float) -> float:
+        if not isfinite(value) or value <= 0:
+            raise ValueError("timeout_seconds must be positive and finite")
+        return value
+
+    @model_validator(mode="after")
+    def validate_outcome(self) -> RoleTranscript:
+        _validate_role_refs(
+            request_ref=self.request_ref,
+            response_ref=self.response_ref,
+            stdout_ref=self.stdout_ref,
+            stderr_ref=self.stderr_ref,
+        )
+        _validate_outcome_fields(
+            outcome=self.outcome,
+            response_ref=self.response_ref,
+            typed_output_ref=self.typed_output_ref,
+            output_digest=self.output_digest,
+            response_id=self.response_id,
+            process_status=self.process_status,
+            failure=self.failure,
+        )
+        return self
+
+
+class RoleInvocation(StrictModel):
+    """Append-only ledger record for every attempted role call."""
+
+    invocation_id: str
+    request_id: str
+    role: AgentRole
+    provider: str
+    model: str
+    backend: str
+    authority_id: str
+    outcome: RoleOutcome
+    response_id: str | None = None
+    request_ref: ArtifactRef
+    transcript_ref: ArtifactRef
+    response_ref: ArtifactRef | None = None
+    typed_output_ref: ArtifactRef | None = None
+    stdout_ref: ArtifactRef | None = None
+    stderr_ref: ArtifactRef | None = None
+    input_digest: DigestStr
+    output_contract_digest: DigestStr
+    output_digest: DigestStr | None = None
+    timeout_seconds: float
+    process_status: int | None = None
+    failure: str | None = None
+
+    _validate_ids = field_validator(
+        "invocation_id", "request_id", "provider", "model", "backend", "authority_id"
+    )(_nonblank)
+
+    @field_validator("timeout_seconds")
+    @classmethod
+    def validate_timeout(cls, value: float) -> float:
+        if not isfinite(value) or value <= 0:
+            raise ValueError("timeout_seconds must be positive and finite")
+        return value
+
+    @model_validator(mode="after")
+    def validate_outcome(self) -> RoleInvocation:
+        _validate_role_refs(
+            request_ref=self.request_ref,
+            response_ref=self.response_ref,
+            stdout_ref=self.stdout_ref,
+            stderr_ref=self.stderr_ref,
+        )
+        if self.transcript_ref.model != "RoleTranscript":
+            raise ValueError("transcript_ref must reference RoleTranscript")
+        _validate_outcome_fields(
+            outcome=self.outcome,
+            response_ref=self.response_ref,
+            typed_output_ref=self.typed_output_ref,
+            output_digest=self.output_digest,
+            response_id=self.response_id,
+            process_status=self.process_status,
+            failure=self.failure,
+        )
+        return self
+
+
+def _validate_role_refs(
+    *,
+    request_ref: ArtifactRef,
+    response_ref: ArtifactRef | None,
+    stdout_ref: ArtifactRef | None,
+    stderr_ref: ArtifactRef | None,
+) -> None:
+    expected = {
+        "request_ref": (request_ref, "RoleRequest"),
+        "response_ref": (response_ref, "RoleResponse"),
+        "stdout_ref": (stdout_ref, "RoleStdout"),
+        "stderr_ref": (stderr_ref, "RoleStderr"),
+    }
+    for name, (reference, model) in expected.items():
+        if reference is not None and reference.model != model:
+            raise ValueError(f"{name} must reference {model}")
+
+
+def _validate_outcome_fields(
+    *,
+    outcome: RoleOutcome,
+    response_ref: ArtifactRef | None,
+    typed_output_ref: ArtifactRef | None,
+    output_digest: str | None,
+    response_id: str | None,
+    process_status: int | None,
+    failure: str | None,
+) -> None:
+    if isinstance(process_status, bool):
+        raise ValueError("process_status must be an integer or null")
+    if typed_output_ref is not None and output_digest != typed_output_ref.digest:
+        raise ValueError("output_digest must match typed_output_ref")
+    if (response_ref is None) != (response_id is None):
+        raise ValueError("response_ref and response_id must be present together")
+    if outcome == RoleOutcome.SUCCESS:
+        if response_ref is None or typed_output_ref is None or output_digest is None:
+            raise ValueError("successful role outcome requires response and typed output refs")
+        if response_id is None or not response_id.strip() or failure is not None:
+            raise ValueError("successful role outcome has invalid response/failure fields")
+        if process_status not in {None, 0}:
+            raise ValueError("successful role outcome cannot have a failing process status")
+        return
+
+    if failure is None or not failure.strip():
+        raise ValueError("failed role outcome requires failure detail")
+    if outcome == RoleOutcome.SEMANTIC_LINK_FAILURE:
+        if response_ref is None or typed_output_ref is None or output_digest is None:
+            raise ValueError("semantic-link failure requires response and typed output refs")
+        if process_status not in {None, 0}:
+            raise ValueError("semantic-link failure cannot have a failing process status")
+        return
+    if typed_output_ref is not None or output_digest is not None:
+        raise ValueError("non-semantic failure cannot retain typed output")
+    if outcome in {
+        RoleOutcome.REQUEST_MISMATCH,
+        RoleOutcome.ROLE_MISMATCH,
+        RoleOutcome.UNSUCCESSFUL_RESPONSE,
+        RoleOutcome.INVALID_TYPED_OUTPUT,
+    }:
+        if response_ref is None:
+            raise ValueError(f"{outcome.value} requires a parsed response")
+        if process_status not in {None, 0}:
+            raise ValueError(f"{outcome.value} cannot have a failing process status")
+    elif outcome == RoleOutcome.NONZERO_EXIT:
+        if process_status is None or process_status == 0:
+            raise ValueError("nonzero-exit outcome requires a nonzero process status")
+    elif outcome == RoleOutcome.MALFORMED_ENVELOPE:
+        if response_ref is not None or process_status not in {None, 0}:
+            raise ValueError("malformed envelope cannot retain a response or failing status")
+    elif outcome in {RoleOutcome.TIMEOUT, RoleOutcome.BACKEND_EXCEPTION}:
+        if response_ref is not None or process_status is not None:
+            raise ValueError(f"{outcome.value} cannot retain a response or process status")
+
+
+class EvolutionPlan(StrictModel):
+    diagnostic_scenarios: list[str]
+    revealing_cases: list[str]
+    structural_variants: list[str]
+    regression_suites: list[str]
+    long_horizon_suites: list[str]
+    forbidden_literals: list[str] = Field(default_factory=list)
 
 
 class CycleManifest(StrictModel):

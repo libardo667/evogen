@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import pytest
 
+from evogen.adapters.agents import RawRoleExecution, RoleInvoker
 from evogen.adapters.role_builder import CandidateBuildError, RoleBackedDirectoryBuilder
-from evogen.core.enums import AgentRole, FailureLayer, ResolutionKind
+from evogen.core.enums import AgentRole, FailureLayer, ResolutionKind, RoleOutcome
 from evogen.core.ids import new_id
 from evogen.core.models import (
     CapabilityIssue,
@@ -13,6 +14,8 @@ from evogen.core.models import (
     RoleRequest,
     RoleResponse,
 )
+from evogen.storage.artifacts import ArtifactStore
+from evogen.storage.ledger import Ledger
 
 
 class FakeBackend:
@@ -20,14 +23,23 @@ class FakeBackend:
         self.output = output
         self.requests: list[RoleRequest] = []
 
-    def run(self, request: RoleRequest) -> RoleResponse:
+    timeout_seconds = 5.0
+
+    def execute(self, request: RoleRequest) -> RawRoleExecution:
         self.requests.append(request)
-        return RoleResponse(
+        response = RoleResponse(
             response_id=new_id("response"),
             request_id=request.request_id,
             role=AgentRole.IMPLEMENTER,
             success=True,
             output=self.output,
+        )
+        return RawRoleExecution(
+            response=response,
+            stdout=None,
+            stderr=None,
+            process_status=0,
+            outcome=RoleOutcome.SUCCESS,
         )
 
 
@@ -90,7 +102,15 @@ def test_role_backed_builder_writes_validated_patch_set(tmp_path):
             "claimed_capabilities": ["inspect"],
         }
     )
-    builder = RoleBackedDirectoryBuilder(backend=backend)
+    invoker = RoleInvoker(
+        backend=backend,
+        artifacts=ArtifactStore(tmp_path / "artifacts"),
+        ledger=Ledger(tmp_path / "ledger.sqlite3"),
+        provider="test-provider",
+        model="test-model",
+        authority_id="test-authority",
+    )
+    builder = RoleBackedDirectoryBuilder(invoker=invoker)
     candidate = builder.build(
         parent=parent(),
         issue=issue(),
@@ -111,7 +131,15 @@ def test_role_backed_builder_rejects_path_traversal(tmp_path):
             "files": [{"path": "../outside.py", "content": "bad = True\n"}],
         }
     )
-    builder = RoleBackedDirectoryBuilder(backend=backend)
+    invoker = RoleInvoker(
+        backend=backend,
+        artifacts=ArtifactStore(tmp_path / "artifacts"),
+        ledger=Ledger(tmp_path / "ledger.sqlite3"),
+        provider="test-provider",
+        model="test-model",
+        authority_id="test-authority",
+    )
+    builder = RoleBackedDirectoryBuilder(invoker=invoker)
 
     with pytest.raises(CandidateBuildError):
         builder.build(

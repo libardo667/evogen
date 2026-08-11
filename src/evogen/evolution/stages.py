@@ -16,12 +16,23 @@ from pydantic import BaseModel
 from evogen.adapters.protocols import (
     CandidateBuilder,
     CandidateReviewer,
+    CapabilityArchitectRole,
+    Diagnostician,
     EnvironmentInvestigator,
     ExperimentEvaluator,
     GenerationMaterializer,
+    ReleaseRecommender,
     SubjectRunner,
+    TraceAnalyst,
 )
-from evogen.core.enums import CandidateStatus, GateVerdict, IssueStatus, ResolutionKind, StageName
+from evogen.core.enums import (
+    CandidateStatus,
+    EventKind,
+    GateVerdict,
+    IssueStatus,
+    ResolutionKind,
+    StageName,
+)
 from evogen.core.ids import new_id, sha256_bytes, stable_digest
 from evogen.core.models import (
     ArtifactRef,
@@ -114,9 +125,11 @@ class EvolutionStageOrchestrator:
         subject_plugin_name: str = "unknown",
         subject_plugin_api_version: str = "1.0",
         subject_plugin_source: str = "unknown",
-        diagnostician: EvidenceFirstDiagnostician | None = None,
-        architect: CapabilityArchitect | None = None,
+        trace_analyst: TraceAnalyst | None = None,
+        diagnostician: Diagnostician | None = None,
+        architect: CapabilityArchitectRole | None = None,
         retention_policy: RetentionPolicy | None = None,
+        release_recommender: ReleaseRecommender | None = None,
     ) -> None:
         self.workspace = workspace.resolve()
         self.artifacts = artifacts
@@ -132,9 +145,12 @@ class EvolutionStageOrchestrator:
         self.subject_plugin_name = subject_plugin_name
         self.subject_plugin_api_version = subject_plugin_api_version
         self.subject_plugin_source = subject_plugin_source
+        self.trace_analyst = trace_analyst or TraceDistiller()
         self.diagnostician = diagnostician or EvidenceFirstDiagnostician()
         self.architect = architect or CapabilityArchitect()
         self.retention_policy = retention_policy or RetentionPolicy()
+        self.release_recommender = release_recommender
+        self._validate_authority_separation()
         self.stage_directory = self.workspace / "stages"
         self.manifest_pointer = self.workspace / "cycle-manifest.pointer.json"
         self.manifest_digest, self.manifest = self._load_or_create_manifest()
@@ -143,6 +159,42 @@ class EvolutionStageOrchestrator:
     @property
     def stage_order(self) -> tuple[StageName, ...]:
         return StageName.ordered()
+
+    def _validate_authority_separation(self) -> None:
+        authorities: tuple[object, object, object] = (
+            self.builder,
+            self.reviewer,
+            self.evaluator,
+        )
+        if len({id(value) for value in authorities}) != 3:
+            raise StageIntegrityError(
+                "Builder, reviewer, and evaluator must be distinct authorities"
+            )
+        ids: dict[str, str] = {}
+        backend_owners: dict[int, str] = {}
+        for name, value in zip(("builder", "reviewer", "evaluator"), authorities, strict=True):
+            invoker = getattr(value, "invoker", None)
+            authority_id = getattr(value, "authority_id", None)
+            if authority_id is None:
+                authority_id = getattr(invoker, "authority_id", None)
+            if authority_id is not None:
+                if not isinstance(authority_id, str) or not authority_id.strip():
+                    raise StageIntegrityError(f"{name} authority_id must be nonblank")
+                if authority_id in ids.values():
+                    prior = next(key for key, item in ids.items() if item == authority_id)
+                    raise StageIntegrityError(
+                        f"{name} shares authority_id with {prior}"
+                    )
+                ids[name] = authority_id
+            backend = getattr(invoker, "backend", None)
+            if backend is not None:
+                backend_identity = id(backend)
+                if backend_identity in backend_owners:
+                    raise StageIntegrityError(
+                        f"{name} shares role backend with "
+                        f"{backend_owners[backend_identity]}"
+                    )
+                backend_owners[backend_identity] = name
 
     def run(self, *, until: StageName | str | None = None) -> BaseModel:
         target = StageName(until) if until is not None else StageName.SELECT
@@ -293,9 +345,7 @@ class EvolutionStageOrchestrator:
         if stage == StageName.DISTILL:
             ingest = self._read_input(inputs, "ingest", IngestResult)
             self._validate_ingest(ingest)
-            recomputed = self._distill_from_cas(ingest)
-            if cast(DistilledTrace, output) != recomputed:
-                raise StageIntegrityError("Distilled output differs from persisted CAS evidence")
+            self._validate_distilled_trace(cast(DistilledTrace, output), ingest)
             return
         if stage == StageName.DIAGNOSE:
             self._validate_issue(cast(CapabilityIssue, output))
@@ -507,7 +557,36 @@ class EvolutionStageOrchestrator:
             ):
                 raise StageIntegrityError("Selection inputs refer to different candidates")
             self._verify_candidate_files(candidate)
-            decision = self.retention_policy.decide(experiment)
+            deterministic_decision = self.retention_policy.decide(experiment)
+            if self.release_recommender is None:
+                decision = deterministic_decision
+            else:
+                decision = self.release_recommender.recommend(experiment)
+                if decision.candidate_id != candidate.candidate_id:
+                    raise StageIntegrityError(
+                        "Release recommendation candidate does not match evaluated candidate"
+                    )
+                if decision.retained_generation_id is not None:
+                    raise StageIntegrityError(
+                        "Release recommendation may not materialize or name a generation"
+                    )
+                if (
+                    decision.passed_rules != deterministic_decision.passed_rules
+                    or decision.failed_rules != deterministic_decision.failed_rules
+                ):
+                    raise StageIntegrityError(
+                        "Release recommendation rule evidence differs from deterministic policy"
+                    )
+                if deterministic_decision.verdict == GateVerdict.REJECT:
+                    if decision.verdict != GateVerdict.REJECT:
+                        raise StageIntegrityError(
+                            "Release recommendation cannot avoid deterministic rejection"
+                        )
+                elif deterministic_decision.verdict == GateVerdict.REVISE:
+                    if decision.verdict == GateVerdict.RETAIN:
+                        raise StageIntegrityError(
+                            "Release recommendation cannot be more permissive than revise"
+                        )
             retained: GenerationManifest | None = None
             final_candidate = candidate.model_copy(
                 update={
@@ -613,11 +692,137 @@ class EvolutionStageOrchestrator:
         for reference in ingest.event_refs:
             events.append(self.artifacts.read_model(reference, TrajectoryEvent))
         capabilities = self.artifacts.read_model(ingest.capability_ref, CapabilityManifest)
-        return TraceDistiller().distill(
+        return self.trace_analyst.distill(
             generation_id=ingest.generation_id,
             events=events,
             capabilities=capabilities,
         )
+
+    def _validate_distilled_trace(
+        self, trace: DistilledTrace, ingest: IngestResult
+    ) -> None:
+        events = [
+            self.artifacts.read_model(reference, TrajectoryEvent)
+            for reference in ingest.event_refs
+        ]
+        capabilities = self.artifacts.read_model(
+            ingest.capability_ref, CapabilityManifest
+        )
+        expected_identity = (
+            ingest.generation_id,
+            sorted({event.run_id for event in events}),
+            sorted({event.scenario_id for event in events}),
+            sorted(capabilities.names),
+            sorted(
+                {
+                    effect
+                    for capability in capabilities.capabilities
+                    for effect in capability.semantic_effects
+                }
+            ),
+            len(events),
+        )
+        observed_identity = (
+            trace.generation_id,
+            trace.run_ids,
+            trace.scenario_ids,
+            trace.existing_capabilities,
+            trace.existing_semantic_effects,
+            trace.event_count,
+        )
+        if observed_identity != expected_identity:
+            raise StageIntegrityError(
+                "Distilled trace identity differs from persisted CAS evidence"
+            )
+
+        offered_by_run: dict[str, set[str]] = {}
+        eligible: dict[str, TrajectoryEvent] = {}
+        for event in events:
+            if event.kind == EventKind.AFFORDANCE_SET:
+                offered = offered_by_run.setdefault(event.run_id, set())
+                for value in event.payload.get("offers", []):
+                    if isinstance(value, dict) and isinstance(value.get("action"), str):
+                        offered.add(value["action"])
+            elif event.kind in {EventKind.GOAL_BLOCKED, EventKind.ERROR}:
+                eligible[event.event_id] = event
+
+        cited: set[str] = set()
+        for signature in trace.signatures:
+            if signature.count != len(signature.evidence) or not signature.evidence:
+                raise StageIntegrityError(
+                    "Distilled signature count does not match retained evidence"
+            )
+            matching: list[TrajectoryEvent] = []
+            for reference in signature.evidence:
+                evidence_event = eligible.get(reference.event_id)
+                if (
+                    evidence_event is None
+                    or evidence_event.run_id != reference.run_id
+                    or reference.event_id in cited
+                ):
+                    raise StageIntegrityError(
+                        "Distilled signature cites missing, mismatched, or duplicate evidence"
+                    )
+                expected_code = str(
+                    evidence_event.payload.get(
+                        "code",
+                        "goal_blocked"
+                        if evidence_event.kind == EventKind.GOAL_BLOCKED
+                        else "runtime_error",
+                    )
+                )
+                blocker_key = (
+                    "blocker_type"
+                    if evidence_event.kind == EventKind.GOAL_BLOCKED
+                    else "layer_hint"
+                )
+                blocker = evidence_event.payload.get(blocker_key)
+                expected_blocker = blocker if isinstance(blocker, str) else None
+                effect = evidence_event.payload.get("required_effect")
+                expected_effect = (
+                    effect
+                    if evidence_event.kind == EventKind.GOAL_BLOCKED
+                    and isinstance(effect, str)
+                    else None
+                )
+                if (
+                    signature.code != expected_code
+                    or signature.blocker_type != expected_blocker
+                    or signature.required_effect != expected_effect
+                ):
+                    raise StageIntegrityError(
+                        "Distilled signature claims facts not present in cited evidence"
+                    )
+                cited.add(reference.event_id)
+                matching.append(evidence_event)
+            expected_offers = sorted(
+                {
+                    action
+                    for event in matching
+                    for action in offered_by_run.get(event.run_id, set())
+                }
+            )
+            if signature.offered_actions != expected_offers:
+                raise StageIntegrityError(
+                    "Distilled signature offered actions differ from persisted evidence"
+                )
+            facts: dict[str, Any] = {}
+            for event in matching:
+                for key, value in event.payload.items():
+                    if key in {"code", "blocker_type", "required_effect"}:
+                        continue
+                    if key not in facts:
+                        facts[key] = value
+                    elif facts[key] != value:
+                        facts[key] = "varies_across_evidence"
+            if signature.facts != facts:
+                raise StageIntegrityError(
+                    "Distilled signature facts differ from persisted evidence"
+                )
+        if cited != set(eligible):
+            raise StageIntegrityError(
+                "Distilled trace omits or invents failure-bearing evidence"
+            )
 
     def _validate_ingest(self, ingest: IngestResult) -> None:
         baseline = self.artifacts.read_model(ingest.baseline_ref, GenerationManifest)

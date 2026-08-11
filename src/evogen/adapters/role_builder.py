@@ -15,7 +15,7 @@ from evogen.core.models import (
     RoleRequest,
 )
 
-from .agents import RoleBackend
+from .agents import RoleInvoker
 
 WorkspaceSeeder = Callable[[GenerationManifest, Path], None]
 
@@ -54,12 +54,12 @@ class RoleBackedDirectoryBuilder:
     def __init__(
         self,
         *,
-        backend: RoleBackend,
+        invoker: RoleInvoker[PatchSet],
         seed_workspace: WorkspaceSeeder = empty_workspace_seeder,
         max_files: int = 100,
         max_total_bytes: int = 2_000_000,
     ) -> None:
-        self.backend = backend
+        self.invoker = invoker
         self.seed_workspace = seed_workspace
         self.max_files = max_files
         self.max_total_bytes = max_total_bytes
@@ -79,22 +79,6 @@ class RoleBackedDirectoryBuilder:
         if not workspace.is_dir():
             raise CandidateBuildError("Workspace seeder did not create a directory")
 
-        packet_root = workspace / ".evogen-input"
-        packet_root.mkdir(parents=True, exist_ok=False)
-        input_paths = {
-            "parent_generation": packet_root / "parent-generation.json",
-            "capability_issue": packet_root / "capability-issue.json",
-            "capability_spec": packet_root / "capability-spec.json",
-        }
-        input_paths["parent_generation"].write_text(
-            parent.model_dump_json(indent=2), encoding="utf-8"
-        )
-        input_paths["capability_issue"].write_text(
-            issue.model_dump_json(indent=2), encoding="utf-8"
-        )
-        input_paths["capability_spec"].write_text(
-            specification.model_dump_json(indent=2), encoding="utf-8"
-        )
         request = RoleRequest(
             request_id=new_id("role-request"),
             role=AgentRole.IMPLEMENTER,
@@ -104,7 +88,9 @@ class RoleBackedDirectoryBuilder:
                 "scenarios, or input artifacts."
             ),
             input_artifacts={
-                name: str(path.resolve()) for name, path in input_paths.items()
+                "parent_generation": parent.model_dump(mode="json"),
+                "capability_issue": issue.model_dump(mode="json"),
+                "capability_spec": specification.model_dump(mode="json"),
             },
             output_contract=PatchSet.model_json_schema(),
             constraints=[
@@ -116,15 +102,16 @@ class RoleBackedDirectoryBuilder:
                 *specification.implementation_constraints,
             ],
         )
-        response = self.backend.run(request)
-        if not response.success:
-            raise CandidateBuildError(
-                "Implementer role failed: " + "; ".join(response.notes or ["unknown failure"])
-            )
         try:
-            patch_set = PatchSet.model_validate(response.output)
-        except ValueError as exc:
-            raise CandidateBuildError(f"Implementer returned an invalid PatchSet: {exc}") from exc
+            retained = self.invoker.invoke_with_record(request, PatchSet)
+        except Exception as exc:
+            raise CandidateBuildError(f"Implementer role failed: {exc}") from exc
+        patch_set = retained.output
+        invocation = retained.invocation
+        if invocation.response_ref is None or invocation.typed_output_ref is None:
+            raise CandidateBuildError(
+                "Successful implementer invocation is missing retained response evidence"
+            )
         if not patch_set.files:
             raise CandidateBuildError("Implementer returned an empty PatchSet")
         if len(patch_set.files) > self.max_files:
@@ -153,8 +140,6 @@ class RoleBackedDirectoryBuilder:
             changed_files.append(normalized)
             file_digests[normalized] = sha256_bytes(file.content.encode("utf-8"))
 
-        transcript = packet_root / "implementer-response.json"
-        transcript.write_text(response.model_dump_json(indent=2), encoding="utf-8")
         source_digest = stable_digest(file_digests)
         return CandidateManifest(
             candidate_id=candidate_id,
@@ -165,7 +150,10 @@ class RoleBackedDirectoryBuilder:
             source_digest=source_digest,
             artifact_digests={
                 "patch_set": stable_digest(patch_set.model_dump(mode="json")),
-                "implementer_response": sha256_bytes(transcript.read_bytes()),
+                "role_request": invocation.request_ref.digest,
+                "role_response": invocation.response_ref.digest,
+                "role_transcript": invocation.transcript_ref.digest,
+                "role_output": invocation.typed_output_ref.digest,
                 **{f"file:{path}": digest for path, digest in file_digests.items()},
             },
             changed_files=sorted(changed_files),
@@ -173,8 +161,13 @@ class RoleBackedDirectoryBuilder:
             metadata={
                 "builder": type(self).__name__,
                 "implementation_summary": patch_set.summary,
-                "role_request_id": request.request_id,
-                "role_response_id": response.response_id,
+                "role_invocation_id": invocation.invocation_id,
+                "role_request_id": invocation.request_id,
+                "role_response_id": invocation.response_id,
+                "role_provider": invocation.provider,
+                "role_model": invocation.model,
+                "role_backend": invocation.backend,
+                "role_authority_id": invocation.authority_id,
             },
         )
 

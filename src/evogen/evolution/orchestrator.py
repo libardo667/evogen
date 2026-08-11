@@ -5,15 +5,17 @@ from pathlib import Path
 from evogen.adapters.protocols import (
     CandidateBuilder,
     CandidateReviewer,
+    CapabilityArchitectRole,
+    Diagnostician,
     EnvironmentInvestigator,
     ExperimentEvaluator,
     GenerationMaterializer,
+    ReleaseRecommender,
     SubjectRunner,
+    TraceAnalyst,
 )
 from evogen.core.models import CycleResult, EvolutionPlan, GenerationManifest
-from evogen.evolution.diagnosis import EvidenceFirstDiagnostician
 from evogen.evolution.selection import RetentionPolicy
-from evogen.evolution.specification import CapabilityArchitect
 from evogen.storage.artifacts import ArtifactStore
 from evogen.storage.ledger import Ledger
 
@@ -40,9 +42,11 @@ class EvolutionOrchestrator:
         subject_plugin_name: str = "unknown",
         subject_plugin_api_version: str = "1.0",
         subject_plugin_source: str = "unknown",
-        diagnostician: EvidenceFirstDiagnostician | None = None,
-        architect: CapabilityArchitect | None = None,
+        trace_analyst: TraceAnalyst | None = None,
+        diagnostician: Diagnostician | None = None,
+        architect: CapabilityArchitectRole | None = None,
         retention_policy: RetentionPolicy | None = None,
+        release_recommender: ReleaseRecommender | None = None,
     ) -> None:
         self.stages = EvolutionStageOrchestrator(
             workspace=workspace,
@@ -59,9 +63,11 @@ class EvolutionOrchestrator:
             subject_plugin_name=subject_plugin_name,
             subject_plugin_api_version=subject_plugin_api_version,
             subject_plugin_source=subject_plugin_source,
+            trace_analyst=trace_analyst,
             diagnostician=diagnostician,
             architect=architect,
             retention_policy=retention_policy,
+            release_recommender=release_recommender,
         )
 
     def invoke(self, stage: str) -> object:

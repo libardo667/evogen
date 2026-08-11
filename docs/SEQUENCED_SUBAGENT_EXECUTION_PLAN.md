@@ -23,8 +23,8 @@ Current execution state:
 - Public remote: `https://github.com/libardo667/evogen`
 - Hosted proof: branch run `31439981915` and tag run `31439981992` each passed
   Python 3.11, 3.12, and 3.13 at the exact release commit
-- Goal 5 state: completed in the current bounded goal commit
-- Next unstarted goal: Goal 6
+- Goal 6 state: completed in the current bounded goal commit
+- Next unstarted goal: Goal 7
 
 ## 1. What this plan controls
 
@@ -364,7 +364,7 @@ independent and the extra handoff creates more evidence than coordination risk.
 
 ### G06 — Typed external reasoning roles
 
-- State: next; implementation remains unstarted.
+- State: completed in the current bounded goal commit.
 - Depends on: G04–G05.
 - Pre-write fan-out: role inventory; ledger/transcript completeness audit;
   malformed-output/timeout test design.
@@ -374,6 +374,7 @@ independent and the extra handoff creates more evidence than coordination risk.
 
 ### G07 — Frozen evaluation authority
 
+- State: next; implementation remains unstarted.
 - Depends on: G06 and persisted artifacts.
 - Pre-write fan-out: evaluator threat model; suite-manifest contract design.
 - Independent proof: candidate tampering with evaluator or held-out scenario is
@@ -665,8 +666,8 @@ goals:
   - {id: G03, repo: [evogen], depends: [G02], profile: schema_migration, state: complete, human_gate: []}
   - {id: G04, repo: [evogen], depends: [G03], profile: orchestration_state, state: complete, human_gate: []}
   - {id: G05, repo: [evogen], depends: [G04], profile: lifecycle_contract, state: complete, human_gate: []}
-  - {id: G06, repo: [evogen], depends: [G05], profile: role_contract, state: next, human_gate: []}
-  - {id: G07, repo: [evogen], depends: [G06], profile: evaluator_security, state: unstarted, human_gate: []}
+  - {id: G06, repo: [evogen], depends: [G05], profile: role_contract, state: complete, human_gate: []}
+  - {id: G07, repo: [evogen], depends: [G06], profile: evaluator_security, state: next, human_gate: []}
   - {id: G08, repo: [evogen], depends: [G07], profile: conformance, state: unstarted, human_gate: []}
   - {id: G09, repo: [kenshi-agent-env], depends: [G08], profile: source_inventory, state: unstarted, human_gate: []}
   - {id: G10, repo: [kenshi-agent-env], depends: [G09], profile: logger_migration, state: unstarted, human_gate: []}
@@ -713,23 +714,29 @@ goals:
 
 ## 16. Immediate next execution packet
 
-The next permitted packet is G06 only. It remains unstarted until the Goal 5
+The next permitted packet is G07 only. It remains unstarted until the Goal 6
 gate, commit, clean checkpoint ratchet, public push, and stop are complete.
 
-Before any G06 edit, the root must:
+Before any G07 edit, the root must:
 
 1. re-read EvoGen `AGENTS.md` and `docs/INTEGRATION_CHECKPOINT.md`;
-2. confirm `main` starts at the reviewed, committed G05 result with a clean
+2. confirm `main` starts at the reviewed, committed G06 result with a clean
    checkpoint ratchet;
-3. inventory every current reasoning role, typed result, backend boundary,
-   transcript artifact, failure path, and ledger owner;
-4. dispatch a role-authority auditor and a malformed-output, timeout, and
-   transcript-completeness proof designer read-only;
-5. freeze the typed request/response and retained transcript contract, including
-   provider, model, digest, timeout, malformed-output, and failure evidence;
-6. assign one writer to make exactly one role backend replaceable without
-   changing the other stage authorities;
-7. independently swap that one backend, prove all other stage artifacts remain
-   unchanged, and prove prose can never bypass the typed result;
-8. refresh the checkpoint with the exact G06 parent and next G07; and
-9. commit and stop without beginning G07.
+3. inventory every suite, scenario, evaluator, seed, repeat count, wall-clock
+   ceiling, environment artifact, metric namespace, and protected path that
+   currently influences evaluation or retention;
+4. dispatch an evaluator-authority threat modeller and a baseline/candidate
+   symmetry plus pre/post hash proof designer read-only;
+5. freeze a typed suite manifest containing revealing cases, structural
+   variants, regressions, long-horizon suites, seeds, repeat counts, wall-clock
+   ceilings, environment artifacts, evaluator version, and protected-path
+   hashes;
+6. extend experiment results with namespaced subject metrics while preserving
+   the generic metric vector and deterministic retention authority;
+7. assign one writer to add pre- and post-execution evaluator/scenario hash
+   verification without giving candidates access to held-out authority;
+8. independently prove that a candidate which edits a held-out scenario or
+   evaluator is rejected even when its reported scores improve, and that a
+   candidate's own tests never become retention evidence;
+9. refresh the checkpoint with the exact G07 parent and next G08; and
+10. commit and stop without beginning G08.

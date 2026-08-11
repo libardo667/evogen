@@ -3,10 +3,12 @@ from __future__ import annotations
 import sqlite3
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from pydantic import BaseModel
 
+from evogen.core.enums import RoleOutcome
+from evogen.core.ids import sha256_bytes, stable_digest
 from evogen.core.models import (
     CandidateManifest,
     CapabilityIssue,
@@ -18,10 +20,17 @@ from evogen.core.models import (
     ProbeEvaluation,
     ProbePlan,
     ProbeReviewReport,
+    RoleInvocation,
+    RoleRequest,
+    RoleResponse,
+    RoleTranscript,
     RunRecord,
     TrajectoryEvent,
 )
 from evogen.trace.io import parse_trajectory_event_json
+
+if TYPE_CHECKING:
+    from .artifacts import ArtifactStore
 
 _ModelT = TypeVar("_ModelT", bound=BaseModel)
 
@@ -29,7 +38,7 @@ _ModelT = TypeVar("_ModelT", bound=BaseModel)
 class Ledger:
     """SQLite index for immutable JSON records and lineage decisions."""
 
-    SCHEMA_VERSION = 1
+    SCHEMA_VERSION = 2
 
     def __init__(self, path: Path, *, read_only: bool = False) -> None:
         self.path = path
@@ -142,6 +151,16 @@ class Ledger:
                     created_at TEXT NOT NULL,
                     PRIMARY KEY(probe_id, stage)
                 );
+
+                CREATE TABLE IF NOT EXISTS role_invocations (
+                    invocation_id TEXT PRIMARY KEY,
+                    request_id TEXT NOT NULL,
+                    role TEXT NOT NULL,
+                    outcome TEXT NOT NULL,
+                    record_json TEXT NOT NULL,
+                    record_digest TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
                 """
             )
             row = connection.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()
@@ -150,10 +169,36 @@ class Ledger:
                     "INSERT INTO meta(key, value) VALUES('schema_version', ?)",
                     (str(self.SCHEMA_VERSION),),
                 )
+            elif int(row["value"]) == 1:
+                self._migrate_v1_to_v2(connection)
+                connection.execute(
+                    "UPDATE meta SET value=? WHERE key='schema_version'",
+                    (str(self.SCHEMA_VERSION),),
+                )
             elif int(row["value"]) != self.SCHEMA_VERSION:
                 raise RuntimeError(
                     f"Unsupported ledger schema {row['value']}; expected {self.SCHEMA_VERSION}"
                 )
+
+    @staticmethod
+    def _migrate_v1_to_v2(connection: sqlite3.Connection) -> None:
+        columns = {
+            row["name"] for row in connection.execute("PRAGMA table_info(role_invocations)")
+        }
+        if "record_digest" not in columns:
+            connection.execute(
+                "ALTER TABLE role_invocations ADD COLUMN record_digest TEXT NOT NULL DEFAULT ''"
+            )
+            rows = connection.execute(
+                "SELECT rowid, record_json FROM role_invocations"
+            ).fetchall()
+            connection.executemany(
+                "UPDATE role_invocations SET record_digest=? WHERE rowid=?",
+                [
+                    (sha256_bytes(row["record_json"].encode("utf-8")), row["rowid"])
+                    for row in rows
+                ],
+            )
 
     @staticmethod
     def _json(model: BaseModel) -> str:
@@ -447,3 +492,188 @@ class Ledger:
                 (probe_id,),
             ).fetchall()
         return [dict(row) for row in rows]
+
+    def add_role_invocation(self, invocation: RoleInvocation) -> None:
+        """Append one immutable invocation; collisions are accepted only byte-for-byte."""
+        serialized = self._json(invocation)
+        try:
+            with self.connect() as connection:
+                connection.execute(
+                    """
+                    INSERT INTO role_invocations(
+                        invocation_id, request_id, role, outcome, record_json,
+                        record_digest, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+                    """,
+                    (
+                        invocation.invocation_id,
+                        invocation.request_id,
+                        invocation.role.value,
+                        invocation.outcome.value,
+                        serialized,
+                        sha256_bytes(serialized.encode("utf-8")),
+                    ),
+                )
+        except sqlite3.IntegrityError as exc:
+            with self.connect() as connection:
+                row = connection.execute(
+                    "SELECT record_json FROM role_invocations WHERE invocation_id=?",
+                    (invocation.invocation_id,),
+                ).fetchone()
+            if row is None or row["record_json"] != serialized:
+                raise RuntimeError(
+                    f"Role invocation {invocation.invocation_id} is immutable"
+                ) from exc
+
+    def get_role_invocation(
+        self, invocation_id: str, artifacts: ArtifactStore | None = None
+    ) -> RoleInvocation:
+        with self.connect() as connection:
+            row = connection.execute(
+                "SELECT request_id, role, outcome, record_json, record_digest "
+                "FROM role_invocations WHERE invocation_id=?",
+                (invocation_id,),
+            ).fetchone()
+        if row is None:
+            raise KeyError(invocation_id)
+        self._verify_record_digest(row["record_json"], row["record_digest"])
+        invocation = self._parse(RoleInvocation, row["record_json"])
+        if (
+            row["request_id"] != invocation.request_id
+            or row["role"] != invocation.role.value
+            or row["outcome"] != invocation.outcome.value
+        ):
+            raise RuntimeError("Role invocation SQL identity columns mismatch record")
+        if artifacts is not None:
+            self._verify_role_refs(invocation, artifacts)
+        return invocation
+
+    def list_role_invocations(
+        self, artifacts: ArtifactStore | None = None
+    ) -> list[RoleInvocation]:
+        with self.connect() as connection:
+            rows = connection.execute(
+                "SELECT request_id, role, outcome, record_json, record_digest "
+                "FROM role_invocations ORDER BY rowid"
+            ).fetchall()
+        for row in rows:
+            self._verify_record_digest(row["record_json"], row["record_digest"])
+        values: list[RoleInvocation] = []
+        for row in rows:
+            value = self._parse(RoleInvocation, row["record_json"])
+            if (
+                row["request_id"] != value.request_id
+                or row["role"] != value.role.value
+                or row["outcome"] != value.outcome.value
+            ):
+                raise RuntimeError("Role invocation SQL identity columns mismatch record")
+            values.append(value)
+        if artifacts is not None:
+            for value in values:
+                self._verify_role_refs(value, artifacts)
+        return values
+
+    @staticmethod
+    def _verify_record_digest(serialized: str, digest: str) -> None:
+        if sha256_bytes(serialized.encode("utf-8")) != digest:
+            raise RuntimeError("Role invocation ledger record digest mismatch")
+
+    @staticmethod
+    def _verify_role_refs(invocation: RoleInvocation, artifacts: ArtifactStore) -> None:
+        for reference in (
+            invocation.request_ref,
+            invocation.transcript_ref,
+            invocation.response_ref,
+            invocation.typed_output_ref,
+            invocation.stdout_ref,
+            invocation.stderr_ref,
+        ):
+            if reference is not None:
+                artifacts.read_bytes(reference.digest)
+        request = artifacts.read_model(invocation.request_ref, RoleRequest)
+        if request.request_id != invocation.request_id or request.role != invocation.role:
+            raise RuntimeError("Role request identity mismatch")
+        if stable_digest(request.input_artifacts) != invocation.input_digest:
+            raise RuntimeError("Role request input digest mismatch")
+        if stable_digest(request.output_contract) != invocation.output_contract_digest:
+            raise RuntimeError("Role output-contract digest mismatch")
+        if invocation.response_ref is not None:
+            response = artifacts.read_model(invocation.response_ref, RoleResponse)
+            if invocation.response_id != response.response_id:
+                raise RuntimeError("Role response ID mismatch")
+            if invocation.outcome == RoleOutcome.REQUEST_MISMATCH:
+                if response.request_id == request.request_id:
+                    raise RuntimeError("Request-mismatch outcome has matching request")
+            elif invocation.outcome == RoleOutcome.ROLE_MISMATCH:
+                if response.request_id != request.request_id or response.role == request.role:
+                    raise RuntimeError("Role-mismatch outcome has inconsistent response")
+            elif invocation.outcome == RoleOutcome.UNSUCCESSFUL_RESPONSE:
+                if (
+                    response.request_id != request.request_id
+                    or response.role != request.role
+                    or response.success
+                ):
+                    raise RuntimeError("Unsuccessful role outcome has inconsistent response")
+            elif invocation.outcome in {
+                RoleOutcome.SUCCESS,
+                RoleOutcome.INVALID_TYPED_OUTPUT,
+                RoleOutcome.SEMANTIC_LINK_FAILURE,
+            } and (
+                response.request_id != request.request_id
+                or response.role != request.role
+                or not response.success
+            ):
+                raise RuntimeError("Role response identity or success field mismatch")
+        elif invocation.response_id is not None:
+            raise RuntimeError("Role response ID exists without response reference")
+        if invocation.typed_output_ref is not None:
+            output_model = Ledger._role_output_model(request)
+            artifacts.read_model(invocation.typed_output_ref, output_model)
+            output_bytes = artifacts.read_bytes(invocation.typed_output_ref.digest)
+            if invocation.output_digest != sha256_bytes(output_bytes):
+                raise RuntimeError("Role typed output digest mismatch")
+        transcript = artifacts.read_model(invocation.transcript_ref, RoleTranscript)
+        if transcript.invocation_id != invocation.invocation_id:
+            raise RuntimeError("Role transcript invocation identity mismatch")
+        for field in (
+            "request_id",
+            "role",
+            "response_id",
+            "request_ref",
+            "response_ref",
+            "typed_output_ref",
+            "stdout_ref",
+            "stderr_ref",
+            "input_digest",
+            "output_contract_digest",
+            "output_digest",
+            "provider",
+            "model",
+            "backend",
+            "authority_id",
+            "outcome",
+            "timeout_seconds",
+            "process_status",
+            "failure",
+        ):
+            if getattr(transcript, field) != getattr(invocation, field):
+                raise RuntimeError(f"Role transcript {field} mismatch")
+
+    @staticmethod
+    def _role_output_model(request: RoleRequest) -> type[BaseModel]:
+        title = request.output_contract.get("title")
+        if not isinstance(title, str) or not title:
+            raise RuntimeError("Role output contract has no typed model title")
+        # Imported lazily so the storage layer does not participate in schema
+        # export initialization.
+        from evogen.schema import MODEL_REGISTRY
+
+        matches = {
+            model.__name__: model for model in MODEL_REGISTRY.values()
+        }
+        try:
+            return matches[title]
+        except KeyError as exc:
+            raise RuntimeError(
+                f"Role output contract names unregistered model {title!r}"
+            ) from exc

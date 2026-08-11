@@ -1,4 +1,4 @@
-# Integration checkpoint: first-class evidence probes
+# Integration checkpoint: typed external reasoning roles
 
 This document is the current repository authority for one bounded integration
 goal. It is replaced in the same commit as every completed goal; Git history
@@ -7,10 +7,10 @@ retains older checkpoints.
 ## Repository and planning authority
 
 ```text
-parent commit          c001c885bd6f2f2ae498430d5f2533cb3b0c167c
+parent commit          dae87edbeb8ca67f20c08a2302171cdcc48c04ce
 integration branch     main
-current goal           Goal 5 - Add first-class probes
-next unstarted goal    Goal 6 - Add typed external reasoning roles
+current goal           Goal 6 - Add typed external reasoning roles
+next unstarted goal    Goal 7 - Freeze evaluation authority outside candidates
 alpha source commit    88c169d46e3eaf5c0b0cc87f31e05c95ea9356b4
 alpha release commit   9c8d94c59a95222a719e20fac5a61d2ec712743d
 alpha tag              v0.1.0
@@ -21,103 +21,99 @@ plan updated           2026-08-10T21:25:08.835Z
 execution plan         docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
 ```
 
-Goal 5 began from the reviewed Goal 4 commit named by `parent commit`. This
-goal adds a disposable evidence-probe plane without changing microworld
-scenarios, permanent candidate architecture, evaluator rules, retention
-policy, or the retained baseline generation.
+Goal 6 began from the reviewed Goal 5 commit named by `parent commit`. This
+goal makes six reasoning stages externally replaceable through one retained
+typed boundary without changing the deterministic microworld result, subject
+ontology, evaluator inputs, or retention policy.
 
 ## Behavioral change and authority
 
 Source-proven:
 
-- probes have their own ordered `plan`, `build`, `review`, `evaluate`, and
-  `dispose` stages, typed manifest, receipts, atomic pointers, content-addressed
-  artifacts, ledger records, candidate kind, permissions, evidence target,
-  evaluation, and terminal disposition;
-- the permanent `EvolutionStageOrchestrator` raises a typed
-  `ProbeRequiredError` before invoking the capability architect whenever an
-  issue requests `BUILD_PROBE`;
-- the optional subject-plugin probe factory exposes typed planner, builder,
-  reviewer, and evaluator roles without a core import or built-in fallback to
-  microworld code;
-- probe builders return typed in-memory file payloads and receive no workspace
-  path; the orchestrator alone validates and publishes the exact declared file
-  set under the assigned probe root;
-- builder, reviewer, and evaluator objects must be distinct authorities;
-- the microworld planner requires one persisted `BUILD_PROBE` issue, one exact
-  investigation-derived operation/effect, one revealing fixture, a named
-  uncertainty, and explicit operation, effect, path, step, byte, and duration
-  permissions;
-- generated probe code binds one opaque container from the supplied observation
-  and contains no scenario identifier, target identifier, container name, or
-  expected answer;
-- dispatch acceptance is insufficient: `RESOLVED` requires a complete accepted
-  and changed receipt, the declared operation/effect within budget, an initially
-  observed target, and a later complete observation of the same inspected target
-  with exposed items;
-- the subject evaluator executes against a fresh microworld and obtains the
-  later snapshot separately from the dispatch receipt; deterministic evaluator
-  replay rejects coordinated persisted-evidence substitution;
-- permanent capability bytes are independently read and hash-checked before and
-  after evaluation against the runner-produced capability manifest;
-- probe CAS, workspace, receipt chain, and ledger transitions are separate from
-  permanent candidates, experiments, decisions, generations, materialization,
-  retention, and lineage; and
-- replay fails closed with typed integrity errors for forged identities or
-  links, missing or corrupt CAS objects, malformed pointers, cross-probe
-  substitution, extra files, path escape, and existing or dangling symlinks.
+- one generic `RoleInvoker` owns request dispatch, strict typed result
+  validation, content-addressed request/response/stream/output/transcript
+  retention, and append-only ledger publication for every external role;
+- the raw backend contract returns `RawRoleExecution`; the retained executor
+  independently normalizes response identity, role, success, process status,
+  timeout, and backend-protocol failures before any result can reach a stage;
+- the JSON-stdio backend is shell-free, uses an explicit environment rather
+  than ambient secrets, defaults to a fresh empty working directory, preserves
+  exact stdout/stderr bytes, enforces a finite timeout, and rejects malformed,
+  trailing, extra-field, nonzero, mismatched, and unsuccessful envelopes;
+- `RoleRequest` and `RoleResponse` accept recursively validated JSON values;
+  prose may be retained as notes or stream bytes but cannot substitute for the
+  exact Pydantic output model named by the request contract;
+- trace analysis, diagnosis, investigation, capability architecture,
+  adversarial review, and release recommendation have subject-neutral adapters
+  over the same executor; deterministic implementations remain the defaults;
+- implementer candidate construction now uses the same retained executor and a
+  self-contained JSON packet, with no legacy direct-backend or unretained
+  fallback and no child-visible mutable workspace path;
+- ledger schema version 2 stores immutable role invocation records and links
+  provider, model, backend class, declared authority, timeout, process status,
+  outcome, failure, request/response/stream/transcript/output references, and
+  input, contract, output, and record digests;
+- ledger replay re-reads every referenced CAS object, validates typed request,
+  response, transcript, and output models, recomputes digests, checks SQL
+  identity columns, and requires the transcript to mirror the invocation;
+- DISTILL replay validates the retained result against persisted event and
+  capability evidence without redispatching the external analyst;
+- builder, reviewer, and evaluator must be distinct objects and may not share
+  an exposed authority ID or external backend object;
+- an external release recommendation must preserve the deterministic policy's
+  exact ordered rule evidence, cannot name a generation, and cannot be more
+  permissive than deterministic reject or revise; and
+- the microworld review authority forbids every diagnostic, revealing,
+  structural-variant, regression, and long-horizon scenario ID and every
+  corresponding target ID from generated capability source.
 
 Test-proven:
 
-- a persisted single-case microworld chain produces occurrence count `1`, an
-  insufficient-evidence `BUILD_PROBE` issue, and the exact
-  `inspect_container -> reveal_contents` investigation without calling the
-  permanent architect;
-- that probe records and resolves its named uncertainty only after an accepted
-  and changed engine receipt plus a complete later observation;
-- permanent ledger rowsets, permanent stage-pointer bytes, all permanent CAS
-  bytes, the baseline `GenerationManifest` reference and bytes, and the
-  capability-manifest reference and bytes are identical before and after the
-  probe; exactly one baseline generation and no child generation remain;
-- missing, truncated, unknown, dispatch-only, unchanged, refused, over-budget,
-  missing-later, contradictory-later, and missing-initial-container evidence all
-  remain non-resolving;
-- evaluator exceptions are retained as typed unknown evidence and terminate
-  inconclusively with before/after capability proof;
-- crash-after-ledger-insert recovery is idempotent at every probe stage, and
-  fresh-process resume produces one immutable row per stage and byte-stable
-  status/result replay;
-- planner, candidate, review, evaluation, disposition, receipt, pointer, and
-  evidence tampering attacks fail, including attacks with recomputed enclosing
-  content hashes and deterministic IDs;
-- manifest, stage-pointer, workspace, probe-root, candidate-root, candidate-file,
-  and dangling-symlink attacks fail closed;
-- source specimens using imports, filesystem/process access, attributes,
-  dunder names, or unbounded control flow are rejected without marker-file side
-  effects; and
-- optional/malformed probe role factories and every malformed individual role
-  fail through typed subject-plugin errors.
+- all six new reasoning adapters use the retained executor and reopen as six
+  verified ledger invocations with typed outputs;
+- byte-identical completed-INGEST workspace clones produce the same deterministic
+  and externally supplied DISTILL artifact while changing only the trace
+  authority; the external clone records exactly one backend call and one role
+  ledger row, and completed-stage replay makes no second call;
+- malformed external trace output retains an `INVALID_TYPED_OUTPUT` invocation
+  and publishes no DISTILL pointer;
+- plain prose, trailing prose, missing/extra envelope fields, request and role
+  mismatch, `success=false`, malformed typed output, nonzero exit, timeout with
+  partial streams, startup failure, generic-backend exception, wrong raw return
+  type, and inconsistent generic response claims all fail closed and remain
+  ledger evidence;
+- a real ambient sentinel does not cross the default JSON-stdio environment
+  boundary;
+- version-1 ledger migration preserves invocation JSON and backfills its record
+  digest; byte-identical duplicate insertion is idempotent while divergent
+  reuse of an invocation ID is rejected;
+- SQL identity, record JSON/digest, request, response, transcript, and typed
+  output substitution or content/model mismatch is detected during replay;
+- malicious release recommendations cannot loosen reject/revise, reorder,
+  duplicate, add, or remove policy rules, change candidate identity, or forge a
+  retained generation; and
+- authority tests reject shared objects, authority IDs, invokers, and backend
+  objects across permanent build, review, and evaluation.
 
 Generated authority:
 
-- the schema registry and generated index now own sixteen probe schemas for
-  build output, file payload, permissions, evidence target, plan, candidate,
-  review, dispatch evidence, observation evidence, evaluation, disposition,
-  manifest, receipt, pointer, required result, and final result; and
-- the pre-existing permanent candidate and cycle-result schemas remain
-  byte-identical to the Goal 4 parent.
+- the schema registry and committed index now own role invocation, role
+  transcript, and adversarial review report schemas in addition to the strict
+  role request and response schemas; and
+- generated schema freshness remains enforced from the Pydantic model registry.
 
 Not proven:
 
-- evaluator provenance, provider/model transcripts, or frozen evaluator and
-  held-out-suite authority; these are explicit Goal 6 and Goal 7 work;
-- containment of an intentionally malicious trusted Python plugin that uses
-  ambient filesystem APIs; G05 removes workspace authority from the builder
-  contract and sandboxes generated probe source, but plugin process isolation is
-  not claimed;
-- concurrent writers to the same probe workspace are serialized;
-- probe results automatically launch a later permanent capability cycle; probe
-  findings are evidence only and never retention authority; or
+- no hosted model or provider was called; external-role proof uses deterministic
+  in-process specimens and isolated Python JSON-stdio subprocesses;
+- only trace analysis has the full completed-microworld one-role swap proof;
+  the other five adapters have typed injection and retained-ledger proof but not
+  five additional end-to-end cycle clones;
+- a fully coherent rewrite of both SQLite records and every replacement CAS
+  object cannot be detected without an external signed anchor; partial or
+  inconsistent tampering is detected;
+- evaluator/scenario suite manifests, protected pre/post hashes, namespaced
+  subject metrics, and held-out evaluation authority remain Goal 7 work; or
 - OpenTTD or Kenshi is registered, controlled, installed from pinned source, or
   live-proven as an EvoGen subject.
 
@@ -129,23 +125,26 @@ The local and CI authority remains:
 uv run --frozen --extra dev python scripts/verify.py
 ```
 
-Before checkpoint refresh, the root independently passed 110 focused
-probe/plugin/schema tests and all 174 non-checkpoint tests, together with Ruff,
-strict mypy over 45 source files, generated-schema freshness, preservation of
-the Goal 4 permanent schemas, and whitespace checks. With this checkpoint
+Before checkpoint refresh, the root passed 32 focused role, policy, ledger,
+builder, and schema tests, together with repository-wide Ruff, strict mypy over
+46 source files, schema freshness, whitespace checks, and the full test suite
+with only the expected checkpoint-freshness failure. With this checkpoint
 present, the authoritative dirty-candidate gate passed compile, Ruff, strict
-mypy, a fresh isolated wheel build and exact subject entry-point metadata check,
-all 175 tests, the retained microworld demo, and whitespace checks.
+mypy, a fresh isolated wheel build, the entire test suite, the retained
+microworld demo, and whitespace checks.
 
-Two Luna agents mapped the pre-write insufficient-evidence path and the
-probe/permanent threat boundary. A separate Luna writer implemented the bounded
-candidate without checkpoint or commit authority. Two independent Luna review
-lanes repeatedly rejected early candidates after reproducing real defects:
-forged receipts and evaluations, weak causal snapshots, writable builder paths,
-unlisted files, raw CAS exceptions, forged plans, symlinked pointers, and
-dangling symlinks. Each accepted correction was tied to a retained regression.
-The causal reviewer and final integrity reviewer independently returned
-`ACCEPT`; candidate-author diagnostics were not used as certification.
+Two Luna agents mapped the pre-write role authority and failure-retention
+boundaries. A separate Luna writer implemented the bounded candidate; the root
+rejected its first handback after two independent audits found unretained
+fallbacks, timeout and identity gaps, weak replay checks, and release-policy
+bypass. The corrected handback was reconciled by the root. Kepler then added
+the real one-role microworld swap proof and exposed duplicate external
+redispatch during replay. Noether and Turing independently authored adversarial
+ledger and policy proofs, which the root tightened against false-positive
+exception paths. Curie and Faraday performed fresh final read-only audits;
+Faraday found incomplete hidden-target protection, the root corrected it with
+a regression, and both final reviewers returned `PASS`. Candidate-author
+diagnostics were not used as certification.
 
 ## External subject availability
 
@@ -161,10 +160,11 @@ as a subject.
 
 ## Completion boundary
 
-This checkpoint is part of the coherent Goal 5 candidate. Goal 5 is complete
+This checkpoint is part of the coherent Goal 6 candidate. Goal 6 is complete
 only after the authoritative gate passes with this dirty checkpoint, the final
 diff is reviewed and committed, the clean-state checkpoint ratchet passes, and
 the tree is clean and synchronized with the public remote.
 
-Goal 6 is the sole next packet and remains unstarted. External reasoning-role
-or frozen evaluator-authority work must not be smuggled into this probe commit.
+Goal 7 is the sole next packet and remains unstarted. Frozen evaluation-authority
+or suite-manifest implementation must not be smuggled into this role-boundary
+commit.

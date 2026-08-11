@@ -150,3 +150,18 @@ class AgentRole(StrEnum):
     ADVERSARIAL_REVIEWER = "adversarial_reviewer"
     EVALUATOR = "evaluator"
     RELEASE_STEWARD = "release_steward"
+
+
+class RoleOutcome(StrEnum):
+    """Terminal disposition of one attempted external role invocation."""
+
+    SUCCESS = "success"
+    TIMEOUT = "timeout"
+    NONZERO_EXIT = "nonzero_exit"
+    MALFORMED_ENVELOPE = "malformed_envelope"
+    REQUEST_MISMATCH = "request_mismatch"
+    ROLE_MISMATCH = "role_mismatch"
+    BACKEND_EXCEPTION = "backend_exception"
+    UNSUCCESSFUL_RESPONSE = "unsuccessful_response"
+    INVALID_TYPED_OUTPUT = "invalid_typed_output"
+    SEMANTIC_LINK_FAILURE = "semantic_link_failure"

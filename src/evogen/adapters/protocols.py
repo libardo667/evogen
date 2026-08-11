@@ -10,6 +10,7 @@ from evogen.core.models import (
     CapabilityIssue,
     CapabilityManifest,
     CapabilitySpec,
+    DistilledTrace,
     ExperimentResult,
     GateDecision,
     GenerationManifest,
@@ -76,6 +77,41 @@ class CandidateReviewer(Protocol):
         *,
         forbidden_literals: list[str] | None = None,
     ) -> ReviewReport: ...
+
+
+@runtime_checkable
+class TraceAnalyst(Protocol):
+    def distill(
+        self,
+        *,
+        generation_id: str,
+        events: list[TrajectoryEvent],
+        capabilities: CapabilityManifest,
+    ) -> DistilledTrace: ...
+
+
+@runtime_checkable
+class Diagnostician(Protocol):
+    def diagnose(self, trace: DistilledTrace) -> CapabilityIssue: ...
+
+
+@runtime_checkable
+class CapabilityArchitectRole(Protocol):
+    def specify(
+        self,
+        *,
+        issue: CapabilityIssue,
+        investigation: InvestigationReport,
+        revealing_cases: list[str],
+        structural_variants: list[str],
+        regression_suites: list[str],
+        long_horizon_suites: list[str],
+    ) -> CapabilitySpec: ...
+
+
+@runtime_checkable
+class ReleaseRecommender(Protocol):
+    def recommend(self, result: ExperimentResult) -> GateDecision: ...
 
 
 @runtime_checkable

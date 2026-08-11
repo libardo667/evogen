@@ -29,6 +29,7 @@ from .evaluator import MicroworldEvaluator
 from .investigator import MicroworldInvestigator
 from .scenarios import (
     DIAGNOSTIC_SCENARIOS,
+    EVALUATION_SCENARIOS,
     LONG_HORIZON_SUITES,
     REGRESSION_SUITES,
     REVEALING_CASES,
@@ -144,10 +145,15 @@ def build_bootstrap(context: SubjectFactoryContext) -> SubjectBootstrap:
             "artifact_digests": {"capability_manifest": digest},
         }
     )
+    protected_scenarios = list(
+        dict.fromkeys([*DIAGNOSTIC_SCENARIOS, *EVALUATION_SCENARIOS])
+    )
     forbidden_literals = [
-        *REVEALING_CASES,
-        *STRUCTURAL_VARIANTS,
-        *[get_scenario(identifier).target_item_id for identifier in REVEALING_CASES],
+        *protected_scenarios,
+        *[
+            get_scenario(identifier).target_item_id
+            for identifier in protected_scenarios
+        ],
     ]
     plan = EvolutionPlan(
         diagnostic_scenarios=DIAGNOSTIC_SCENARIOS,
