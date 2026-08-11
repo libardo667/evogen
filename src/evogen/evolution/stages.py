@@ -21,7 +21,7 @@ from evogen.adapters.protocols import (
     GenerationMaterializer,
     SubjectRunner,
 )
-from evogen.core.enums import CandidateStatus, GateVerdict, IssueStatus, StageName
+from evogen.core.enums import CandidateStatus, GateVerdict, IssueStatus, ResolutionKind, StageName
 from evogen.core.ids import new_id, sha256_bytes, stable_digest
 from evogen.core.models import (
     ArtifactRef,
@@ -37,6 +37,7 @@ from evogen.core.models import (
     GenerationManifest,
     IngestResult,
     InvestigationReport,
+    ProbeRequiredResult,
     ReviewReport,
     RunRecord,
     StagePointer,
@@ -70,6 +71,14 @@ class StageConflictError(StageIntegrityError):
 
 class StageArtifactError(StageIntegrityError):
     pass
+
+
+class ProbeRequiredError(StageIntegrityError):
+    """Typed fail-closed result when a permanent stage receives BUILD_PROBE."""
+
+    def __init__(self, result: ProbeRequiredResult) -> None:
+        self.result = result
+        super().__init__(result.message)
 
 
 _OUTPUT_MODELS: dict[StageName, type[BaseModel]] = {
@@ -409,6 +418,16 @@ class EvolutionStageOrchestrator:
             self._validate_issue(issue)
             if investigation.issue_id != issue.issue_id:
                 raise StageIntegrityError("Investigation does not belong to diagnosed issue")
+            if issue.proposed_resolution == ResolutionKind.BUILD_PROBE:
+                raise ProbeRequiredError(
+                    ProbeRequiredResult(
+                        issue_id=issue.issue_id,
+                        message=(
+                            "Issue requires a first-class evidence probe; permanent capability "
+                            "architecture is not permitted."
+                        ),
+                    )
+                )
             specification = self.architect.specify(
                 issue=issue,
                 investigation=investigation,

@@ -1,0 +1,769 @@
+{
+  "$defs": {
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "A typed reference to one immutable content-addressed artifact.",
+      "properties": {
+        "digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "model"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "Completeness": {
+      "enum": [
+        "complete",
+        "truncated",
+        "missing",
+        "unknown"
+      ],
+      "title": "Completeness",
+      "type": "string"
+    },
+    "ProbeCandidateManifest": {
+      "additionalProperties": false,
+      "description": "Probe code identity. This intentionally has no spec/claimed/retained fields.",
+      "properties": {
+        "artifact_digests": {
+          "additionalProperties": {
+            "maxLength": 64,
+            "minLength": 64,
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "title": "Artifact Digests",
+          "type": "object"
+        },
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "changed_files": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Changed Files",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "file_digests": {
+          "additionalProperties": {
+            "maxLength": 64,
+            "minLength": 64,
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "title": "File Digests",
+          "type": "object"
+        },
+        "issue_id": {
+          "title": "Issue Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "probe",
+          "default": "probe",
+          "title": "Kind",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "parent_generation": {
+          "title": "Parent Generation",
+          "type": "string"
+        },
+        "probe_id": {
+          "title": "Probe Id",
+          "type": "string"
+        },
+        "source_digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Source Digest",
+          "type": "string"
+        },
+        "workspace_path": {
+          "title": "Workspace Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "probe_id",
+        "parent_generation",
+        "issue_id",
+        "workspace_path",
+        "source_digest",
+        "changed_files"
+      ],
+      "title": "ProbeCandidateManifest",
+      "type": "object"
+    },
+    "ProbeDispatchEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted": {
+          "title": "Accepted",
+          "type": "boolean"
+        },
+        "changed": {
+          "title": "Changed",
+          "type": "boolean"
+        },
+        "completeness": {
+          "$ref": "#/$defs/Completeness"
+        },
+        "effect": {
+          "title": "Effect",
+          "type": "string"
+        },
+        "operation": {
+          "title": "Operation",
+          "type": "string"
+        },
+        "receipt": {
+          "additionalProperties": true,
+          "title": "Receipt",
+          "type": "object"
+        },
+        "steps": {
+          "default": 1,
+          "minimum": 0,
+          "title": "Steps",
+          "type": "integer"
+        },
+        "target_id": {
+          "title": "Target Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation",
+        "effect",
+        "target_id",
+        "accepted",
+        "changed",
+        "receipt",
+        "completeness"
+      ],
+      "title": "ProbeDispatchEvidence",
+      "type": "object"
+    },
+    "ProbeDisposition": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "disposition": {
+          "$ref": "#/$defs/ProbeDispositionKind"
+        },
+        "disposition_id": {
+          "title": "Disposition Id",
+          "type": "string"
+        },
+        "named_uncertainty": {
+          "title": "Named Uncertainty",
+          "type": "string"
+        },
+        "probe_id": {
+          "title": "Probe Id",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "disposition_id",
+        "candidate_id",
+        "probe_id",
+        "named_uncertainty",
+        "disposition",
+        "rationale"
+      ],
+      "title": "ProbeDisposition",
+      "type": "object"
+    },
+    "ProbeDispositionKind": {
+      "enum": [
+        "resolved",
+        "refuted",
+        "inconclusive",
+        "rejected",
+        "failed"
+      ],
+      "title": "ProbeDispositionKind",
+      "type": "string"
+    },
+    "ProbeEvaluation": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "capability_manifest_unchanged": {
+          "default": false,
+          "title": "Capability Manifest Unchanged",
+          "type": "boolean"
+        },
+        "completeness": {
+          "$ref": "#/$defs/Completeness"
+        },
+        "dispatch_evidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProbeDispatchEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dispatch_evidence_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evaluation_id": {
+          "title": "Evaluation Id",
+          "type": "string"
+        },
+        "final_capability_manifest_bytes_digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Final Capability Manifest Bytes Digest",
+          "type": "string"
+        },
+        "final_capability_manifest_digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Final Capability Manifest Digest",
+          "type": "string"
+        },
+        "final_capability_manifest_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "initial_capability_manifest_bytes_digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Initial Capability Manifest Bytes Digest",
+          "type": "string"
+        },
+        "initial_capability_manifest_digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Initial Capability Manifest Digest",
+          "type": "string"
+        },
+        "initial_capability_manifest_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "initial_observation_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "later_observation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProbeObservationEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "later_observation_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "named_uncertainty": {
+          "title": "Named Uncertainty",
+          "type": "string"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "probe_id": {
+          "title": "Probe Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evaluation_id",
+        "candidate_id",
+        "probe_id",
+        "named_uncertainty",
+        "initial_observation_ref",
+        "dispatch_evidence_ref",
+        "later_observation_ref",
+        "completeness",
+        "initial_capability_manifest_ref",
+        "initial_capability_manifest_digest",
+        "initial_capability_manifest_bytes_digest",
+        "final_capability_manifest_ref",
+        "final_capability_manifest_digest",
+        "final_capability_manifest_bytes_digest"
+      ],
+      "title": "ProbeEvaluation",
+      "type": "object"
+    },
+    "ProbeEvidenceTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "hypotheses": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Hypotheses",
+          "type": "array"
+        },
+        "named_uncertainty": {
+          "title": "Named Uncertainty",
+          "type": "string"
+        },
+        "prohibited_inferences": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Prohibited Inferences",
+          "type": "array"
+        },
+        "required_later_observations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Later Observations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "named_uncertainty",
+        "hypotheses",
+        "required_later_observations",
+        "prohibited_inferences"
+      ],
+      "title": "ProbeEvidenceTarget",
+      "type": "object"
+    },
+    "ProbeManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_capability_manifest_digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Baseline Capability Manifest Digest",
+          "type": "string"
+        },
+        "baseline_generation_id": {
+          "title": "Baseline Generation Id",
+          "type": "string"
+        },
+        "baseline_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "capability_manifest_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "investigation_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "issue_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "manifest_version": {
+          "const": "1.0",
+          "title": "Manifest Version",
+          "type": "string"
+        },
+        "probe_id": {
+          "title": "Probe Id",
+          "type": "string"
+        },
+        "stage_order": {
+          "items": {
+            "$ref": "#/$defs/ProbeStageName"
+          },
+          "title": "Stage Order",
+          "type": "array"
+        },
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        }
+      },
+      "required": [
+        "manifest_version",
+        "probe_id",
+        "subject",
+        "baseline_generation_id",
+        "baseline_ref",
+        "issue_ref",
+        "investigation_ref",
+        "capability_manifest_ref",
+        "baseline_capability_manifest_digest",
+        "stage_order"
+      ],
+      "title": "ProbeManifest",
+      "type": "object"
+    },
+    "ProbeObservationEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "completeness": {
+          "$ref": "#/$defs/Completeness"
+        },
+        "container_id": {
+          "title": "Container Id",
+          "type": "string"
+        },
+        "exposed_item_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Exposed Item Ids",
+          "type": "array"
+        },
+        "inspected": {
+          "title": "Inspected",
+          "type": "boolean"
+        },
+        "observation": {
+          "additionalProperties": true,
+          "title": "Observation",
+          "type": "object"
+        }
+      },
+      "required": [
+        "container_id",
+        "inspected",
+        "exposed_item_ids",
+        "observation",
+        "completeness"
+      ],
+      "title": "ProbeObservationEvidence",
+      "type": "object"
+    },
+    "ProbePermissions": {
+      "additionalProperties": false,
+      "description": "Explicit probe sandbox; every operation/effect/path is denied by default.",
+      "properties": {
+        "allowed_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Effects",
+          "type": "array"
+        },
+        "allowed_operations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Operations",
+          "type": "array"
+        },
+        "allowed_paths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Paths",
+          "type": "array"
+        },
+        "max_bytes": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Max Bytes",
+          "type": "integer"
+        },
+        "max_duration_seconds": {
+          "default": 0.0,
+          "minimum": 0.0,
+          "title": "Max Duration Seconds",
+          "type": "number"
+        },
+        "max_steps": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Max Steps",
+          "type": "integer"
+        }
+      },
+      "title": "ProbePermissions",
+      "type": "object"
+    },
+    "ProbePlan": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_capability_manifest_digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Baseline Capability Manifest Digest",
+          "type": "string"
+        },
+        "capability_manifest_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "evidence_target": {
+          "$ref": "#/$defs/ProbeEvidenceTarget"
+        },
+        "fixture_id": {
+          "title": "Fixture Id",
+          "type": "string"
+        },
+        "initial_observation": {
+          "additionalProperties": true,
+          "title": "Initial Observation",
+          "type": "object"
+        },
+        "initial_observation_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "investigation_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "issue_id": {
+          "title": "Issue Id",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "parent_generation": {
+          "title": "Parent Generation",
+          "type": "string"
+        },
+        "permissions": {
+          "$ref": "#/$defs/ProbePermissions"
+        },
+        "probe_id": {
+          "title": "Probe Id",
+          "type": "string"
+        },
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        }
+      },
+      "required": [
+        "probe_id",
+        "issue_id",
+        "parent_generation",
+        "subject",
+        "investigation_ref",
+        "capability_manifest_ref",
+        "baseline_capability_manifest_digest",
+        "fixture_id",
+        "evidence_target",
+        "permissions"
+      ],
+      "title": "ProbePlan",
+      "type": "object"
+    },
+    "ProbeReviewReport": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "checks": {
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "title": "Checks",
+          "type": "object"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/ReviewFinding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "passed": {
+          "title": "Passed",
+          "type": "boolean"
+        },
+        "probe_id": {
+          "title": "Probe Id",
+          "type": "string"
+        },
+        "review_id": {
+          "title": "Review Id",
+          "type": "string"
+        },
+        "reviewed_files": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewed Files",
+          "type": "array"
+        }
+      },
+      "required": [
+        "review_id",
+        "candidate_id",
+        "probe_id",
+        "passed",
+        "checks"
+      ],
+      "title": "ProbeReviewReport",
+      "type": "object"
+    },
+    "ProbeStageName": {
+      "description": "The deliberately separate, short-lived probe lifecycle.",
+      "enum": [
+        "plan",
+        "build",
+        "review",
+        "evaluate",
+        "dispose"
+      ],
+      "title": "ProbeStageName",
+      "type": "string"
+    },
+    "ReviewFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "file": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "File"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        }
+      },
+      "required": [
+        "severity",
+        "code",
+        "message"
+      ],
+      "title": "ReviewFinding",
+      "type": "object"
+    },
+    "Severity": {
+      "enum": [
+        "info",
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "title": "Severity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "candidate": {
+      "$ref": "#/$defs/ProbeCandidateManifest"
+    },
+    "disposition": {
+      "$ref": "#/$defs/ProbeDisposition"
+    },
+    "evaluation": {
+      "$ref": "#/$defs/ProbeEvaluation"
+    },
+    "manifest": {
+      "$ref": "#/$defs/ProbeManifest"
+    },
+    "plan": {
+      "$ref": "#/$defs/ProbePlan"
+    },
+    "review": {
+      "$ref": "#/$defs/ProbeReviewReport"
+    },
+    "workspace": {
+      "title": "Workspace",
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace",
+    "manifest",
+    "plan",
+    "candidate",
+    "review",
+    "evaluation",
+    "disposition"
+  ],
+  "title": "ProbeResult",
+  "type": "object"
+}

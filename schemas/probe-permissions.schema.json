@@ -1,0 +1,47 @@
+{
+  "additionalProperties": false,
+  "description": "Explicit probe sandbox; every operation/effect/path is denied by default.",
+  "properties": {
+    "allowed_effects": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Allowed Effects",
+      "type": "array"
+    },
+    "allowed_operations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Allowed Operations",
+      "type": "array"
+    },
+    "allowed_paths": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Allowed Paths",
+      "type": "array"
+    },
+    "max_bytes": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Max Bytes",
+      "type": "integer"
+    },
+    "max_duration_seconds": {
+      "default": 0.0,
+      "minimum": 0.0,
+      "title": "Max Duration Seconds",
+      "type": "number"
+    },
+    "max_steps": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Max Steps",
+      "type": "integer"
+    }
+  },
+  "title": "ProbePermissions",
+  "type": "object"
+}

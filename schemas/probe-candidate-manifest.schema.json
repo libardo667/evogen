@@ -1,0 +1,87 @@
+{
+  "additionalProperties": false,
+  "description": "Probe code identity. This intentionally has no spec/claimed/retained fields.",
+  "properties": {
+    "artifact_digests": {
+      "additionalProperties": {
+        "maxLength": 64,
+        "minLength": 64,
+        "pattern": "^[0-9a-f]{64}$",
+        "type": "string"
+      },
+      "title": "Artifact Digests",
+      "type": "object"
+    },
+    "candidate_id": {
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "changed_files": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Changed Files",
+      "type": "array"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "file_digests": {
+      "additionalProperties": {
+        "maxLength": 64,
+        "minLength": 64,
+        "pattern": "^[0-9a-f]{64}$",
+        "type": "string"
+      },
+      "title": "File Digests",
+      "type": "object"
+    },
+    "issue_id": {
+      "title": "Issue Id",
+      "type": "string"
+    },
+    "kind": {
+      "const": "probe",
+      "default": "probe",
+      "title": "Kind",
+      "type": "string"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "title": "Metadata",
+      "type": "object"
+    },
+    "parent_generation": {
+      "title": "Parent Generation",
+      "type": "string"
+    },
+    "probe_id": {
+      "title": "Probe Id",
+      "type": "string"
+    },
+    "source_digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source Digest",
+      "type": "string"
+    },
+    "workspace_path": {
+      "title": "Workspace Path",
+      "type": "string"
+    }
+  },
+  "required": [
+    "candidate_id",
+    "probe_id",
+    "parent_generation",
+    "issue_id",
+    "workspace_path",
+    "source_digest",
+    "changed_files"
+  ],
+  "title": "ProbeCandidateManifest",
+  "type": "object"
+}

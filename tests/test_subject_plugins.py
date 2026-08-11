@@ -16,6 +16,7 @@ from evogen.adapters.protocols import (
     EnvironmentInvestigator,
     ExperimentEvaluator,
     GenerationMaterializer,
+    ProbeRoleBundle,
     SubjectDoctor,
     SubjectRunner,
 )
@@ -372,6 +373,81 @@ def test_all_factories_share_context_and_runner_identity(tmp_path) -> None:
     assert isinstance(composition.evaluator, ExperimentEvaluator)
     assert isinstance(composition.materializer, GenerationMaterializer)
     assert isinstance(composition.doctor, SubjectDoctor)
+
+
+def test_probe_roles_are_optional_but_microworld_exposes_typed_bundle(tmp_path) -> None:
+    composition = compose_subject(_plugin(), context=_context(tmp_path / "optional"))
+    assert composition.probe_roles is None
+    microworld = load_subject_plugin("microworld")
+    composed = compose_subject(microworld, context=_context(tmp_path / "microworld"))
+    assert composed.probe_roles is not None
+    assert all(
+        role is not None
+        for role in (
+            composed.probe_roles.planner,
+            composed.probe_roles.builder,
+            composed.probe_roles.reviewer,
+            composed.probe_roles.evaluator,
+        )
+    )
+
+
+@pytest.mark.parametrize("factory", [lambda context: object(), object()])
+def test_probe_factory_shape_and_failure_are_typed(tmp_path: Path, factory) -> None:
+    plugin = _plugin(probe_roles_factory=factory)
+    error = SubjectPluginShapeError if not callable(factory) else SubjectPluginFactoryError
+    with pytest.raises(error, match="probe_roles_factory"):
+        compose_subject(plugin, context=_context(tmp_path))
+
+
+def test_probe_factory_exception_is_wrapped(tmp_path: Path) -> None:
+    def raising(context):
+        del context
+        raise RuntimeError("probe factory boom")
+
+    with pytest.raises(SubjectPluginFactoryError, match="probe_roles_factory.*probe factory boom"):
+        compose_subject(
+            _plugin(probe_roles_factory=raising),
+            context=_context(tmp_path),
+        )
+
+
+class _ProbePlanner:
+    def plan(self, **kwargs):
+        del kwargs
+        return object()
+
+
+class _ProbeBuilder:
+    def build(self, **kwargs):
+        del kwargs
+        return object()
+
+
+class _ProbeReviewer:
+    def review(self, **kwargs):
+        del kwargs
+        return object()
+
+
+class _ProbeEvaluator:
+    def evaluate(self, **kwargs):
+        del kwargs
+        return object()
+
+
+@pytest.mark.parametrize("bad_role", ["planner", "builder", "reviewer", "evaluator"])
+def test_each_probe_role_is_runtime_checked(tmp_path: Path, bad_role: str) -> None:
+    roles = {
+        "planner": _ProbePlanner(),
+        "builder": _ProbeBuilder(),
+        "reviewer": _ProbeReviewer(),
+        "evaluator": _ProbeEvaluator(),
+    }
+    roles[bad_role] = object()
+    plugin = _plugin(probe_roles_factory=lambda context: ProbeRoleBundle(**roles))
+    with pytest.raises(SubjectPluginFactoryError, match=bad_role):
+        compose_subject(plugin, context=_context(tmp_path))
 
 
 def test_external_subject_is_discovered_from_real_metadata(tmp_path, monkeypatch) -> None:

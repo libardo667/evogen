@@ -1,0 +1,106 @@
+{
+  "$defs": {
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "A typed reference to one immutable content-addressed artifact.",
+      "properties": {
+        "digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "model"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "ProbeStageName": {
+      "description": "The deliberately separate, short-lived probe lifecycle.",
+      "enum": [
+        "plan",
+        "build",
+        "review",
+        "evaluate",
+        "dispose"
+      ],
+      "title": "ProbeStageName",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "input_refs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ArtifactRef"
+      },
+      "title": "Input Refs",
+      "type": "object"
+    },
+    "manifest_digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Manifest Digest",
+      "type": "string"
+    },
+    "output_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "prior_receipt_digest": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prior Receipt Digest"
+    },
+    "probe_id": {
+      "title": "Probe Id",
+      "type": "string"
+    },
+    "receipt_id": {
+      "title": "Receipt Id",
+      "type": "string"
+    },
+    "receipt_version": {
+      "const": "1.0",
+      "title": "Receipt Version",
+      "type": "string"
+    },
+    "stage": {
+      "$ref": "#/$defs/ProbeStageName"
+    },
+    "subject": {
+      "title": "Subject",
+      "type": "string"
+    }
+  },
+  "required": [
+    "receipt_version",
+    "receipt_id",
+    "probe_id",
+    "manifest_digest",
+    "stage",
+    "subject",
+    "input_refs",
+    "output_ref"
+  ],
+  "title": "ProbeStageReceipt",
+  "type": "object"
+}

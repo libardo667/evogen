@@ -1,0 +1,49 @@
+{
+  "$defs": {
+    "Completeness": {
+      "enum": [
+        "complete",
+        "truncated",
+        "missing",
+        "unknown"
+      ],
+      "title": "Completeness",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "completeness": {
+      "$ref": "#/$defs/Completeness"
+    },
+    "container_id": {
+      "title": "Container Id",
+      "type": "string"
+    },
+    "exposed_item_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Exposed Item Ids",
+      "type": "array"
+    },
+    "inspected": {
+      "title": "Inspected",
+      "type": "boolean"
+    },
+    "observation": {
+      "additionalProperties": true,
+      "title": "Observation",
+      "type": "object"
+    }
+  },
+  "required": [
+    "container_id",
+    "inspected",
+    "exposed_item_ids",
+    "observation",
+    "completeness"
+  ],
+  "title": "ProbeObservationEvidence",
+  "type": "object"
+}

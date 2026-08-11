@@ -11,6 +11,7 @@ from evogen.adapters.protocols import (
     EnvironmentInvestigator,
     ExperimentEvaluator,
     GenerationMaterializer,
+    ProbeRoleBundle,
     SubjectRunner,
 )
 from evogen.adapters.subjects import (
@@ -91,6 +92,32 @@ def build_doctor(context: SubjectFactoryContext) -> MicroworldDoctor:
     return MicroworldDoctor()
 
 
+def build_probe_roles(context: SubjectFactoryContext) -> ProbeRoleBundle:
+    """Provide typed generic probe roles through the public subject boundary."""
+    from .probe import (
+        MicroworldProbeBuilder,
+        MicroworldProbeEvaluator,
+        MicroworldProbePlanner,
+        MicroworldProbeReviewer,
+    )
+
+    runner = _runner_from_context(context)
+    if context.bootstrap is None:
+        raise RuntimeError("Probe roles require the composed subject bootstrap")
+    return ProbeRoleBundle(
+        planner=MicroworldProbePlanner(
+            runner=runner,
+            trace_directory=context.workspace / "probes" / "baseline-traces",
+        ),
+        builder=MicroworldProbeBuilder(),
+        reviewer=MicroworldProbeReviewer(),
+        evaluator=MicroworldProbeEvaluator(
+            runner=runner,
+            baseline=context.bootstrap.baseline,
+        ),
+    )
+
+
 def build_bootstrap(context: SubjectFactoryContext) -> SubjectBootstrap:
     """Create microworld-only baseline/plan values in generic core types."""
 
@@ -140,17 +167,18 @@ class MicroworldSubjectPlugin:
     name: str = "microworld"
     api_version: str = SUBJECT_PLUGIN_API_VERSION
     runner_factory: Callable[[SubjectFactoryContext], SubjectRunner] = build_runner
-    investigator_factory: Callable[
-        [SubjectFactoryContext], EnvironmentInvestigator
-    ] = build_investigator
+    investigator_factory: Callable[[SubjectFactoryContext], EnvironmentInvestigator] = (
+        build_investigator
+    )
     builder_factory: Callable[[SubjectFactoryContext], CandidateBuilder] = build_builder
     reviewer_factory: Callable[[SubjectFactoryContext], CandidateReviewer] = build_reviewer
     evaluator_factory: Callable[[SubjectFactoryContext], ExperimentEvaluator] = build_evaluator
-    materializer_factory: Callable[
-        [SubjectFactoryContext], GenerationMaterializer
-    ] = build_materializer
+    materializer_factory: Callable[[SubjectFactoryContext], GenerationMaterializer] = (
+        build_materializer
+    )
     doctor_factory: Callable[[SubjectFactoryContext], SubjectDoctor] = build_doctor
     bootstrap_factory: Callable[[SubjectFactoryContext], SubjectBootstrap] = build_bootstrap
+    probe_roles_factory: Callable[[SubjectFactoryContext], ProbeRoleBundle] = build_probe_roles
 
 
 subject_plugin: SubjectPlugin = MicroworldSubjectPlugin()
@@ -166,5 +194,6 @@ __all__ = [
     "MicroworldDoctor",
     "MicroworldSubjectPlugin",
     "build_subject_plugin",
+    "build_probe_roles",
     "subject_plugin",
 ]

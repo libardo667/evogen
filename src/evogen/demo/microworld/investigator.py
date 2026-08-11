@@ -19,15 +19,16 @@ class MicroworldInvestigator:
         available_methods = {
             name for name, member in inspect.getmembers(MicroWorld) if callable(member)
         }
-        candidates = [
-            operation
-            for operation in ENVIRONMENT_OPERATIONS
-            if operation.name in available_methods
-            and (
-                issue.required_effect is None
-                or issue.required_effect in operation.semantic_effects
-            )
-        ]
+        candidates = (
+            [
+                operation
+                for operation in ENVIRONMENT_OPERATIONS
+                if operation.name in available_methods
+                and issue.required_effect in operation.semantic_effects
+            ]
+            if issue.required_effect is not None
+            else []
+        )
         rejected = [
             operation.name
             for operation in ENVIRONMENT_OPERATIONS

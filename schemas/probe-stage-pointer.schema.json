@@ -1,0 +1,46 @@
+{
+  "$defs": {
+    "ProbeStageName": {
+      "description": "The deliberately separate, short-lived probe lifecycle.",
+      "enum": [
+        "plan",
+        "build",
+        "review",
+        "evaluate",
+        "dispose"
+      ],
+      "title": "ProbeStageName",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "pointer_version": {
+      "const": "1.0",
+      "title": "Pointer Version",
+      "type": "string"
+    },
+    "probe_id": {
+      "title": "Probe Id",
+      "type": "string"
+    },
+    "receipt_digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Receipt Digest",
+      "type": "string"
+    },
+    "stage": {
+      "$ref": "#/$defs/ProbeStageName"
+    }
+  },
+  "required": [
+    "pointer_version",
+    "probe_id",
+    "stage",
+    "receipt_digest"
+  ],
+  "title": "ProbeStagePointer",
+  "type": "object"
+}

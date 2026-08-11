@@ -21,6 +21,20 @@ class StageName(StrEnum):
         return tuple(cls)
 
 
+class ProbeStageName(StrEnum):
+    """The deliberately separate, short-lived probe lifecycle."""
+
+    PLAN = "plan"
+    BUILD = "build"
+    REVIEW = "review"
+    EVALUATE = "evaluate"
+    DISPOSE = "dispose"
+
+    @classmethod
+    def ordered(cls) -> tuple[ProbeStageName, ...]:
+        return tuple(cls)
+
+
 class Completeness(StrEnum):
     COMPLETE = "complete"
     TRUNCATED = "truncated"
@@ -87,6 +101,14 @@ class ResolutionKind(StrEnum):
     FIX_INFRASTRUCTURE = "fix_infrastructure"
     NO_CHANGE_ENVIRONMENT_REFUSED = "no_change_environment_refused"
     NO_CHANGE_EXISTING_CAPABILITY = "no_change_existing_capability"
+
+
+class ProbeDispositionKind(StrEnum):
+    RESOLVED = "resolved"
+    REFUTED = "refuted"
+    INCONCLUSIVE = "inconclusive"
+    REJECTED = "rejected"
+    FAILED = "failed"
 
 
 class IssueStatus(StrEnum):

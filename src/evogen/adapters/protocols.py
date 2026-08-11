@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from evogen.core.models import (
+    ArtifactRef,
     CandidateManifest,
     CapabilityIssue,
     CapabilityManifest,
@@ -12,6 +14,12 @@ from evogen.core.models import (
     GateDecision,
     GenerationManifest,
     InvestigationReport,
+    ProbeBuildOutput,
+    ProbeCandidateManifest,
+    ProbeEvaluation,
+    ProbeEvidenceTarget,
+    ProbePlan,
+    ProbeReviewReport,
     ReviewReport,
     RunRecord,
     TrajectoryEvent,
@@ -87,3 +95,53 @@ class SubjectDoctor(Protocol):
     """Minimal generic diagnostic boundary reserved for a later goal."""
 
     def check(self) -> None: ...
+
+
+@runtime_checkable
+class ProbePlanner(Protocol):
+    def plan(
+        self,
+        *,
+        issue: CapabilityIssue,
+        investigation: InvestigationReport,
+        parent: GenerationManifest,
+        probe_id: str,
+        evidence_target: ProbeEvidenceTarget | None = None,
+        initial_observation: dict[str, Any] | None = None,
+        investigation_ref: ArtifactRef | None = None,
+        capability_manifest_ref: ArtifactRef | None = None,
+    ) -> ProbePlan: ...
+
+
+@runtime_checkable
+class ProbeBuilder(Protocol):
+    def build(self, *, plan: ProbePlan) -> ProbeBuildOutput: ...
+
+
+@runtime_checkable
+class ProbeReviewer(Protocol):
+    def review(
+        self,
+        *,
+        plan: ProbePlan,
+        candidate: ProbeCandidateManifest,
+    ) -> ProbeReviewReport: ...
+
+
+@runtime_checkable
+class ProbeEvaluator(Protocol):
+    def evaluate(
+        self,
+        *,
+        plan: ProbePlan,
+        candidate: ProbeCandidateManifest,
+        review: ProbeReviewReport,
+    ) -> ProbeEvaluation: ...
+
+
+@dataclass(frozen=True)
+class ProbeRoleBundle:
+    planner: ProbePlanner
+    builder: ProbeBuilder
+    reviewer: ProbeReviewer
+    evaluator: ProbeEvaluator

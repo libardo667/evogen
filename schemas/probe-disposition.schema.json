@@ -1,0 +1,51 @@
+{
+  "$defs": {
+    "ProbeDispositionKind": {
+      "enum": [
+        "resolved",
+        "refuted",
+        "inconclusive",
+        "rejected",
+        "failed"
+      ],
+      "title": "ProbeDispositionKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "candidate_id": {
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "disposition": {
+      "$ref": "#/$defs/ProbeDispositionKind"
+    },
+    "disposition_id": {
+      "title": "Disposition Id",
+      "type": "string"
+    },
+    "named_uncertainty": {
+      "title": "Named Uncertainty",
+      "type": "string"
+    },
+    "probe_id": {
+      "title": "Probe Id",
+      "type": "string"
+    },
+    "rationale": {
+      "title": "Rationale",
+      "type": "string"
+    }
+  },
+  "required": [
+    "disposition_id",
+    "candidate_id",
+    "probe_id",
+    "named_uncertainty",
+    "disposition",
+    "rationale"
+  ],
+  "title": "ProbeDisposition",
+  "type": "object"
+}

@@ -1,0 +1,189 @@
+{
+  "$defs": {
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "A typed reference to one immutable content-addressed artifact.",
+      "properties": {
+        "digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "model"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "ProbeEvidenceTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "hypotheses": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Hypotheses",
+          "type": "array"
+        },
+        "named_uncertainty": {
+          "title": "Named Uncertainty",
+          "type": "string"
+        },
+        "prohibited_inferences": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Prohibited Inferences",
+          "type": "array"
+        },
+        "required_later_observations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Later Observations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "named_uncertainty",
+        "hypotheses",
+        "required_later_observations",
+        "prohibited_inferences"
+      ],
+      "title": "ProbeEvidenceTarget",
+      "type": "object"
+    },
+    "ProbePermissions": {
+      "additionalProperties": false,
+      "description": "Explicit probe sandbox; every operation/effect/path is denied by default.",
+      "properties": {
+        "allowed_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Effects",
+          "type": "array"
+        },
+        "allowed_operations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Operations",
+          "type": "array"
+        },
+        "allowed_paths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Paths",
+          "type": "array"
+        },
+        "max_bytes": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Max Bytes",
+          "type": "integer"
+        },
+        "max_duration_seconds": {
+          "default": 0.0,
+          "minimum": 0.0,
+          "title": "Max Duration Seconds",
+          "type": "number"
+        },
+        "max_steps": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Max Steps",
+          "type": "integer"
+        }
+      },
+      "title": "ProbePermissions",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "baseline_capability_manifest_digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Baseline Capability Manifest Digest",
+      "type": "string"
+    },
+    "capability_manifest_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "evidence_target": {
+      "$ref": "#/$defs/ProbeEvidenceTarget"
+    },
+    "fixture_id": {
+      "title": "Fixture Id",
+      "type": "string"
+    },
+    "initial_observation": {
+      "additionalProperties": true,
+      "title": "Initial Observation",
+      "type": "object"
+    },
+    "initial_observation_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "investigation_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "issue_id": {
+      "title": "Issue Id",
+      "type": "string"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "title": "Metadata",
+      "type": "object"
+    },
+    "parent_generation": {
+      "title": "Parent Generation",
+      "type": "string"
+    },
+    "permissions": {
+      "$ref": "#/$defs/ProbePermissions"
+    },
+    "probe_id": {
+      "title": "Probe Id",
+      "type": "string"
+    },
+    "subject": {
+      "title": "Subject",
+      "type": "string"
+    }
+  },
+  "required": [
+    "probe_id",
+    "issue_id",
+    "parent_generation",
+    "subject",
+    "investigation_ref",
+    "capability_manifest_ref",
+    "baseline_capability_manifest_digest",
+    "fixture_id",
+    "evidence_target",
+    "permissions"
+  ],
+  "title": "ProbePlan",
+  "type": "object"
+}

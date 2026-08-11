@@ -1,0 +1,255 @@
+{
+  "$defs": {
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "A typed reference to one immutable content-addressed artifact.",
+      "properties": {
+        "digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "model"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "Completeness": {
+      "enum": [
+        "complete",
+        "truncated",
+        "missing",
+        "unknown"
+      ],
+      "title": "Completeness",
+      "type": "string"
+    },
+    "ProbeDispatchEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted": {
+          "title": "Accepted",
+          "type": "boolean"
+        },
+        "changed": {
+          "title": "Changed",
+          "type": "boolean"
+        },
+        "completeness": {
+          "$ref": "#/$defs/Completeness"
+        },
+        "effect": {
+          "title": "Effect",
+          "type": "string"
+        },
+        "operation": {
+          "title": "Operation",
+          "type": "string"
+        },
+        "receipt": {
+          "additionalProperties": true,
+          "title": "Receipt",
+          "type": "object"
+        },
+        "steps": {
+          "default": 1,
+          "minimum": 0,
+          "title": "Steps",
+          "type": "integer"
+        },
+        "target_id": {
+          "title": "Target Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation",
+        "effect",
+        "target_id",
+        "accepted",
+        "changed",
+        "receipt",
+        "completeness"
+      ],
+      "title": "ProbeDispatchEvidence",
+      "type": "object"
+    },
+    "ProbeObservationEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "completeness": {
+          "$ref": "#/$defs/Completeness"
+        },
+        "container_id": {
+          "title": "Container Id",
+          "type": "string"
+        },
+        "exposed_item_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Exposed Item Ids",
+          "type": "array"
+        },
+        "inspected": {
+          "title": "Inspected",
+          "type": "boolean"
+        },
+        "observation": {
+          "additionalProperties": true,
+          "title": "Observation",
+          "type": "object"
+        }
+      },
+      "required": [
+        "container_id",
+        "inspected",
+        "exposed_item_ids",
+        "observation",
+        "completeness"
+      ],
+      "title": "ProbeObservationEvidence",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "candidate_id": {
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "capability_manifest_unchanged": {
+      "default": false,
+      "title": "Capability Manifest Unchanged",
+      "type": "boolean"
+    },
+    "completeness": {
+      "$ref": "#/$defs/Completeness"
+    },
+    "dispatch_evidence": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProbeDispatchEvidence"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "dispatch_evidence_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "evaluation_id": {
+      "title": "Evaluation Id",
+      "type": "string"
+    },
+    "final_capability_manifest_bytes_digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Final Capability Manifest Bytes Digest",
+      "type": "string"
+    },
+    "final_capability_manifest_digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Final Capability Manifest Digest",
+      "type": "string"
+    },
+    "final_capability_manifest_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "initial_capability_manifest_bytes_digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Initial Capability Manifest Bytes Digest",
+      "type": "string"
+    },
+    "initial_capability_manifest_digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Initial Capability Manifest Digest",
+      "type": "string"
+    },
+    "initial_capability_manifest_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "initial_observation_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "later_observation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProbeObservationEvidence"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "later_observation_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "named_uncertainty": {
+      "title": "Named Uncertainty",
+      "type": "string"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    },
+    "probe_id": {
+      "title": "Probe Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "evaluation_id",
+    "candidate_id",
+    "probe_id",
+    "named_uncertainty",
+    "initial_observation_ref",
+    "dispatch_evidence_ref",
+    "later_observation_ref",
+    "completeness",
+    "initial_capability_manifest_ref",
+    "initial_capability_manifest_digest",
+    "initial_capability_manifest_bytes_digest",
+    "final_capability_manifest_ref",
+    "final_capability_manifest_digest",
+    "final_capability_manifest_bytes_digest"
+  ],
+  "title": "ProbeEvaluation",
+  "type": "object"
+}

@@ -23,12 +23,18 @@ from .protocols import (
     EnvironmentInvestigator,
     ExperimentEvaluator,
     GenerationMaterializer,
+    ProbeBuilder,
+    ProbeEvaluator,
+    ProbePlanner,
+    ProbeReviewer,
+    ProbeRoleBundle,
     SubjectDoctor,
     SubjectRunner,
 )
 
 SUBJECT_PLUGIN_API_VERSION = "1.0"
 SUBJECT_PLUGIN_ENTRY_POINT_GROUP = "evogen.subjects"
+
 
 class SubjectPluginError(RuntimeError):
     pass
@@ -105,6 +111,11 @@ class SubjectPlugin(Protocol):
     @property
     def bootstrap_factory(self) -> Callable[[SubjectFactoryContext], SubjectBootstrap]: ...
 
+    @property
+    def probe_roles_factory(
+        self,
+    ) -> Callable[[SubjectFactoryContext], ProbeRoleBundle] | None: ...
+
 
 @dataclass
 class SubjectFactoryContext:
@@ -112,6 +123,7 @@ class SubjectFactoryContext:
     artifacts: ArtifactStore
     ledger: Ledger
     runner: SubjectRunner | None = None
+    bootstrap: SubjectBootstrap | None = None
 
 
 @dataclass(frozen=True)
@@ -133,6 +145,7 @@ class SubjectComposition:
     doctor: SubjectDoctor
     bootstrap: SubjectBootstrap
     orchestrator: EvolutionOrchestrator
+    probe_roles: ProbeRoleBundle | None
 
 
 def _distribution_name(entry_point: importlib.metadata.EntryPoint) -> str:
@@ -149,9 +162,7 @@ def _entry_point_sort_key(entry_point: importlib.metadata.EntryPoint) -> tuple[s
 
 def _installed_entry_points() -> list[importlib.metadata.EntryPoint]:
     try:
-        selected = importlib.metadata.entry_points(
-            group=SUBJECT_PLUGIN_ENTRY_POINT_GROUP
-        )
+        selected = importlib.metadata.entry_points(group=SUBJECT_PLUGIN_ENTRY_POINT_GROUP)
         return sorted(list(selected), key=_entry_point_sort_key)
     except Exception as exc:
         raise SubjectPluginDiscoveryError(
@@ -191,8 +202,7 @@ def discover_subject_entry_points() -> tuple[importlib.metadata.EntryPoint, ...]
 def _entry_point_for(subject_name: str) -> importlib.metadata.EntryPoint:
     if not isinstance(subject_name, str) or not subject_name.strip():
         raise SubjectPluginNotFoundError(
-            "Subject plugin name must be a non-empty string; received "
-            f"{subject_name!r}."
+            f"Subject plugin name must be a non-empty string; received {subject_name!r}."
         )
     entries = discover_subject_entry_points()
     match = next((entry for entry in entries if entry.name == subject_name), None)
@@ -270,6 +280,11 @@ def validate_subject_plugin(
             raise SubjectPluginShapeError(
                 f"Subject plugin {name!r} has a missing or non-callable {factory_name}."
             )
+    optional_probe_factory = getattr(plugin, "probe_roles_factory", None)
+    if optional_probe_factory is not None and not callable(optional_probe_factory):
+        raise SubjectPluginShapeError(
+            f"Subject plugin {name!r} has a non-callable probe_roles_factory."
+        )
     return cast(SubjectPlugin, plugin)
 
 
@@ -415,8 +430,7 @@ def _bootstrap_result(
         baseline_subject = baseline.subject
     except Exception as exc:
         raise SubjectBootstrapError(
-            f"Subject plugin {subject_name!r} bootstrap baseline has an unreadable "
-            f"subject: {exc}"
+            f"Subject plugin {subject_name!r} bootstrap baseline has an unreadable subject: {exc}"
         ) from exc
     if baseline_subject != subject_name:
         raise SubjectBootstrapError(
@@ -446,6 +460,7 @@ def compose_subject(
     )
     context.runner = runner
     bootstrap = _bootstrap_result(validated, context, subject_name)
+    context.bootstrap = bootstrap
     investigator = cast(
         EnvironmentInvestigator,
         _factory_result(
@@ -530,6 +545,38 @@ def compose_subject(
         subject_plugin_api_version=validated.api_version,
         subject_plugin_source=_plugin_source_identity(validated),
     )
+    probe_roles: ProbeRoleBundle | None = None
+    probe_factory = getattr(validated, "probe_roles_factory", None)
+    if probe_factory is not None:
+        result = _call_factory(
+            validated,
+            context,
+            "probe_roles_factory",
+            subject_name,
+            SubjectPluginFactoryError,
+        )
+        if not isinstance(result, ProbeRoleBundle):
+            raise SubjectPluginFactoryError(
+                f"Subject plugin {subject_name!r} probe_roles_factory returned "
+                f"{type(result).__name__}; expected ProbeRoleBundle."
+            )
+        for name, role, expected in (
+            ("planner", result.planner, ProbePlanner),
+            ("builder", result.builder, ProbeBuilder),
+            ("reviewer", result.reviewer, ProbeReviewer),
+            ("evaluator", result.evaluator, ProbeEvaluator),
+        ):
+            if not isinstance(role, expected):
+                raise SubjectPluginFactoryError(
+                    f"Subject plugin {subject_name!r} probe role {name!r} does not "
+                    f"implement {expected.__name__}."
+                )
+        if len({id(result.builder), id(result.reviewer), id(result.evaluator)}) != 3:
+            raise SubjectPluginFactoryError(
+                f"Subject plugin {subject_name!r} probe builder, reviewer, and "
+                "evaluator must be distinct authorities."
+            )
+        probe_roles = result
     return SubjectComposition(
         plugin=validated,
         context=context,
@@ -542,6 +589,7 @@ def compose_subject(
         doctor=doctor,
         bootstrap=bootstrap,
         orchestrator=orchestrator,
+        probe_roles=probe_roles,
     )
 
 
@@ -633,8 +681,7 @@ def run_subject_cycle(
     result = composition.orchestrator.stages.run(until=until)
     if not isinstance(result, CycleResult):
         raise SubjectWorkspaceError(
-            "run_subject_cycle requires select or no --until; "
-            f"received {type(result).__name__}"
+            f"run_subject_cycle requires select or no --until; received {type(result).__name__}"
         )
     return result
 

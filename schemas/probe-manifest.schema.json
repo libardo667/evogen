@@ -1,0 +1,104 @@
+{
+  "$defs": {
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "A typed reference to one immutable content-addressed artifact.",
+      "properties": {
+        "digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "model"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "ProbeStageName": {
+      "description": "The deliberately separate, short-lived probe lifecycle.",
+      "enum": [
+        "plan",
+        "build",
+        "review",
+        "evaluate",
+        "dispose"
+      ],
+      "title": "ProbeStageName",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "baseline_capability_manifest_digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Baseline Capability Manifest Digest",
+      "type": "string"
+    },
+    "baseline_generation_id": {
+      "title": "Baseline Generation Id",
+      "type": "string"
+    },
+    "baseline_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "capability_manifest_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "investigation_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "issue_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "manifest_version": {
+      "const": "1.0",
+      "title": "Manifest Version",
+      "type": "string"
+    },
+    "probe_id": {
+      "title": "Probe Id",
+      "type": "string"
+    },
+    "stage_order": {
+      "items": {
+        "$ref": "#/$defs/ProbeStageName"
+      },
+      "title": "Stage Order",
+      "type": "array"
+    },
+    "subject": {
+      "title": "Subject",
+      "type": "string"
+    }
+  },
+  "required": [
+    "manifest_version",
+    "probe_id",
+    "subject",
+    "baseline_generation_id",
+    "baseline_ref",
+    "issue_ref",
+    "investigation_ref",
+    "capability_manifest_ref",
+    "baseline_capability_manifest_digest",
+    "stage_order"
+  ],
+  "title": "ProbeManifest",
+  "type": "object"
+}

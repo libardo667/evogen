@@ -1,0 +1,20 @@
+{
+  "additionalProperties": false,
+  "description": "A builder's in-memory file; the orchestrator owns filesystem publication.",
+  "properties": {
+    "content": {
+      "title": "Content",
+      "type": "string"
+    },
+    "path": {
+      "title": "Path",
+      "type": "string"
+    }
+  },
+  "required": [
+    "path",
+    "content"
+  ],
+  "title": "ProbeFilePayload",
+  "type": "object"
+}

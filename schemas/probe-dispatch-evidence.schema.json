@@ -1,0 +1,62 @@
+{
+  "$defs": {
+    "Completeness": {
+      "enum": [
+        "complete",
+        "truncated",
+        "missing",
+        "unknown"
+      ],
+      "title": "Completeness",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "accepted": {
+      "title": "Accepted",
+      "type": "boolean"
+    },
+    "changed": {
+      "title": "Changed",
+      "type": "boolean"
+    },
+    "completeness": {
+      "$ref": "#/$defs/Completeness"
+    },
+    "effect": {
+      "title": "Effect",
+      "type": "string"
+    },
+    "operation": {
+      "title": "Operation",
+      "type": "string"
+    },
+    "receipt": {
+      "additionalProperties": true,
+      "title": "Receipt",
+      "type": "object"
+    },
+    "steps": {
+      "default": 1,
+      "minimum": 0,
+      "title": "Steps",
+      "type": "integer"
+    },
+    "target_id": {
+      "title": "Target Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "operation",
+    "effect",
+    "target_id",
+    "accepted",
+    "changed",
+    "receipt",
+    "completeness"
+  ],
+  "title": "ProbeDispatchEvidence",
+  "type": "object"
+}

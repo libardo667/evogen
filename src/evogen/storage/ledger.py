@@ -13,6 +13,11 @@ from evogen.core.models import (
     ExperimentResult,
     GateDecision,
     GenerationManifest,
+    ProbeCandidateManifest,
+    ProbeDisposition,
+    ProbeEvaluation,
+    ProbePlan,
+    ProbeReviewReport,
     RunRecord,
     TrajectoryEvent,
 )
@@ -49,6 +54,13 @@ class Ledger:
         if not self.read_only:
             connection.execute("PRAGMA journal_mode = WAL")
         return connection
+
+    def checkpoint(self) -> None:
+        """Materialize WAL pages for deterministic workspace inspection in tests/tools."""
+        if self.read_only:
+            raise RuntimeError("Read-only ledger cannot checkpoint")
+        with self.connect() as connection:
+            connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
 
     def _initialize(self) -> None:
         with self.connect() as connection:
@@ -121,6 +133,14 @@ class Ledger:
                     decision_id TEXT NOT NULL,
                     created_at TEXT NOT NULL,
                     PRIMARY KEY(parent_generation_id, child_generation_id)
+                );
+
+                CREATE TABLE IF NOT EXISTS probes (
+                    probe_id TEXT NOT NULL,
+                    stage TEXT NOT NULL,
+                    record_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY(probe_id, stage)
                 );
                 """
             )
@@ -378,5 +398,52 @@ class Ledger:
                        candidate_id, decision_id, created_at
                 FROM lineage ORDER BY created_at, child_generation_id
                 """
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def add_probe_plan(self, plan: ProbePlan) -> None:
+        self._add_probe_record(plan.probe_id, "plan", plan)
+
+    def add_probe_candidate(self, candidate: ProbeCandidateManifest) -> None:
+        self._add_probe_record(candidate.probe_id, "build", candidate)
+
+    def add_probe_review(self, review: ProbeReviewReport) -> None:
+        self._add_probe_record(review.probe_id, "review", review)
+
+    def add_probe_evaluation(self, evaluation: ProbeEvaluation) -> None:
+        self._add_probe_record(evaluation.probe_id, "evaluate", evaluation)
+
+    def add_probe_disposition(self, disposition: ProbeDisposition) -> None:
+        self._add_probe_record(disposition.probe_id, "dispose", disposition)
+
+    def _add_probe_record(self, probe_id: str, stage: str, record: BaseModel) -> None:
+        """Append one immutable probe transition; probe rows are never replaced."""
+        serialized = self._json(record)
+        try:
+            with self.connect() as connection:
+                connection.execute(
+                    """
+                    INSERT INTO probes(probe_id, stage, record_json, created_at)
+                    VALUES (?, ?, ?, datetime('now'))
+                    """,
+                    (probe_id, stage, serialized),
+                )
+        except sqlite3.IntegrityError as exc:
+            with self.connect() as connection:
+                row = connection.execute(
+                    "SELECT record_json FROM probes WHERE probe_id=? AND stage=?",
+                    (probe_id, stage),
+                ).fetchone()
+            if row is None or row["record_json"] != serialized:
+                raise RuntimeError(f"Probe transition {probe_id}/{stage} is immutable") from exc
+
+    def probe_records(self, probe_id: str) -> list[dict[str, str]]:
+        with self.connect() as connection:
+            rows = connection.execute(
+                "SELECT probe_id, stage, record_json, created_at FROM probes "
+                "WHERE probe_id=? ORDER BY CASE stage WHEN 'plan' THEN 0 "
+                "WHEN 'build' THEN 1 WHEN 'review' THEN 2 WHEN 'evaluate' THEN 3 "
+                "WHEN 'dispose' THEN 4 ELSE 5 END, created_at",
+                (probe_id,),
             ).fetchall()
         return [dict(row) for row in rows]

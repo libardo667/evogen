@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any, Generic, Literal, TypeVar
+from typing import Annotated, Any, Generic, Literal, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
 
@@ -13,6 +13,8 @@ from .enums import (
     FailureLayer,
     GateVerdict,
     IssueStatus,
+    ProbeDispositionKind,
+    ProbeStageName,
     ProofClass,
     ResolutionKind,
     Severity,
@@ -26,6 +28,9 @@ def utc_now() -> datetime:
 
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
+
+
+DigestStr = Annotated[str, Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")]
 
 
 _ItemT = TypeVar("_ItemT")
@@ -42,9 +47,7 @@ class BoundedCollection(StrictModel, Generic[_ItemT]):
     def validate_completeness(self) -> BoundedCollection[_ItemT]:
         if self.completeness == Completeness.COMPLETE:
             if self.known_total is None or self.known_total != len(self.items):
-                raise ValueError(
-                    "Complete collections require known_total equal to len(items)"
-                )
+                raise ValueError("Complete collections require known_total equal to len(items)")
         elif self.completeness == Completeness.TRUNCATED:
             if self.known_total is not None and self.known_total <= len(self.items):
                 raise ValueError(
@@ -52,9 +55,7 @@ class BoundedCollection(StrictModel, Generic[_ItemT]):
                 )
         else:
             if self.items:
-                raise ValueError(
-                    "Missing or unknown collections cannot carry authoritative items"
-                )
+                raise ValueError("Missing or unknown collections cannot carry authoritative items")
             if self.known_total is not None:
                 raise ValueError(
                     "Missing or unknown collections cannot claim an authoritative total"
@@ -370,8 +371,10 @@ class ArtifactRef(StrictModel):
     @field_validator("model")
     @classmethod
     def validate_model_identity(cls, value: str) -> str:
-        if not value or not value[0].isalpha() or not all(
-            character.isalnum() or character == "_" for character in value
+        if (
+            not value
+            or not value[0].isalpha()
+            or not all(character.isalnum() or character == "_" for character in value)
         ):
             raise ValueError("Artifact model identity must be a controlled identifier")
         return value
@@ -448,3 +451,191 @@ class CycleResult(StrictModel):
     experiment: ExperimentResult
     decision: GateDecision
     retained_generation: GenerationManifest | None = None
+
+
+class ProbePermissions(StrictModel):
+    """Explicit probe sandbox; every operation/effect/path is denied by default."""
+
+    allowed_operations: list[str] = Field(default_factory=list)
+    allowed_effects: list[str] = Field(default_factory=list)
+    allowed_paths: list[str] = Field(default_factory=list)
+    max_steps: int = Field(default=0, ge=0)
+    max_bytes: int = Field(default=0, ge=0)
+    max_duration_seconds: float = Field(default=0.0, ge=0.0)
+
+
+class ProbeEvidenceTarget(StrictModel):
+    named_uncertainty: str
+    hypotheses: list[str]
+    required_later_observations: list[str]
+    prohibited_inferences: list[str]
+
+
+class ProbeFilePayload(StrictModel):
+    """A builder's in-memory file; the orchestrator owns filesystem publication."""
+
+    path: str
+    content: str
+
+
+class ProbeBuildOutput(StrictModel):
+    files: list[ProbeFilePayload]
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProbePlan(StrictModel):
+    probe_id: str
+    issue_id: str
+    parent_generation: str
+    subject: str
+    investigation_ref: ArtifactRef
+    capability_manifest_ref: ArtifactRef
+    baseline_capability_manifest_digest: DigestStr
+    fixture_id: str
+    evidence_target: ProbeEvidenceTarget
+    permissions: ProbePermissions
+    initial_observation: dict[str, Any] = Field(default_factory=dict)
+    initial_observation_ref: ArtifactRef | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProbeCandidateManifest(StrictModel):
+    """Probe code identity. This intentionally has no spec/claimed/retained fields."""
+
+    candidate_id: str
+    probe_id: str
+    parent_generation: str
+    issue_id: str
+    kind: Literal["probe"] = "probe"
+    created_at: datetime = Field(default_factory=utc_now)
+    workspace_path: str
+    source_digest: DigestStr
+    artifact_digests: dict[str, DigestStr] = Field(default_factory=dict)
+    changed_files: list[str]
+    file_digests: dict[str, DigestStr] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProbeReviewReport(StrictModel):
+    review_id: str
+    candidate_id: str
+    probe_id: str
+    passed: bool
+    checks: dict[str, bool]
+    findings: list[ReviewFinding] = Field(default_factory=list)
+    reviewed_files: list[str] = Field(default_factory=list)
+
+
+class ProbeDispatchEvidence(StrictModel):
+    operation: str
+    effect: str
+    target_id: str
+    accepted: bool
+    changed: bool
+    steps: int = Field(default=1, ge=0)
+    receipt: dict[str, Any]
+    completeness: Completeness
+
+
+class ProbeObservationEvidence(StrictModel):
+    container_id: str
+    inspected: bool
+    exposed_item_ids: list[str]
+    observation: dict[str, Any]
+    completeness: Completeness
+
+
+class ProbeEvaluation(StrictModel):
+    evaluation_id: str
+    candidate_id: str
+    probe_id: str
+    named_uncertainty: str
+    initial_observation_ref: ArtifactRef
+    dispatch_evidence_ref: ArtifactRef | None
+    later_observation_ref: ArtifactRef | None
+    completeness: Completeness
+    dispatch_evidence: ProbeDispatchEvidence | None = None
+    later_observation: ProbeObservationEvidence | None = None
+    initial_capability_manifest_ref: ArtifactRef
+    initial_capability_manifest_digest: DigestStr
+    initial_capability_manifest_bytes_digest: DigestStr
+    final_capability_manifest_ref: ArtifactRef
+    final_capability_manifest_digest: DigestStr
+    final_capability_manifest_bytes_digest: DigestStr
+    capability_manifest_unchanged: bool = False
+    notes: list[str] = Field(default_factory=list)
+
+    @property
+    def accepted_receipt(self) -> bool:
+        return bool(self.dispatch_evidence is not None and self.dispatch_evidence.accepted)
+
+    @property
+    def independent_observation(self) -> bool:
+        return bool(
+            self.later_observation is not None
+            and self.later_observation.completeness == Completeness.COMPLETE
+        )
+
+
+class ProbeDisposition(StrictModel):
+    disposition_id: str
+    candidate_id: str
+    probe_id: str
+    named_uncertainty: str
+    disposition: ProbeDispositionKind
+    rationale: str
+
+
+class ProbeManifest(StrictModel):
+    manifest_version: Literal["1.0"]
+    probe_id: str
+    subject: str
+    baseline_generation_id: str
+    baseline_ref: ArtifactRef
+    issue_ref: ArtifactRef
+    investigation_ref: ArtifactRef
+    capability_manifest_ref: ArtifactRef
+    baseline_capability_manifest_digest: DigestStr
+    stage_order: tuple[ProbeStageName, ...]
+    created_at: datetime = Field(default_factory=utc_now)
+
+    @model_validator(mode="after")
+    def validate_stage_order(self) -> ProbeManifest:
+        if self.stage_order != ProbeStageName.ordered():
+            raise ValueError("Probe manifest stage order does not match the probe contract")
+        return self
+
+
+class ProbeStageReceipt(StrictModel):
+    receipt_version: Literal["1.0"]
+    receipt_id: str
+    probe_id: str
+    manifest_digest: DigestStr
+    stage: ProbeStageName
+    subject: str
+    input_refs: dict[str, ArtifactRef]
+    output_ref: ArtifactRef
+    prior_receipt_digest: DigestStr | None = None
+
+
+class ProbeStagePointer(StrictModel):
+    pointer_version: Literal["1.0"]
+    probe_id: str
+    stage: ProbeStageName
+    receipt_digest: DigestStr
+
+
+class ProbeRequiredResult(StrictModel):
+    issue_id: str
+    resolution: Literal["build_probe"] = "build_probe"
+    message: str
+
+
+class ProbeResult(StrictModel):
+    workspace: str
+    manifest: ProbeManifest
+    plan: ProbePlan
+    candidate: ProbeCandidateManifest
+    review: ProbeReviewReport
+    evaluation: ProbeEvaluation
+    disposition: ProbeDisposition
