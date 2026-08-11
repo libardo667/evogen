@@ -1,4 +1,4 @@
-# Integration checkpoint: KAE session-event disposition inventory
+# Integration checkpoint: KAE run-local event sequence
 
 This document is the current repository authority for one bounded integration
 goal. It is replaced in the same commit as every completed goal; Git history
@@ -7,105 +7,108 @@ retains older checkpoints.
 ## Repository and planning authority
 
 ```text
-parent commit                    f53298ff15ca1bfc2c9559c8c77568b153c5649e
+parent commit                    cf70589f91add9c9dbe6affd11866b20d2690642
 integration branch               main
-current goal                     Goal 9 - Inventory exact KAE export authorities
-next unstarted goal              Goal 10 - Add logger-owned event sequence
-KAE parent commit                a18af271634a767f90a9e9356f1f8bbc50411e8f
-KAE completion commit            b8544b88b8c610f2859298308b0adaca290c9ddc
-KAE-recorded EvoGen counterpart  f53298ff15ca1bfc2c9559c8c77568b153c5649e
+current goal                     Goal 10 - Add logger-owned event sequence
+next unstarted goal              Goal 11 - Add generation manifest
+KAE parent commit                b8544b88b8c610f2859298308b0adaca290c9ddc
+KAE completion commit            7e25459c992572b0f102297420f7117fbc2146d7
+KAE-recorded EvoGen counterpart  cf70589f91add9c9dbe6affd11866b20d2690642
 KAE public remote                https://github.com/libardo667/kenshi-agent-env
-KAE hosted run                   31536027613
+KAE hosted run                   31538471899
 alpha release commit             9c8d94c59a95222a719e20fac5a61d2ec712743d
+source plan revision             2026-08-10T21:25:08.835Z
 execution plan                   docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
 ```
 
-Goal 9 began from clean, synchronized KAE `main` after the complete Goal 8
-EvoGen conformance boundary. This EvoGen commit changes only the durable
-planning ratchet; the implementation and its evidence live in the exact KAE
-completion commit above.
+Goal 10 began from clean, synchronized KAE `main` after the complete Goal 9
+event-disposition inventory. This EvoGen commit changes only the durable
+planning ratchet; implementation and evidence live in the exact KAE completion
+commit above.
 
 ## Behavioral change and authority
 
 Source-proven in KAE:
 
-- a deterministic AST inventory follows current direct `SessionLogger.write`
-  producers, plan/callback wrappers, operation progress, control-ownership enum
-  values, bound methods, and open string boundaries;
-- the source-derived denominator is 89 event types across 127 producer records
-  and 16 reviewed open boundaries;
-- repeated producers and open boundaries remain in the canonical fingerprint,
-  so a second emission cannot hide behind an unchanged event-name set;
-- a separate reviewed authority assigns every event exactly one disposition:
-  22 exact EvoGen projections, 54 subject-only raw records, 9 derived summaries,
-  and 4 intentionally ignored normalized records;
-- the generated artifact combines the reviewed dispositions, exact producer
-  records, open boundaries, and deterministic content fingerprint;
-- the KAE portable gate regenerates the artifact and rejects stale checked-in
-  bytes; and
-- G09 changes no logger record shape, protocol, runtime behavior, environment,
-  evaluator, fixture, or live installation.
+- every newly written session record has a logger-owned, one-based
+  `event_sequence`;
+- sequence allocation, JSON serialization, append, and immediate flush share
+  one lock, so serialized file order is sequence order for the production
+  shared logger;
+- uncertain I/O retires its attempted identity instead of permitting a later
+  duplicate;
+- reopening an append log continues after legacy and sequenced rows for the
+  same run, preserves complete final JSON without a newline, and removes only
+  a provably invalid unterminated crash fragment;
+- `SessionEvent.event_sequence` is optional and positive, preserving typed
+  compatibility with legacy dictionary-payload rows;
+- `step_index` remains nullable gameplay evidence and nested telemetry sequence
+  remains a separate world-revision field; and
+- no overlay, replay, evaluator, environment, native-controller, or gameplay
+  semantics changed.
 
-The semantic map remains conservative:
+The committed sequence fixture contains records `1..4`: a run-level record and
+three rows sharing step 7 and telemetry revision 42. The historical 45-row
+reporting fixture remains byte-unchanged and has no sequence field.
 
-- `planner_context_prepared` is not an exact affordance set;
-- input-boundary records need an action/target join before exact binding;
-- continuity and fieldbook receipts need status-aware interpretation before a
-  memory update can be projected;
-- `world_state_update` is observation-delta metadata, not a complete effect;
-- plan, option, affordance, and run success do not prove a goal/world effect;
-  and
-- current KAE outer events prove neither native dispatch nor `goal_blocked` nor
-  `goal_achieved`.
+G09 freshness remains active. The semantic denominator is still 89 event types
+and 127 producer records. The crash-tail separator adds one explicitly reviewed
+non-event write, so the generated inventory now has 17 open boundaries and
+fingerprint
+`232a934c595657d6189d9ab39dc347b4af711d86814fc071ec263e51da3ad60b`.
 
 ## Verification and independent review
 
-Root verification passed the final KAE portable gate:
+The focused proof writes 1,024 events from eight threads, all at gameplay step
+7 and telemetry revision 314159. It requires all `(writer, ordinal)` identities
+to survive and file-order sequences to equal exactly `1..1024`. Additional
+tests prove nullable-step independence, run-local reset, legacy continuation,
+valid no-newline preservation, invalid crash-tail repair, ambiguous flush
+identity retirement, and both committed fixture contracts.
+
+Lamport, Hoare, and Dijkstra independently audited logger authority, consumer
+compatibility, and concurrency falsifiers. Candidate review found two genuine
+defects: duplicate reuse after an ambiguous flush failure and retention of an
+invalid unterminated tail. Root repaired both and added regression tests;
+Lamport reran the exact adversarial probes and passed the repaired candidate.
+
+Root then passed KAE's complete portable gate:
 
 ```bash
-UV_CACHE_DIR=/tmp/kae-uv-cache \
-RUFF_CACHE_DIR=/tmp/kae-ruff-cache \
-MYPY_CACHE_DIR=/tmp/kae-mypy-cache \
+UV_CACHE_DIR=/tmp/kae-g10-uv-cache \
+RUFF_CACHE_DIR=/tmp/kae-g10-ruff-cache \
+MYPY_CACHE_DIR=/tmp/kae-g10-mypy-cache \
 ./dev verify-portable
 ```
 
 That gate covered locked dependency sync, Ruff, strict mypy over 150 source
-files, research validation, event-map/schema/document generation, the complete
-pytest suite, and whitespace checks.
+files, research validation, event-map/schema/document generation and freshness,
+the complete pytest suite, and whitespace checks.
 
-Raman independently reviewed all semantic dispositions against their KAE
-payload producers and current EvoGen meanings. Lovelace and Gauss attacked the
-source denominator and freshness logic. Their initial reviews found real
-mixed-condition, malformed/splatted, duplicate-open-sink, function-default,
-annotated-enum, bound-method, destructured, and dynamic-`getattr` escapes. The
-root repaired each one, explicitly named the existing bound callback into
-`OperationMonitor`, and returned the candidate for re-review.
-
-Final independent verification reported:
-
-```text
-focused tests       29 passed
-full pytest         1686 passed, 2 xfailed
-Ruff                passed
-strict mypy         150 source files passed
-generated bytes     exact match
-git diff --check    passed
-```
-
-The KAE completion commit passes hosted run
-`https://github.com/libardo667/kenshi-agent-env/actions/runs/31536027613` on
+The exact KAE completion commit passes hosted run
+`https://github.com/libardo667/kenshi-agent-env/actions/runs/31538471899` on
 Python 3.11, 3.12, 3.13, and 3.14. Candidate-author diagnostics were not used
 as certification.
 
-## Completion boundary
+This EvoGen planning ratchet passes `uv run python scripts/verify.py`: source
+and test compilation, Ruff, strict mypy over 47 source files, wheel build and
+entry-point inspection, 264 tests, a fresh deterministic microworld cycle, and
+`git diff --check`.
 
-Goal 9 is complete at KAE commit
-`b8544b88b8c610f2859298308b0adaca290c9ddc`. This planning-ratchet candidate is
+## Withheld claims and completion boundary
+
+`event_sequence` records session-log order only. It does not certify dispatch,
+acceptance, completion, a world effect, goal progress, or goal achievement. It
+is not a cross-run, cross-process, telemetry, gameplay, or charged-turn clock.
+G10 adds no EvoGen exporter or trajectory envelope, changes no live process or
+game artifact, and makes no power-loss-durability claim.
+
+Goal 10 is complete at KAE commit
+`7e25459c992572b0f102297420f7117fbc2146d7`. This planning-ratchet candidate is
 complete only after EvoGen verification, commit, clean checkpoint mode, public
 push, and hosted Python 3.11-3.13 matrix are green.
 
-Goal 10 is the sole next packet. It remains unstarted here. Goal 10 owns the
-logger-serialized event sequence and concurrency stress proof while keeping log
-sequence distinct from environment step index and telemetry revision. No Goal
-11 provenance/configuration or generation-manifest work is authorized in that
-slice.
+Goal 11 is the sole next packet and remains unstarted here. It owns generation
+provenance, effective configuration, secrets exclusion, and the generation
+manifest. No Goal 12 affordance-event or Goal 14 exporter work is authorized in
+that slice.

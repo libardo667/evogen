@@ -405,8 +405,11 @@ and no real subject imports in core.
   generates the event disposition map from `SessionLogger.write` source;
   unmapped source changes fail freshness. The reviewed authority contains 89
   event types, 127 producer records, and 16 open boundaries.
-- G10 is a serial logger migration with a concurrency stress test; log sequence
-  remains distinct from step and telemetry revision.
+- G10 is complete at KAE commit
+  `7e25459c992572b0f102297420f7117fbc2146d7`. Its serial logger migration
+  adds a run-local, append-safe event sequence under the physical write lock;
+  a 1,024-write concurrency stress test proves ordered identities with no loss
+  while step and telemetry revision remain distinct.
 - G11 pairs provenance/config auditors; secrets and unrelated environment are
   negative fixtures.
 - G12 captures the planner-visible offer set at the authoritative enumeration
@@ -677,8 +680,8 @@ goals:
   - {id: G07, repo: [evogen], depends: [G06], profile: evaluator_security, state: complete, human_gate: []}
   - {id: G08, repo: [evogen], depends: [G07], profile: conformance, state: complete, human_gate: []}
   - {id: G09, repo: [kenshi-agent-env], depends: [G08], profile: source_inventory, state: complete, human_gate: []}
-  - {id: G10, repo: [kenshi-agent-env], depends: [G09], profile: logger_migration, state: next, human_gate: []}
-  - {id: G11, repo: [kenshi-agent-env], depends: [G10], profile: generation_manifest, state: unstarted, human_gate: []}
+  - {id: G10, repo: [kenshi-agent-env], depends: [G09], profile: logger_migration, state: complete, human_gate: []}
+  - {id: G11, repo: [kenshi-agent-env], depends: [G10], profile: generation_manifest, state: next, human_gate: []}
   - {id: G12, repo: [kenshi-agent-env], depends: [G11], profile: event_contract, state: unstarted, human_gate: []}
   - {id: G13, repo: [kenshi-agent-env], depends: [G12], profile: generated_manifest, state: unstarted, human_gate: []}
   - {id: G14, repo: [kenshi-agent-env, evogen], depends: [G13], profile: cross_repo_adapter, state: unstarted, human_gate: []}
@@ -721,8 +724,9 @@ goals:
 
 ## 16. Immediate next execution packet
 
-The next permitted packet is G10 only. It remains unstarted until the Goal 9
-KAE commit, clean checkpoint ratchet, public push, hosted matrix, and this
-central planning ratchet are complete. Goal 10 begins in `kenshi-agent-env`
-with a read-only concurrency and logger-authority audit; no G11 provenance,
-configuration, or generation-manifest change belongs in its logger migration.
+The next permitted packet is G11 only. It remains unstarted until the Goal 10
+KAE commit, clean checkpoint, public push, hosted Python matrix, and this
+central planning ratchet are complete. Goal 11 begins in `kenshi-agent-env`
+with paired provenance and effective-configuration audits. Secrets and
+unrelated environment remain negative fixtures; no G12 affordance-event or
+G14 exporter work belongs in its generation-manifest slice.
