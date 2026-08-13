@@ -49,6 +49,31 @@ class ProofClass(StrEnum):
     LIVE = "live"
 
 
+class CapabilityKind(StrEnum):
+    SENSING = "sensing"
+    REPRESENTATION = "representation"
+    MEMORY = "memory"
+    ACTION = "action"
+    VERIFICATION = "verification"
+    RECOVERY = "recovery"
+
+
+class EvidenceState(StrEnum):
+    """How far a capability's evidence supports offering it.
+
+    ``proof_class`` is intentionally a separate, nullable axis.  A capability
+    may be declared but absent, unproven, withheld, unknown, or unsupported
+    without being accidentally certified by a default proof class.
+    """
+
+    PROVEN = "proven"
+    ABSENT = "absent"
+    UNPROVEN = "unproven"
+    WITHHELD = "withheld"
+    UNKNOWN = "unknown"
+    UNSUPPORTED = "unsupported"
+
+
 class EventKind(StrEnum):
     RUN_STARTED = "run_started"
     OBSERVATION = "observation"

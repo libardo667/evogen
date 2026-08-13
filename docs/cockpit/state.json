@@ -1094,7 +1094,7 @@
   "snapshot_label": "G12 closed · G13 queued",
   "source_authority": {
     "branch": "main",
-    "input_digest": "473c25f0382a4dcea97b7ebb967ed33f4ca3b2b6b4718344b272f0882b563b0e",
+    "input_digest": "7c83410cd77a1f9747ca28299c8b905a441d6a73d4d0269f31f2a91ff31d2e49",
     "inputs": [
       {
         "path": "docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md",
@@ -1102,7 +1102,7 @@
       },
       {
         "path": "docs/INTEGRATION_CHECKPOINT.md",
-        "sha256": "033194501e16be6272ff8c0303fe0e98f411056e9dcc88ab1a63b611bc5b7cb9"
+        "sha256": "9470e4312f4076fc2a8aefef1270c5bcc48da8c29dd4f04bb3b9da7226cfe351"
       },
       {
         "path": "docs/cockpit/content.json",
@@ -1112,7 +1112,7 @@
     "plan_revision_commit": "ef27a9bc440b789a89bf5e1582868d21c244d2f7",
     "repository": "evogen"
   },
-  "state_id": "sha256:933f4618eaa17d0bc97aa8a3498967a32a698a717ce37e02b3e7845feae2a173",
+  "state_id": "sha256:420d7f2ab0985ad63d8b42f517f26fb19d3139b67cca79c9a3e8cc31a3d27fa9",
   "withheld_claims": [
     "No general model has yet been shown to infer arbitrary missing capabilities from arbitrary environments.",
     "The KAE generation manifest does not prove that native bytes are loaded, identify a running process, or prove a world effect.",

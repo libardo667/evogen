@@ -12,7 +12,7 @@ from evogen.core.models import (
 
 _INSPECT_CONTAINER_PLUGIN = """from __future__ import annotations
 
-from evogen.core.enums import ProofClass
+from evogen.core.enums import CapabilityKind, EvidenceState
 from evogen.core.models import CapabilityDefinition
 from evogen.demo.microworld.models import ActionChoice, ActionOffer, ActionResult, WorldSnapshot
 
@@ -27,7 +27,7 @@ class InspectContainerCapability:
                 "Inspect an exact opaque container so a later authoritative observation can "
                 "reveal its contents."
             ),
-            kind="action",
+            kind=CapabilityKind.ACTION,
             semantic_effects=["reveal_contents"],
             owner_component="candidate capability plugin",
             input_schema={"container_id": "string"},
@@ -39,7 +39,8 @@ class InspectContainerCapability:
                 "A later snapshot marks the exact container inspected and exposes its contents."
             ],
             implementation_ref="plugin:inspect_container.py",
-            proof_class=ProofClass.PORTABLE,
+            proof_class=None,
+            evidence_state=EvidenceState.UNPROVEN,
             introduced_generation=generation_id,
             limitations=["Only containers in the active room are eligible."],
         )

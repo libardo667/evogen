@@ -3,6 +3,7 @@
   "bounded-collection": "bounded-collection.schema.json",
   "candidate-manifest": "candidate-manifest.schema.json",
   "capability-definition": "capability-definition.schema.json",
+  "capability-evidence-ref": "capability-evidence-ref.schema.json",
   "capability-issue": "capability-issue.schema.json",
   "capability-manifest": "capability-manifest.schema.json",
   "capability-spec": "capability-spec.schema.json",

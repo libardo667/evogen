@@ -1,0 +1,64 @@
+{
+  "$defs": {
+    "EvidenceState": {
+      "description": "How far a capability's evidence supports offering it.\n\n``proof_class`` is intentionally a separate, nullable axis.  A capability\nmay be declared but absent, unproven, withheld, unknown, or unsupported\nwithout being accidentally certified by a default proof class.",
+      "enum": [
+        "proven",
+        "absent",
+        "unproven",
+        "withheld",
+        "unknown",
+        "unsupported"
+      ],
+      "title": "EvidenceState",
+      "type": "string"
+    },
+    "ProofClass": {
+      "enum": [
+        "synthetic",
+        "portable",
+        "replay",
+        "live"
+      ],
+      "title": "ProofClass",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Opaque, content-addressed support for one capability claim.\n\nThe referenced artifact carries detailed evidence externally. Capability\nsemantics never copy incident prose, target names, command IDs, or\nincident-specific mechanics into this generic contract.",
+  "properties": {
+    "authority_ref": {
+      "minLength": 1,
+      "title": "Authority Ref",
+      "type": "string"
+    },
+    "content_digest": {
+      "maxLength": 64,
+      "minLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Content Digest",
+      "type": "string"
+    },
+    "evidence_state": {
+      "$ref": "#/$defs/EvidenceState"
+    },
+    "proof_class": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProofClass"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "authority_ref",
+    "content_digest",
+    "evidence_state",
+    "proof_class"
+  ],
+  "title": "CapabilityEvidenceRef",
+  "type": "object"
+}

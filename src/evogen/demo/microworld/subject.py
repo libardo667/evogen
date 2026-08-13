@@ -6,7 +6,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-from evogen.core.enums import EventKind, ProofClass
+from evogen.core.enums import CapabilityKind, EventKind, EvidenceState
 from evogen.core.ids import new_id
 from evogen.core.models import (
     CapabilityDefinition,
@@ -30,7 +30,7 @@ class MoveCapability:
         return CapabilityDefinition(
             name=self.name,
             purpose="Move through a currently adjacent room connection.",
-            kind="action",
+            kind=CapabilityKind.ACTION,
             semantic_effects=["change_location"],
             owner_component="microworld subject",
             input_schema={"destination_room_id": "string"},
@@ -38,7 +38,8 @@ class MoveCapability:
             applicability="A destination is offered only when currently adjacent.",
             completion_evidence=["Later world state reports the destination as current."],
             implementation_ref="builtin:MoveCapability",
-            proof_class=ProofClass.PORTABLE,
+            proof_class=None,
+            evidence_state=EvidenceState.UNPROVEN,
             introduced_generation="genesis",
         )
 
@@ -64,7 +65,7 @@ class TakeItemCapability:
         return CapabilityDefinition(
             name=self.name,
             purpose="Acquire an exact item already visible in current state.",
-            kind="action",
+            kind=CapabilityKind.ACTION,
             semantic_effects=["acquire_visible_item"],
             owner_component="microworld subject",
             input_schema={"item_id": "string", "source_container_id": "string|null"},
@@ -72,7 +73,8 @@ class TakeItemCapability:
             applicability="The item must be exposed in the active room.",
             completion_evidence=["Later world state includes the item in acquired_item_ids."],
             implementation_ref="builtin:TakeItemCapability",
-            proof_class=ProofClass.PORTABLE,
+            proof_class=None,
+            evidence_state=EvidenceState.UNPROVEN,
             introduced_generation="genesis",
         )
 

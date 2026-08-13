@@ -1,5 +1,69 @@
 {
   "$defs": {
+    "CapabilityEvidenceRef": {
+      "additionalProperties": false,
+      "description": "Opaque, content-addressed support for one capability claim.\n\nThe referenced artifact carries detailed evidence externally. Capability\nsemantics never copy incident prose, target names, command IDs, or\nincident-specific mechanics into this generic contract.",
+      "properties": {
+        "authority_ref": {
+          "minLength": 1,
+          "title": "Authority Ref",
+          "type": "string"
+        },
+        "content_digest": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Digest",
+          "type": "string"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "proof_class": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProofClass"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "authority_ref",
+        "content_digest",
+        "evidence_state",
+        "proof_class"
+      ],
+      "title": "CapabilityEvidenceRef",
+      "type": "object"
+    },
+    "CapabilityKind": {
+      "enum": [
+        "sensing",
+        "representation",
+        "memory",
+        "action",
+        "verification",
+        "recovery"
+      ],
+      "title": "CapabilityKind",
+      "type": "string"
+    },
+    "EvidenceState": {
+      "description": "How far a capability's evidence supports offering it.\n\n``proof_class`` is intentionally a separate, nullable axis.  A capability\nmay be declared but absent, unproven, withheld, unknown, or unsupported\nwithout being accidentally certified by a default proof class.",
+      "enum": [
+        "proven",
+        "absent",
+        "unproven",
+        "withheld",
+        "unknown",
+        "unsupported"
+      ],
+      "title": "EvidenceState",
+      "type": "string"
+    },
     "ProofClass": {
       "enum": [
         "synthetic",
@@ -24,6 +88,16 @@
       "title": "Completion Evidence",
       "type": "array"
     },
+    "evidence_refs": {
+      "items": {
+        "$ref": "#/$defs/CapabilityEvidenceRef"
+      },
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "evidence_state": {
+      "$ref": "#/$defs/EvidenceState"
+    },
     "implementation_ref": {
       "title": "Implementation Ref",
       "type": "string"
@@ -38,8 +112,7 @@
       "type": "string"
     },
     "kind": {
-      "title": "Kind",
-      "type": "string"
+      "$ref": "#/$defs/CapabilityKind"
     },
     "limitations": {
       "items": {
@@ -62,8 +135,14 @@
       "type": "string"
     },
     "proof_class": {
-      "$ref": "#/$defs/ProofClass",
-      "default": "portable"
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProofClass"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "purpose": {
       "title": "Purpose",
@@ -73,6 +152,7 @@
       "items": {
         "type": "string"
       },
+      "minItems": 1,
       "title": "Semantic Effects",
       "type": "array"
     }
@@ -84,6 +164,8 @@
     "owner_component",
     "applicability",
     "implementation_ref",
+    "evidence_state",
+    "proof_class",
     "introduced_generation"
   ],
   "title": "CapabilityDefinition",

@@ -10,8 +10,10 @@ from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, m
 from .enums import (
     AgentRole,
     CandidateStatus,
+    CapabilityKind,
     Completeness,
     EventKind,
+    EvidenceState,
     FailureLayer,
     GateVerdict,
     IssueStatus,
@@ -42,6 +44,10 @@ def _nonblank(value: str) -> str:
     if not value.strip():
         raise ValueError("value must be nonblank")
     return value
+
+
+def _nonblank_items(values: list[str]) -> list[str]:
+    return [_nonblank(value) for value in values]
 
 
 def _json_value(value: object) -> JsonValue:
@@ -110,25 +116,92 @@ class EvidenceRef(StrictModel):
     note: str
 
 
+class CapabilityEvidenceRef(StrictModel):
+    """Opaque, content-addressed support for one capability claim.
+
+    The referenced artifact carries detailed evidence externally. Capability
+    semantics never copy incident prose, target names, command IDs, or
+    incident-specific mechanics into this generic contract.
+    """
+
+    authority_ref: str = Field(min_length=1)
+    content_digest: DigestStr
+    evidence_state: EvidenceState
+    proof_class: ProofClass | None
+
+    _validate_authority_ref = field_validator("authority_ref")(_nonblank)
+
+    @model_validator(mode="after")
+    def evidence_ref_coherence(self) -> CapabilityEvidenceRef:
+        if self.evidence_state is EvidenceState.ABSENT:
+            raise ValueError("absent evidence cannot carry a reference")
+        if self.evidence_state is EvidenceState.PROVEN and self.proof_class is None:
+            raise ValueError("proven evidence references require proof_class")
+        if self.evidence_state is not EvidenceState.PROVEN and self.proof_class is not None:
+            raise ValueError("non-proven evidence references cannot carry proof_class")
+        return self
+
+
 class CapabilityDefinition(StrictModel):
     name: str
     purpose: str
-    kind: str
-    semantic_effects: list[str] = Field(default_factory=list)
+    kind: CapabilityKind
+    semantic_effects: list[str] = Field(default_factory=list, min_length=1)
     owner_component: str
     input_schema: dict[str, Any] = Field(default_factory=dict)
     output_schema: dict[str, Any] = Field(default_factory=dict)
     applicability: str
     completion_evidence: list[str] = Field(default_factory=list)
+    evidence_refs: list[CapabilityEvidenceRef] = Field(default_factory=list)
     implementation_ref: str
-    proof_class: ProofClass = ProofClass.PORTABLE
+    evidence_state: EvidenceState
+    proof_class: ProofClass | None
     introduced_generation: str
     limitations: list[str] = Field(default_factory=list)
+
+    _validate_identity = field_validator(
+        "name",
+        "purpose",
+        "kind",
+        "owner_component",
+        "applicability",
+        "implementation_ref",
+        "introduced_generation",
+    )(_nonblank)
+    _validate_list_strings = field_validator(
+        "semantic_effects", "completion_evidence", "limitations"
+    )(_nonblank_items)
+
+    @model_validator(mode="after")
+    def evidence_proof_are_coherent(self) -> CapabilityDefinition:
+        if self.evidence_state is EvidenceState.ABSENT and self.evidence_refs:
+            raise ValueError("absent capabilities cannot carry evidence_refs")
+        if self.evidence_state is EvidenceState.PROVEN and self.proof_class is None:
+            raise ValueError("proven capabilities require proof_class")
+        if self.evidence_state is EvidenceState.PROVEN and not self.evidence_refs:
+            raise ValueError("proven capabilities require evidence_refs")
+        if self.evidence_state is not EvidenceState.PROVEN and self.proof_class is not None:
+            raise ValueError(
+                "absent, unproven, withheld, unknown, and unsupported capabilities "
+                "cannot carry proof_class"
+            )
+        return self
 
 
 class CapabilityManifest(StrictModel):
     generation_id: str
     capabilities: list[CapabilityDefinition]
+
+    _validate_generation_id = field_validator("generation_id")(_nonblank)
+
+    @model_validator(mode="after")
+    def unique_and_sorted(self) -> CapabilityManifest:
+        names = [capability.name for capability in self.capabilities]
+        if len(names) != len(set(names)):
+            raise ValueError("capability manifest contains duplicate names")
+        if names != sorted(names):
+            raise ValueError("capability manifest capabilities must be sorted by name")
+        return self
 
     @property
     def names(self) -> set[str]:

@@ -1,13 +1,14 @@
-# Integration checkpoint: G12 exact planner affordance evidence
+# Integration checkpoint: serial G13 prerequisite contract candidate
 
 This document is the current repository authority for one bounded integration
-goal. It is replaced in the same commit as every completed goal; Git history
-retains older checkpoints.
+slice. Git history retains the completed G12 checkpoint. This candidate freezes
+the EvoGen contract that KAE's next generated manifest must satisfy; it does not
+advance the numbered-goal queue by itself.
 
 ## Repository and planning authority
 
 ```text
-parent commit                    643ca51b04d8c8e21d5a1478e6fa6542f3b9e36a
+parent commit                    eb07feb10dbdaba30151d6338eca837a5c47d4ba
 integration branch               main
 current goal                     Goal 12 - Log the exact affordance set
 next unstarted goal              Goal 13 - Generate KAE capability manifest
@@ -24,125 +25,83 @@ source plan revision             2026-08-10T21:25:08.835Z
 execution plan                   docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
 ```
 
-Goal 12 began from clean, synchronized KAE `main` after G11's exact generation
-manifest. This EvoGen candidate changes only the durable planning ratchet;
-implementation and primary evidence live in the exact KAE completion commit.
+Goal 12 remains the latest closed numbered goal at the exact KAE commit above.
+The current EvoGen changes are a serial prerequisite discovered while mapping
+G13: the old generic capability model could not represent absent, unknown, or
+unsupported evidence without assigning a proof class. KAE must not invent
+subject conformance merely to fit that weaker shape.
 
-The subsequent cockpit repair changes no numbered-goal state. The first public
-ratchet run `31703681557` correctly rejected the stale G11/G12 cockpit snapshot
-after the plan advanced to G13. Commit
-`643ca51b04d8c8e21d5a1478e6fa6542f3b9e36a` refreshed that generated UI and
-its assertions from the already-published ratchet authority; hosted run
-`31704114352` then passed Python 3.11–3.13. This final metadata refresh records
-that proof without changing the plan queue.
+## Generic capability contract
 
-## Behavioral change and authority
+The prerequisite makes these rules explicit in EvoGen's authoritative Pydantic
+models and generated JSON Schemas:
 
-Source-proven in KAE:
+- `CapabilityKind` has exactly six values: sensing, representation, memory,
+  action, verification, and recovery;
+- `EvidenceState` distinguishes proven, absent, unproven, withheld, unknown,
+  and unsupported;
+- a proven capability requires a proof class and at least one typed,
+  content-addressed evidence reference;
+- non-proven capabilities cannot carry a proof class, and absent capabilities
+  cannot carry evidence references;
+- identity and semantic strings cannot be blank;
+- `semantic_effects` contains at least one nonblank effect so diagnosis can
+  distinguish an existing capability from a missing effect;
+- manifest capability names are unique and canonically sorted; and
+- `introduced_generation` records lineage independently of the generation that
+  currently publishes the manifest.
 
-- `enumerate_affordance_set` produces one immutable offer snapshot used by the
-  hosted planner payload, the dedicated evidence event, and the read-only watch
-  surface;
-- hosted planners enumerate once before budgeting and reuse that snapshot;
-- the complete planner `affordances` array must equal the projection from the
-  same snapshot or planner preparation fails closed;
-- `planner_context_prepared` remains delivery accounting, while
-  `affordance_set` is written after it as the final durable record before
-  `decide_prepared` receives the context;
-- a failed event write prevents an unrecorded planner delivery, and a provider
-  failure leaves the exact delivered menu in the log;
-- direct-action and scripted planners record every source as `not_delivered`
-  because they do not consume the hosted semantic menu; and
-- the event disposition generator now inventories 90 event types and 128
-  producer records, with `affordance_set` mapped exactly to EvoGen's event kind.
+The contract remains subject-neutral. EvoGen core imports no KAE object, and
+the detailed Kenshi proof artifacts stay in KAE. A subject manifest may refer to
+those artifacts by stable authority reference and digest without copying an
+incident narrative into reusable semantics.
 
-Each typed event records its context and authored world revision, optional
-identity session, opaque offer identity, operation kind, source adapter,
-semantic name, typed parameter constraints, required opaque selection target,
-applicable engine-owned target identities, per-source completeness, and the
-canonical union of withholding categories.
+This is an intentional alpha contract cutover. Older capability payloads that
+omit explicit evidence state or rely on the former default portable proof class
+are refused rather than silently upgraded into claims the retained artifact did
+not make.
 
-## Missing evidence and semantic/mechanical separation
+## Existing subject behavior
 
-Missing telemetry, stale telemetry, unknown sources, truncated sources,
-unprobed targets, invalid semantic values, authoring refusal, binding refusal,
-interface scope, and intentional non-delivery remain distinct. A fresh complete
-source with zero offers is represented differently from every unavailable or
-incomplete source. Contradictory statuses, unsorted or duplicate identities,
-malformed parameter contracts, and incomplete source inventories fail closed.
+The microworld's built-in and generated capabilities now state `unproven`
+instead of treating their own source bytes as behavioral proof. This preserves
+the deterministic runnable cycle while honoring two existing invariants:
+dispatch is not proof of a world effect, and candidate authors do not certify
+their own work. Built-in capabilities retain their `genesis` lineage when a
+later generation is materialized; only a newly retained capability names its
+actual introduction generation.
 
-The evidence event contains no presentation labels, descriptions, executor
-arguments, keys, screen coordinates, inventory sections or slots, or inventories
-of unoffered native commands. Inventory transfers now expose one opaque semantic
-selection target plus role-tagged source/destination owner identities. Their
-private section and slot address remains only in runtime binding arguments.
+This prerequisite changes no environment, evaluator, scenario, operation, or
+selection rule. It launches no game, sends no input, contacts no model provider,
+and claims no external world effect.
 
-This separation does not weaken execution. Selection and later execution still
-re-enumerate current adapter authority and bind against fresh world evidence;
-the recorded event is provenance of what was delivered, never durable permission
-to dispatch.
+## Generated authority and verification
 
-## Replay proof
+`evogen.schema.MODEL_REGISTRY` owns the generated capability-definition,
+capability-evidence-ref, and capability-manifest schemas. The project cockpit is
+regenerated from this checkpoint and the still-G13-next execution plan.
 
-The checked-in `affordance_set` schema and JSONL fixture are parsed through the
-strict typed event model. `load_affordance_sets` requires the exact registered
-adapter inventory and validates every adapter/operation pair. It refuses old
-logs with no typed event rather than inferring a menu from prompts, descriptions,
-or the retired summary fields in `planner_context_prepared`.
-
-`reconstruct_choice` resolves semantic, target, and parameter constraints from
-the event and can cross-check the retained opaque affordance ID, operation kind,
-and source adapter. Tests mutate all of those authorities, malformed bounds and
-choices, completeness coherence, and forged source/operation pairs.
-
-## Independent review and verification
-
-Cicero mapped enumeration, delivery, generated, and replay authority. Kuhn
-designed adversarial falsifiers and found permissive parameter/completeness and
-replay-identity contracts. Hypatia independently found the forged
-adapter/operation boundary. Root repaired those findings; Kuhn and Hypatia then
-retested the exact repairs read-only and returned PASS.
-
-Cicero also identified that the generated reporting-surface report still shows
-zero `affordance_set` events in its real pre-G12 live fixture. That gap is kept
-visible. The new synthetic fixture proves typed replay mechanics but is not
-inserted into historical live evidence or presented as a live run.
-
-KAE's final candidate passed Ruff, strict mypy over 153 source files, generated
-event/schema/document freshness, research evidence, architecture and whitespace
-checks, the full pytest suite, and `./dev verify-portable`. The exact public KAE
-completion commit passed hosted run
-`https://github.com/libardo667/kenshi-agent-env/actions/runs/31703301693` on
-Python 3.11, 3.12, 3.13, and 3.14.
-
-This EvoGen ratchet is verified with the repository's current complete command:
+The complete repository gate is:
 
 ```bash
 UV_CACHE_DIR=/tmp/evogen-uv-cache \
   uv run --frozen --extra dev python scripts/verify.py
 ```
 
-Hosted EvoGen CI remains the post-push completion authority.
+It covers compileall, Ruff, mypy, wheel construction and entry-point metadata,
+all tests, the deterministic end-to-end microworld evolution demo, generated
+schema and cockpit freshness, and `git diff --check`. The uncommitted candidate
+passes that full gate locally. Hosted EvoGen CI remains required after its exact
+public commit.
 
-## Withheld claims and completion boundary
+## Completion boundary
 
-An affordance event proves only what semantic choices were delivered. It does
-not prove that the planner selected one, that dispatch was accepted, that an
-operation completed, that the game advanced, or that Kenshi changed. Those
-claims still require their independent later evidence.
+This commit will establish only the generic prerequisite and its exact public
+identity. G13 remains incomplete until KAE generates its manifest from existing
+operation, affordance, native, protocol, continuity, outcome, recovery, and
+proof authorities; independent reviewers accept the final projection; the full
+KAE portable gate passes; both repositories record exact counterpart commits;
+the public hosted matrices pass; and the central plan and cockpit are ratcheted.
 
-Source completeness describes the adapter's declared observed denominator, not
-every possible action in Kenshi. Old logs remain valid historical records but
-cannot claim exact offer reconstruction. The runtime plane and EvoGen evolution
-plane remain separate. No game process, save, DLL, native protocol, operation
-definition, environment, or evaluator changed in G12.
-
-Goal 12 is complete at KAE commit
-`0560b9de6e049f0dc06fab9afbef76f76d198092`. This planning-ratchet candidate is
-complete only after EvoGen verification, commit, clean checkpoint mode, public
-push, and hosted Python matrix are green.
-
-Goal 13 is the sole next packet and remains unstarted here. It owns a generated
-KAE `CapabilityManifest` derived from existing registries, protocol/schema
-versions, and proof authorities with no hand-maintained sibling list. G14 still
-owns production trajectory export, and G15 still owns subject registration.
+G14 trajectory export and G15 subject registration remain unstarted. No agent
+may begin either one as part of this slice.
