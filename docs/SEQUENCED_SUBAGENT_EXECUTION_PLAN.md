@@ -37,7 +37,13 @@ Current execution state:
   `0560b9de6e049f0dc06fab9afbef76f76d198092`
 - Goal 12 hosted proof: KAE run `31703301693` passed the portable gate on
   Python 3.11, 3.12, 3.13, and 3.14 at the exact completion commit
-- Next unstarted goal: Goal 13
+- Goal 13 state: completed at KAE commit
+  `a8584554e30bb793f5b60ef57e3d1500de5aaa12`
+- Goal 13 hosted proof: KAE run `31720597916` passed the portable gate on
+  Python 3.11, 3.12, 3.13, and 3.14 at the exact completion commit
+- Goal 13 EvoGen prerequisite: commit
+  `4270e8332f8a03757b39a306b2e936ac8a618cc3`, hosted run `31717965263`
+- Next unstarted goal: Goal 14
 
 ## 1. What this plan controls
 
@@ -443,8 +449,16 @@ and no real subject imports in core.
   mechanics remain private to runtime binding. The generated event authority is
   now 90 event types and 128 producer records. Hosted run `31703301693` passed
   Python 3.11–3.14.
-- G13 derives the capability manifest from existing KAE registries/protocol and
-  proof authorities; no hand-written sibling list is permitted.
+- G13 is complete at KAE commit
+  `a8584554e30bb793f5b60ef57e3d1500de5aaa12`. Its 69-row manifest is generated
+  from operation, affordance, native, telemetry, protocol, continuity, outcome,
+  recovery, and proof authorities rather than a sibling semantic registry. It
+  preserves six exact kinds and distinct proven, absent, unproven, withheld,
+  unknown, and unsupported states. Referenced proof bytes participate in
+  content identity; semantic mutations change identity or output while
+  ordering-only changes stay stable. The schema-2 native category metadata
+  leaves the generated C++ header byte-identical to G12. Hosted run
+  `31720597916` passed Python 3.11–3.14.
 - Exit artifacts: generated event map, sequence fixture, generation manifest,
   affordance-set event fixture, generated capability manifest, freshness tests.
 
@@ -712,8 +726,8 @@ goals:
   - {id: G10, repo: [kenshi-agent-env], depends: [G09], profile: logger_migration, state: complete, human_gate: []}
   - {id: G11, repo: [kenshi-agent-env], depends: [G10], profile: generation_manifest, state: complete, human_gate: []}
   - {id: G12, repo: [kenshi-agent-env], depends: [G11], profile: event_contract, state: complete, human_gate: []}
-  - {id: G13, repo: [kenshi-agent-env], depends: [G12], profile: generated_manifest, state: next, human_gate: []}
-  - {id: G14, repo: [kenshi-agent-env, evogen], depends: [G13], profile: cross_repo_adapter, state: unstarted, human_gate: []}
+  - {id: G13, repo: [kenshi-agent-env], depends: [G12], profile: generated_manifest, state: complete, human_gate: []}
+  - {id: G14, repo: [kenshi-agent-env, evogen], depends: [G13], profile: cross_repo_adapter, state: next, human_gate: []}
   - {id: G15, repo: [kenshi-agent-env], depends: [G14], profile: subject_plugin, state: unstarted, human_gate: []}
   - {id: G16, repo: [kenshi-agent-env], depends: [G15], profile: observer_replay, state: unstarted, human_gate: []}
   - {id: G17, repo: [kenshi-agent-env], depends: [G16], profile: metric_mapping, state: unstarted, human_gate: []}
@@ -753,21 +767,19 @@ goals:
 
 ## 16. Immediate next execution packet
 
-The next permitted packet is G13 only. It remains unstarted until the Goal 12
+The next permitted packet is G14 only. It remains unstarted until the Goal 13
 KAE commit, clean checkpoint, public push, hosted Python matrix, and this
-central planning ratchet are complete. Goal 13 begins in `kenshi-agent-env`
-with a read-only map of the existing operation registry, native capability
-authority, protocol/schema versions, proof ledger, and EvoGen's exact
-`CapabilityManifest` contract.
+central plan/cockpit ratchet are complete.
 
-The eventual writer generates the KAE capability manifest from those existing
-authorities. A hand-maintained sibling capability list is forbidden: freshness
-must fail when a source registry changes without a regenerated manifest, and
-the content-addressed result must distinguish absent, unknown, and unsupported
-evidence without inventing subject conformance.
+G14 is cross-repository and serial. It begins in `kenshi-agent-env` by mapping
+the exact existing session-event and generation/capability authorities into a
+production trajectory exporter. Only after the KAE exporter is committed,
+public, and recorded by exact hash may EvoGen retire its provisional KAE
+normalizer in favor of that exported contract. Each repository checkpoint must
+name the exact counterpart commit.
 
-The completion falsifier mutates each contributing authority and proves the
-manifest identity or generated output changes, while ordering-only changes stay
-stable. G13 does not build the G14 trajectory exporter, register the G15
-subject plugin, change native behavior, install artifacts, launch Kenshi, or
-claim a live world effect.
+The exporter must preserve missing, truncated, unknown, and withheld evidence;
+retain event and generation identity; and keep dispatch separate from later
+world-effect proof. G14 does not register the G15 subject plugin, run the G16
+observer/replay path, change native behavior, install artifacts, launch Kenshi,
+modify a save, or claim a live world effect.
