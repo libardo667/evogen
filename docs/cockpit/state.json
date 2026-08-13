@@ -1090,14 +1090,14 @@
   "repositories": [
     {
       "branch": "main",
-      "evidence_commit": "6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a",
-      "hosted_run": null,
-      "href": "https://github.com/libardo667/evogen/commit/6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a",
+      "evidence_commit": "73a6ab25f5b726f23cba050f4ace1c3d70c83935",
+      "hosted_run": "31721525900",
+      "href": "https://github.com/libardo667/evogen/commit/73a6ab25f5b726f23cba050f4ace1c3d70c83935",
       "id": "evogen",
-      "matrix": "Python 3.11–3.13 pending",
+      "matrix": "Python 3.11–3.13",
       "name": "EvoGen",
       "role": "generic evolution plane",
-      "state": "G01–G08 complete; G13 plan ratchet committed; cockpit refresh awaiting public proof"
+      "state": "G01–G08 complete; G13 plan ratchet and cockpit public"
     },
     {
       "branch": "main",
@@ -1126,7 +1126,7 @@
   "snapshot_label": "G13 closed · G14 queued",
   "source_authority": {
     "branch": "main",
-    "input_digest": "518c7c970a986ef4d9e3b57b264b3befcdf467bbcb018b999f2b720a69ae9e8e",
+    "input_digest": "b8d317a9b66b1a24dc0600209792b30c969ab4ab12c467573aa89ff0e6feece3",
     "inputs": [
       {
         "path": "docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md",
@@ -1134,17 +1134,17 @@
       },
       {
         "path": "docs/INTEGRATION_CHECKPOINT.md",
-        "sha256": "ed3a99381a8300a939a37d00ba9982723900b0317eae26a05115de45180d1f10"
+        "sha256": "e28cec187ce1bf9c113adfced7deb6b4056cd7740d6eb3252c50454b0cb4ee1b"
       },
       {
         "path": "docs/cockpit/content.json",
-        "sha256": "8f807f715c3d9abd5b25ad196326ccc2c27fba634cbe7319ae577c81d3cbe36c"
+        "sha256": "321bedeb67c3dc5242c7c9dcdb2e3d48d8a108c61ec1798e0f17f0a786da5579"
       }
     ],
     "plan_revision_commit": "6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a",
     "repository": "evogen"
   },
-  "state_id": "sha256:1a6fea1dc45b99380c441ef1f2c7eec320bb5ad33191f4da31411496f318fcc1",
+  "state_id": "sha256:74dc18c6fb0818d9b64eb57cd97f39f341df69b3fe0db6b9db93346491cfff85",
   "withheld_claims": [
     "No general model has yet been shown to infer arbitrary missing capabilities from arbitrary environments.",
     "The KAE generation manifest does not prove that native bytes are loaded, identify a running process, or prove a world effect.",

@@ -39,11 +39,11 @@
       "name": "EvoGen",
       "role": "generic evolution plane",
       "branch": "main",
-      "state": "G01–G08 complete; G13 plan ratchet committed; cockpit refresh awaiting public proof",
-      "evidence_commit": "6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a",
-      "hosted_run": null,
-      "matrix": "Python 3.11–3.13 pending",
-      "href": "https://github.com/libardo667/evogen/commit/6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a"
+      "state": "G01–G08 complete; G13 plan ratchet and cockpit public",
+      "evidence_commit": "73a6ab25f5b726f23cba050f4ace1c3d70c83935",
+      "hosted_run": "31721525900",
+      "matrix": "Python 3.11–3.13",
+      "href": "https://github.com/libardo667/evogen/commit/73a6ab25f5b726f23cba050f4ace1c3d70c83935"
     },
     {
       "id": "kae",
