@@ -33,7 +33,11 @@ Current execution state:
   `bfaa4d55ae10a34d33e7a06ee3959fc6659eceb4`
 - Goal 11 hosted proof: KAE run `31542719034` passed the portable gate on
   Python 3.11, 3.12, 3.13, and 3.14 at the exact completion commit
-- Next unstarted goal: Goal 12
+- Goal 12 state: completed at KAE commit
+  `0560b9de6e049f0dc06fab9afbef76f76d198092`
+- Goal 12 hosted proof: KAE run `31703301693` passed the portable gate on
+  Python 3.11, 3.12, 3.13, and 3.14 at the exact completion commit
+- Next unstarted goal: Goal 13
 
 ## 1. What this plan controls
 
@@ -425,8 +429,20 @@ and no real subject imports in core.
   as EvoGen's current `GenerationManifest`, while its native-capability digest
   remains explicitly provisional until G13 rather than claiming subject
   conformance early. Hosted run `31542719034` passed Python 3.11–3.14.
-- G12 captures the planner-visible offer set at the authoritative enumeration
-  boundary, not by prompt parsing.
+- G12 is complete at KAE commit
+  `0560b9de6e049f0dc06fab9afbef76f76d198092`. One immutable enumeration now
+  feeds hosted planner projection, typed `affordance_set` evidence, and the
+  read-only watch surface. The event is the last durable record before planner
+  delivery and retains opaque offer and selection identities, declared
+  adapter/operation authority, semantic parameter contracts, applicable target
+  identities, source completeness, typed withholding, and authored revision.
+  Replay reconstructs selections from that typed evidence, refuses legacy logs
+  rather than parsing prompts or labels, and rejects contradictory contracts,
+  unknown adapter/operation pairs, or incomplete source inventories. Direct and
+  scripted planners truthfully record `not_delivered`. Transfer slot/section
+  mechanics remain private to runtime binding. The generated event authority is
+  now 90 event types and 128 producer records. Hosted run `31703301693` passed
+  Python 3.11–3.14.
 - G13 derives the capability manifest from existing KAE registries/protocol and
   proof authorities; no hand-written sibling list is permitted.
 - Exit artifacts: generated event map, sequence fixture, generation manifest,
@@ -695,8 +711,8 @@ goals:
   - {id: G09, repo: [kenshi-agent-env], depends: [G08], profile: source_inventory, state: complete, human_gate: []}
   - {id: G10, repo: [kenshi-agent-env], depends: [G09], profile: logger_migration, state: complete, human_gate: []}
   - {id: G11, repo: [kenshi-agent-env], depends: [G10], profile: generation_manifest, state: complete, human_gate: []}
-  - {id: G12, repo: [kenshi-agent-env], depends: [G11], profile: event_contract, state: next, human_gate: []}
-  - {id: G13, repo: [kenshi-agent-env], depends: [G12], profile: generated_manifest, state: unstarted, human_gate: []}
+  - {id: G12, repo: [kenshi-agent-env], depends: [G11], profile: event_contract, state: complete, human_gate: []}
+  - {id: G13, repo: [kenshi-agent-env], depends: [G12], profile: generated_manifest, state: next, human_gate: []}
   - {id: G14, repo: [kenshi-agent-env, evogen], depends: [G13], profile: cross_repo_adapter, state: unstarted, human_gate: []}
   - {id: G15, repo: [kenshi-agent-env], depends: [G14], profile: subject_plugin, state: unstarted, human_gate: []}
   - {id: G16, repo: [kenshi-agent-env], depends: [G15], profile: observer_replay, state: unstarted, human_gate: []}
@@ -737,20 +753,21 @@ goals:
 
 ## 16. Immediate next execution packet
 
-The next permitted packet is G12 only. It remains unstarted until the Goal 11
+The next permitted packet is G13 only. It remains unstarted until the Goal 12
 KAE commit, clean checkpoint, public push, hosted Python matrix, and this
-central planning ratchet are complete. Goal 12 begins in `kenshi-agent-env`
-with a read-only map of the authoritative affordance-enumeration path and the
-planner-delivery boundary, plus a proof design for exact replay reconstruction.
+central planning ratchet are complete. Goal 13 begins in `kenshi-agent-env`
+with a read-only map of the existing operation registry, native capability
+authority, protocol/schema versions, proof ledger, and EvoGen's exact
+`CapabilityManifest` contract.
 
-The eventual writer emits one dedicated `affordance_set` event immediately
-before planner delivery. Its typed payload includes opaque offer identity,
-operation kind, source adapter, semantic parameters, applicable target
-identities, source completeness, withheld categories, and authored world
-revision. `planner_context_prepared` remains planner-delivery accounting rather
-than becoming the only affordance evidence.
+The eventual writer generates the KAE capability manifest from those existing
+authorities. A hand-maintained sibling capability list is forbidden: freshness
+must fail when a source registry changes without a regenerated manifest, and
+the content-addressed result must distinguish absent, unknown, and unsupported
+evidence without inventing subject conformance.
 
-The completion falsifier must reconstruct exactly what the planner could choose
-without parsing prompt text or human-readable labels. Executor mechanics, keys,
-coordinates, and unoffered native commands remain forbidden from planner
-affordances. No G13 capability-manifest or G14 exporter work belongs in G12.
+The completion falsifier mutates each contributing authority and proves the
+manifest identity or generated output changes, while ordering-only changes stay
+stable. G13 does not build the G14 trajectory exporter, register the G15
+subject plugin, change native behavior, install artifacts, launch Kenshi, or
+claim a live world effect.
