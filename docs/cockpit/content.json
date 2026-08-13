@@ -39,11 +39,11 @@
       "name": "EvoGen",
       "role": "generic evolution plane",
       "branch": "main",
-      "state": "G01–G08 complete; G12 planning ratchet public; cockpit repair in progress",
-      "evidence_commit": "ef27a9bc440b789a89bf5e1582868d21c244d2f7",
-      "hosted_run": "31703681557",
-      "matrix": "Python 3.11–3.13 rejected stale cockpit snapshot",
-      "href": "https://github.com/libardo667/evogen/commit/ef27a9bc440b789a89bf5e1582868d21c244d2f7"
+      "state": "G01–G08 complete; G12 planning ratchet and cockpit public",
+      "evidence_commit": "643ca51b04d8c8e21d5a1478e6fa6542f3b9e36a",
+      "hosted_run": "31704114352",
+      "matrix": "Python 3.11–3.13",
+      "href": "https://github.com/libardo667/evogen/commit/643ca51b04d8c8e21d5a1478e6fa6542f3b9e36a"
     },
     {
       "id": "kae",

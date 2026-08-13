@@ -7,7 +7,7 @@ retains older checkpoints.
 ## Repository and planning authority
 
 ```text
-parent commit                    ef27a9bc440b789a89bf5e1582868d21c244d2f7
+parent commit                    643ca51b04d8c8e21d5a1478e6fa6542f3b9e36a
 integration branch               main
 current goal                     Goal 12 - Log the exact affordance set
 next unstarted goal              Goal 13 - Generate KAE capability manifest
@@ -16,6 +16,9 @@ KAE completion commit            0560b9de6e049f0dc06fab9afbef76f76d198092
 KAE-recorded EvoGen counterpart  c37147b3120c38c9a979ca8671fcc11c5ab62c6c
 KAE public remote                https://github.com/libardo667/kenshi-agent-env
 KAE hosted run                   31703301693
+EvoGen plan ratchet commit       ef27a9bc440b789a89bf5e1582868d21c244d2f7
+EvoGen cockpit proof commit      643ca51b04d8c8e21d5a1478e6fa6542f3b9e36a
+EvoGen hosted run                31704114352
 alpha release commit             9c8d94c59a95222a719e20fac5a61d2ec712743d
 source plan revision             2026-08-10T21:25:08.835Z
 execution plan                   docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
@@ -27,8 +30,11 @@ implementation and primary evidence live in the exact KAE completion commit.
 
 The subsequent cockpit repair changes no numbered-goal state. The first public
 ratchet run `31703681557` correctly rejected the stale G11/G12 cockpit snapshot
-after the plan advanced to G13. This follow-up refreshes that generated UI and
-its assertions from the already-published ratchet authority.
+after the plan advanced to G13. Commit
+`643ca51b04d8c8e21d5a1478e6fa6542f3b9e36a` refreshed that generated UI and
+its assertions from the already-published ratchet authority; hosted run
+`31704114352` then passed Python 3.11–3.13. This final metadata refresh records
+that proof without changing the plan queue.
 
 ## Behavioral change and authority
 
