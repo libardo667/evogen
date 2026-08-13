@@ -6,7 +6,7 @@ goal. Git history retains the completed prerequisite-contract checkpoint.
 ## Repository and planning authority
 
 ```text
-parent commit                    4270e8332f8a03757b39a306b2e936ac8a618cc3
+parent commit                    6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a
 integration branch               main
 current goal                     Goal 13 - Generate KAE capability manifest
 next unstarted goal              Goal 14 - Replace the provisional normalizer with an exact KAE exporter
@@ -17,6 +17,7 @@ KAE public remote                https://github.com/libardo667/kenshi-agent-env
 KAE hosted run                   31720597916
 EvoGen prerequisite commit       4270e8332f8a03757b39a306b2e936ac8a618cc3
 EvoGen prerequisite hosted run   31717965263
+EvoGen plan ratchet commit       6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a
 alpha release commit             9c8d94c59a95222a719e20fac5a61d2ec712743d
 source plan revision             2026-08-10T21:25:08.835Z
 execution plan                   docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
@@ -27,6 +28,11 @@ planner-affordance evidence. EvoGen first published the subject-neutral evidence
 contract above. The KAE commit then generated the real subject capability
 manifest from existing authorities and recorded that exact EvoGen prerequisite
 in its commit message and checkpoint.
+
+The follow-up cockpit refresh changes no numbered-goal state. It renders the
+already-committed G13/G14 queue boundary and KAE proof into the checked-in,
+offline project interface. Hosted EvoGen CI remains pending until that exact
+combined state is public.
 
 ## Generated subject authority
 

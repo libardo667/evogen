@@ -147,13 +147,40 @@
     {
       "evidence": [
         {
+          "href": "../INTEGRATION_CHECKPOINT.md",
+          "label": "G13 checkpoint"
+        },
+        {
+          "href": "https://github.com/libardo667/kenshi-agent-env/commit/a8584554e30bb793f5b60ef57e3d1500de5aaa12",
+          "label": "KAE completion commit"
+        },
+        {
+          "href": "https://github.com/libardo667/kenshi-agent-env/actions/runs/31720597916",
+          "label": "Hosted matrix"
+        }
+      ],
+      "id": "kae_capability_manifest",
+      "name": "Generated KAE capability manifest",
+      "not_proven": "This is an evidence-backed inventory, not proof that every operation works live or that KAE is already registered as an EvoGen subject.",
+      "plain_language": "Publishes 69 KAE capabilities from their real operation, native, protocol, service, and proof owners, including one unsupported threat-response boundary that KAE does not pretend to satisfy.",
+      "proof": [
+        "source",
+        "static",
+        "portable",
+        "hosted"
+      ],
+      "status": "available"
+    },
+    {
+      "evidence": [
+        {
           "href": "../SEQUENCED_SUBAGENT_EXECUTION_PLAN.md",
           "label": "KAE journey"
         }
       ],
       "id": "kae_cycle",
       "name": "Historical and new KAE evolution cycles",
-      "not_proven": "Planned in G15–G29; no retained KAE capability is claimed yet.",
+      "not_proven": "Planned in G14–G29; no evolved KAE capability has been retained yet.",
       "plain_language": "Will convert real KAE history into hidden-answer diagnostics, then close a genuinely new deficit through supervised live proof.",
       "proof": [
         "withheld"
@@ -208,14 +235,19 @@
       "command": "./dev generation-manifest --output /tmp/kae-generation.json",
       "cwd": "kenshi-agent-env",
       "label": "Publish a KAE generation manifest"
+    },
+    {
+      "command": "./dev capability-manifest --generation-id 0000000000000000000000000000000000000000000000000000000000000000 --output /tmp/kae-capabilities.json",
+      "cwd": "kenshi-agent-env",
+      "label": "Publish KAE's capability inventory"
     }
   ],
   "current_focus": {
-    "goal_id": "G13",
+    "goal_id": "G14",
     "human_gate": "none",
     "state": "unstarted",
-    "summary": "The next slice will derive one content-addressed KAE capability manifest from existing registries, protocol versions, and proof authorities instead of maintaining a second capability list.",
-    "title": "Generate KAE's capability manifest from authorities"
+    "summary": "The next serial slice will publish KAE's exact production trajectory contract first, then make EvoGen consume that authority and retire its provisional normalizer.",
+    "title": "Replace the provisional normalizer with an exact KAE exporter"
   },
   "demo_result": {
     "label": "Deterministic microworld retention proof",
@@ -422,7 +454,7 @@
       "repositories": [
         "kenshi-agent-env"
       ],
-      "state": "next",
+      "state": "complete",
       "title": "Generate KAE's capability manifest from authorities"
     },
     {
@@ -437,7 +469,7 @@
         "kenshi-agent-env",
         "evogen"
       ],
-      "state": "unstarted",
+      "state": "next",
       "title": "Replace the provisional normalizer with an exact KAE exporter"
     },
     {
@@ -994,19 +1026,19 @@
     }
   ],
   "last_closed_goal": {
-    "goal_id": "G12",
-    "summary": "KAE now records the exact typed semantic menu delivered to each hosted planner call, with source completeness and fail-closed replay that never guesses from prompt text.",
-    "title": "Log the exact affordance set as its own event"
+    "goal_id": "G13",
+    "summary": "KAE now publishes one content-addressed 69-row capability manifest from its real semantic and proof authorities, preserving unsupported and unproven boundaries instead of inventing conformance.",
+    "title": "Generate KAE's capability manifest from authorities"
   },
-  "plan_revision_commit": "ef27a9bc440b789a89bf5e1582868d21c244d2f7",
+  "plan_revision_commit": "6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a",
   "product_name": "EvoGen",
   "product_thesis": "Turn repeated agent failures into evidence-backed capability changes.",
   "progress": {
-    "checkpoint_current_goal_id": "G12",
-    "completed_goal_count": 12,
+    "checkpoint_current_goal_id": "G13",
+    "completed_goal_count": 13,
     "goal_count": 49,
-    "last_closed_goal_id": "G12",
-    "next_goal_id": "G13"
+    "last_closed_goal_id": "G13",
+    "next_goal_id": "G14"
   },
   "proof_lanes": [
     {
@@ -1058,25 +1090,25 @@
   "repositories": [
     {
       "branch": "main",
-      "evidence_commit": "643ca51b04d8c8e21d5a1478e6fa6542f3b9e36a",
-      "hosted_run": "31704114352",
-      "href": "https://github.com/libardo667/evogen/commit/643ca51b04d8c8e21d5a1478e6fa6542f3b9e36a",
+      "evidence_commit": "6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a",
+      "hosted_run": null,
+      "href": "https://github.com/libardo667/evogen/commit/6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a",
       "id": "evogen",
-      "matrix": "Python 3.11–3.13",
+      "matrix": "Python 3.11–3.13 pending",
       "name": "EvoGen",
       "role": "generic evolution plane",
-      "state": "G01–G08 complete; G12 planning ratchet and cockpit public"
+      "state": "G01–G08 complete; G13 plan ratchet committed; cockpit refresh awaiting public proof"
     },
     {
       "branch": "main",
-      "evidence_commit": "0560b9de6e049f0dc06fab9afbef76f76d198092",
-      "hosted_run": "31703301693",
-      "href": "https://github.com/libardo667/kenshi-agent-env/commit/0560b9de6e049f0dc06fab9afbef76f76d198092",
+      "evidence_commit": "a8584554e30bb793f5b60ef57e3d1500de5aaa12",
+      "hosted_run": "31720597916",
+      "href": "https://github.com/libardo667/kenshi-agent-env/commit/a8584554e30bb793f5b60ef57e3d1500de5aaa12",
       "id": "kae",
       "matrix": "Python 3.11–3.14",
       "name": "Kenshi Agent Environment",
       "role": "first real subject",
-      "state": "G09–G12 complete"
+      "state": "G09–G13 complete"
     },
     {
       "branch": "not created",
@@ -1091,32 +1123,32 @@
     }
   ],
   "schema_version": "evogen-cockpit/v1",
-  "snapshot_label": "G12 closed · G13 queued",
+  "snapshot_label": "G13 closed · G14 queued",
   "source_authority": {
     "branch": "main",
-    "input_digest": "7c83410cd77a1f9747ca28299c8b905a441d6a73d4d0269f31f2a91ff31d2e49",
+    "input_digest": "518c7c970a986ef4d9e3b57b264b3befcdf467bbcb018b999f2b720a69ae9e8e",
     "inputs": [
       {
         "path": "docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md",
-        "sha256": "b4235c5b933d5b167f444765169d28dc7244184721592bdc7d1236fa062b26a5"
+        "sha256": "dc76efdde52d0e502cfb3ed67e53623096c10bcae9555bb20a6c030750420486"
       },
       {
         "path": "docs/INTEGRATION_CHECKPOINT.md",
-        "sha256": "9470e4312f4076fc2a8aefef1270c5bcc48da8c29dd4f04bb3b9da7226cfe351"
+        "sha256": "ed3a99381a8300a939a37d00ba9982723900b0317eae26a05115de45180d1f10"
       },
       {
         "path": "docs/cockpit/content.json",
-        "sha256": "8612fc818593c5ad74498b351d01a7c29658d61d1f25286284a415a6b129fda4"
+        "sha256": "8f807f715c3d9abd5b25ad196326ccc2c27fba634cbe7319ae577c81d3cbe36c"
       }
     ],
-    "plan_revision_commit": "ef27a9bc440b789a89bf5e1582868d21c244d2f7",
+    "plan_revision_commit": "6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a",
     "repository": "evogen"
   },
-  "state_id": "sha256:420d7f2ab0985ad63d8b42f517f26fb19d3139b67cca79c9a3e8cc31a3d27fa9",
+  "state_id": "sha256:1a6fea1dc45b99380c441ef1f2c7eec320bb5ad33191f4da31411496f318fcc1",
   "withheld_claims": [
     "No general model has yet been shown to infer arbitrary missing capabilities from arbitrary environments.",
     "The KAE generation manifest does not prove that native bytes are loaded, identify a running process, or prove a world effect.",
-    "KAE is not yet registered as a complete EvoGen subject, and its production trajectory exporter is not complete.",
+    "KAE's capability manifest is available, but KAE is not yet registered as an EvoGen subject and its production trajectory exporter is not complete.",
     "No OpenTTD subject repository or retained OpenTTD capability exists yet.",
     "Two-subject genericity and the first serious release remain unproven."
   ]
