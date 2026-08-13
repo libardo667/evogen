@@ -7,7 +7,7 @@ retains older checkpoints.
 ## Repository and planning authority
 
 ```text
-parent commit                    c37147b3120c38c9a979ca8671fcc11c5ab62c6c
+parent commit                    ef27a9bc440b789a89bf5e1582868d21c244d2f7
 integration branch               main
 current goal                     Goal 12 - Log the exact affordance set
 next unstarted goal              Goal 13 - Generate KAE capability manifest
@@ -24,6 +24,11 @@ execution plan                   docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
 Goal 12 began from clean, synchronized KAE `main` after G11's exact generation
 manifest. This EvoGen candidate changes only the durable planning ratchet;
 implementation and primary evidence live in the exact KAE completion commit.
+
+The subsequent cockpit repair changes no numbered-goal state. The first public
+ratchet run `31703681557` correctly rejected the stale G11/G12 cockpit snapshot
+after the plan advanced to G13. This follow-up refreshes that generated UI and
+its assertions from the already-published ratchet authority.
 
 ## Behavioral change and authority
 

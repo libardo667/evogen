@@ -2,18 +2,18 @@
   "schema_version": "evogen-cockpit/v1",
   "product_name": "EvoGen",
   "product_thesis": "Turn repeated agent failures into evidence-backed capability changes.",
-  "snapshot_label": "G11 closed · G12 queued",
-  "plan_revision_commit": "be1b57c23aee52482d677c8175154c2691a1b3ce",
+  "snapshot_label": "G12 closed · G13 queued",
+  "plan_revision_commit": "ef27a9bc440b789a89bf5e1582868d21c244d2f7",
   "last_closed_goal": {
-    "goal_id": "G11",
-    "title": "Export an exact KAE generation manifest",
-    "summary": "KAE can now publish a stable, redacted, typed identity for the source, models, prompts, policy, configuration, protocols, scenarios, and native artifacts that form one generation."
-  },
-  "current_focus": {
     "goal_id": "G12",
     "title": "Log the exact affordance set as its own event",
+    "summary": "KAE now records the exact typed semantic menu delivered to each hosted planner call, with source completeness and fail-closed replay that never guesses from prompt text."
+  },
+  "current_focus": {
+    "goal_id": "G13",
+    "title": "Generate KAE's capability manifest from authorities",
     "state": "unstarted",
-    "summary": "The next slice will record exactly what the KAE planner could choose immediately before delivery, without parsing prompt labels or exposing executor mechanics.",
+    "summary": "The next slice will derive one content-addressed KAE capability manifest from existing registries, protocol versions, and proof authorities instead of maintaining a second capability list.",
     "human_gate": "none"
   },
   "journeys": [
@@ -39,22 +39,22 @@
       "name": "EvoGen",
       "role": "generic evolution plane",
       "branch": "main",
-      "state": "G01–G08 complete; G11 planning ratchet public",
-      "evidence_commit": "be1b57c23aee52482d677c8175154c2691a1b3ce",
-      "hosted_run": "31543193951",
-      "matrix": "Python 3.11–3.13",
-      "href": "https://github.com/libardo667/evogen/commit/be1b57c23aee52482d677c8175154c2691a1b3ce"
+      "state": "G01–G08 complete; G12 planning ratchet public; cockpit repair in progress",
+      "evidence_commit": "ef27a9bc440b789a89bf5e1582868d21c244d2f7",
+      "hosted_run": "31703681557",
+      "matrix": "Python 3.11–3.13 rejected stale cockpit snapshot",
+      "href": "https://github.com/libardo667/evogen/commit/ef27a9bc440b789a89bf5e1582868d21c244d2f7"
     },
     {
       "id": "kae",
       "name": "Kenshi Agent Environment",
       "role": "first real subject",
       "branch": "main",
-      "state": "G09–G11 complete",
-      "evidence_commit": "bfaa4d55ae10a34d33e7a06ee3959fc6659eceb4",
-      "hosted_run": "31542719034",
+      "state": "G09–G12 complete",
+      "evidence_commit": "0560b9de6e049f0dc06fab9afbef76f76d198092",
+      "hosted_run": "31703301693",
       "matrix": "Python 3.11–3.14",
-      "href": "https://github.com/libardo667/kenshi-agent-env/commit/bfaa4d55ae10a34d33e7a06ee3959fc6659eceb4"
+      "href": "https://github.com/libardo667/kenshi-agent-env/commit/0560b9de6e049f0dc06fab9afbef76f76d198092"
     },
     {
       "id": "openttd",
@@ -111,7 +111,7 @@
       "status": "available",
       "plain_language": "KAE has an audited event surface and a monotonic event sequence, closing the identity ambiguity that blocked faithful trajectory import.",
       "proof": ["source", "static", "portable", "hosted"],
-      "not_proven": "The exact planner affordance set is not yet a dedicated event; that is G12.",
+      "not_proven": "An event inventory and sequence do not by themselves prove what a planner received; the separate G12 event supplies that evidence.",
       "evidence": [{"label": "Current checkpoint", "href": "../INTEGRATION_CHECKPOINT.md"}]
     },
     {
@@ -121,16 +121,16 @@
       "plain_language": "Publishes a stable, redacted identity for KAE source and runtime authorities, including independent built, staged, and installed native-artifact evidence.",
       "proof": ["source", "static", "portable", "hosted", "built", "installed"],
       "not_proven": "File identity does not prove that a DLL is loaded, a process matches it, or a world effect occurred.",
-      "evidence": [{"label": "G11 checkpoint", "href": "../INTEGRATION_CHECKPOINT.md"}, {"label": "KAE completion commit", "href": "https://github.com/libardo667/kenshi-agent-env/commit/bfaa4d55ae10a34d33e7a06ee3959fc6659eceb4"}]
+      "evidence": [{"label": "G11 authority in Git history", "href": "https://github.com/libardo667/kenshi-agent-env/commit/bfaa4d55ae10a34d33e7a06ee3959fc6659eceb4"}]
     },
     {
       "id": "kae_affordances",
       "name": "Exact KAE affordance-set event",
-      "status": "next",
-      "plain_language": "Will let replay reconstruct exactly what the planner could choose at each decision point, without prompt-label parsing.",
-      "proof": ["withheld"],
-      "not_proven": "Unstarted. No implementation or completion evidence is claimed.",
-      "evidence": [{"label": "G12 source plan", "href": "../SEQUENCED_SUBAGENT_EXECUTION_PLAN.md"}]
+      "status": "available",
+      "plain_language": "Records the exact semantic choices delivered to each hosted planner, including source completeness and typed withholding, then reconstructs selections without parsing prompts or labels.",
+      "proof": ["source", "static", "portable", "replay", "hosted"],
+      "not_proven": "Delivery is not selection, dispatch, completion, or a world effect; the real pre-G12 live reporting fixture still truthfully contains no such event.",
+      "evidence": [{"label": "G12 checkpoint", "href": "../INTEGRATION_CHECKPOINT.md"}, {"label": "KAE completion commit", "href": "https://github.com/libardo667/kenshi-agent-env/commit/0560b9de6e049f0dc06fab9afbef76f76d198092"}]
     },
     {
       "id": "kae_cycle",

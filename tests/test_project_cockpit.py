@@ -41,14 +41,14 @@ def test_state_preserves_the_exact_execution_boundary() -> None:
     ]
     assert STATE["progress"] == {
         "goal_count": 49,
-        "completed_goal_count": 11,
-        "next_goal_id": "G12",
-        "last_closed_goal_id": "G11",
-        "checkpoint_current_goal_id": "G11",
+        "completed_goal_count": 12,
+        "next_goal_id": "G13",
+        "last_closed_goal_id": "G12",
+        "checkpoint_current_goal_id": "G12",
     }
-    assert [goal["state"] for goal in STATE["goals"][:11]] == ["complete"] * 11
-    assert STATE["goals"][11]["state"] == "next"
-    assert [goal["state"] for goal in STATE["goals"][12:]] == ["unstarted"] * 37
+    assert [goal["state"] for goal in STATE["goals"][:12]] == ["complete"] * 12
+    assert STATE["goals"][12]["state"] == "next"
+    assert [goal["state"] for goal in STATE["goals"][13:]] == ["unstarted"] * 36
 
 
 def test_json_and_file_protocol_script_are_the_same_state() -> None:
@@ -67,8 +67,8 @@ def test_cockpit_has_no_runtime_network_or_module_dependency() -> None:
     assert "XMLHttpRequest" not in javascript
     assert not re.search(r'''(?:src|href)=["']https?://''', index)
     assert "generated:fallback:start" in index
-    assert "Last closed:</strong> G11" in index
-    assert "Next authorized:</strong> G12" in index
+    assert "Last closed:</strong> G12" in index
+    assert "Next authorized:</strong> G13" in index
 
 
 def test_evidence_links_are_safe_and_local_links_resolve() -> None:
