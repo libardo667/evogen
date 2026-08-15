@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -26,6 +27,16 @@ def verify_wheel_entry_point(directory: Path) -> None:
     if len(wheels) != 1:
         raise RuntimeError(f"Expected one wheel in {directory}, found {wheels}")
     with zipfile.ZipFile(wheels[0]) as archive:
+        retired_paths = [
+            name
+            for name in archive.namelist()
+            if name.startswith("evogen/integrations/kenshi/")
+        ]
+        if retired_paths:
+            raise RuntimeError(
+                "Wheel contains the retired production KAE normalizer: "
+                f"{retired_paths}"
+            )
         metadata_paths = [
             name for name in archive.namelist() if name.endswith(".dist-info/entry_points.txt")
         ]
@@ -49,6 +60,10 @@ def main() -> None:
     run(sys.executable, "-m", "compileall", "-q", "src", "tests")
     run("ruff", "check", ".")
     run("mypy", "src")
+    build_directory = ROOT / "build"
+    if build_directory.is_symlink():
+        raise RuntimeError(f"Refusing to clean symlinked build directory: {build_directory}")
+    shutil.rmtree(build_directory, ignore_errors=True)
     with tempfile.TemporaryDirectory(prefix="evogen-wheel-verify-") as directory:
         wheel_directory = Path(directory)
         run("uv", "build", "--wheel", "--out-dir", str(wheel_directory))

@@ -41,15 +41,15 @@ def test_state_preserves_the_exact_execution_boundary() -> None:
     ]
     assert STATE["progress"] == {
         "goal_count": 49,
-        "completed_goal_count": 13,
-        "next_goal_id": "G14",
-        "last_closed_goal_id": "G13",
-        "checkpoint_current_goal_id": "G13",
+        "completed_goal_count": 14,
+        "next_goal_id": "G15",
+        "last_closed_goal_id": "G14",
+        "checkpoint_current_goal_id": "G14",
         "current_route_id": "replay_showcase",
     }
-    assert [goal["state"] for goal in STATE["goals"][:13]] == ["complete"] * 13
-    assert STATE["goals"][13]["state"] == "next"
-    assert [goal["state"] for goal in STATE["goals"][14:]] == ["unstarted"] * 35
+    assert [goal["state"] for goal in STATE["goals"][:14]] == ["complete"] * 14
+    assert STATE["goals"][14]["state"] == "next"
+    assert [goal["state"] for goal in STATE["goals"][15:]] == ["unstarted"] * 34
 
 
 def test_cockpit_shows_the_exact_proof_first_route_and_boundaries() -> None:
@@ -76,6 +76,32 @@ def test_cockpit_shows_the_exact_proof_first_route_and_boundaries() -> None:
     assert "availability evidence only" in routes[4]["boundary"]
 
 
+def test_cockpit_exposes_the_exact_g14_mapping_and_uncertainty() -> None:
+    proof = STATE["trajectory_export_proof"]
+    assert proof["portable_source"] == {
+        "normalized_events": 5,
+        "normalized_sequence": "0..4",
+        "raw_records": 5,
+        "raw_sha256": (
+            "98f3d6cfbc5173692e7bcf3b12942aab80e121695582ca82310188693490e08a"
+        ),
+        "run_id": "kae-g14-portable",
+        "source_sequence": "1..5",
+    }
+    assert proof["mapping"] == [
+        {"normalized": "run_started", "source": "run_started"},
+        {"normalized": "execution_receipt", "source": "action_receipt"},
+        {"normalized": "outcome_observation", "source": "action_outcome"},
+        {"normalized": "observation_delta", "source": "world_state_update"},
+        {"normalized": "run_finished", "source": "run_finished"},
+    ]
+    assert proof["real_run_acceptance"]["raw_records"] == 38_293
+    assert proof["real_run_acceptance"]["normalized_events"] == 22_995
+    assert proof["withheld"] == ["binding", "dispatch"]
+    assert "original generation identity" in proof["boundary"]
+    assert "G15" in proof["boundary"]
+
+
 def test_json_and_file_protocol_script_are_the_same_state() -> None:
     script = (COCKPIT / "state.js").read_text(encoding="utf-8")
     prefix = "window.EVOGEN_COCKPIT_STATE = "
@@ -92,10 +118,12 @@ def test_cockpit_has_no_runtime_network_or_module_dependency() -> None:
     assert "XMLHttpRequest" not in javascript
     assert not re.search(r'''(?:src|href)=["']https?://''', index)
     assert "generated:fallback:start" in index
-    assert "Last closed:</strong> G13" in index
-    assert "Next authorized:</strong> G14" in index
+    assert "Last closed:</strong> G14" in index
+    assert "Next authorized:</strong> G15" in index
     assert "Proof-first route:</strong> Real KAE replay showcase" in index
     assert 'id="proof-roadmap"' in index
+    assert 'id="trajectory-panel"' in index
+    assert "38,293 retained raw records" in index
 
 
 def test_evidence_links_are_safe_and_local_links_resolve() -> None:

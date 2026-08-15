@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from typer.testing import CliRunner
 
 from evogen.cli import app
@@ -31,22 +29,8 @@ def test_status_cli_reads_lineage(tmp_path):
     assert "Lineage" in status.output
 
 
-def test_normalize_kae_cli(tmp_path):
-    source = Path(__file__).parent / "fixtures" / "kenshi_missing_close.raw.jsonl"
-    destination = tmp_path / "normalized.jsonl"
-    result = runner.invoke(
-        app,
-        [
-            "normalize-kae",
-            str(source),
-            str(destination),
-            "--generation",
-            "kae-gen",
-            "--scenario",
-            "missing-close",
-            "--strict",
-        ],
-    )
+def test_provisional_kae_normalizer_is_not_a_public_command() -> None:
+    result = runner.invoke(app, ["--help"])
+
     assert result.exit_code == 0, result.output
-    assert destination.exists()
-    assert len(destination.read_text().splitlines()) == 11
+    assert "normalize-kae" not in result.output

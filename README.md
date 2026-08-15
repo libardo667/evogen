@@ -30,7 +30,7 @@ This is a runnable alpha, not only a scaffold. It includes:
   regression preservation, long-horizon success, and matched predictions;
 - JSON-over-stdio interfaces for substituting real coding-agent roles;
 - a Git worktree adapter for real subject repositories;
-- a small KAE JSONL normalization adapter; and
+- strict consumption of KAE-owned exported trajectory envelopes; and
 - a complete deterministic microworld proof.
 
 ## Run the proof
@@ -138,7 +138,7 @@ additional evidence only and cannot certify generic checks.
 
 A practical first integration uses observer mode:
 
-1. normalize the subject's trajectory events;
+1. have the subject export exact normalized trajectory events from its own typed authorities;
 2. publish a generation and capability manifest;
 3. expose scenario execution through `SubjectRunner`;
 4. expose environment/source investigation through `EnvironmentInvestigator`;

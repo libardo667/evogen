@@ -174,14 +174,46 @@
     {
       "evidence": [
         {
+          "href": "../INTEGRATION_CHECKPOINT.md",
+          "label": "G14 checkpoint"
+        },
+        {
+          "href": "../../tests/fixtures/kae_g14_export/README.md",
+          "label": "Portable bundle"
+        },
+        {
+          "href": "https://github.com/libardo667/kenshi-agent-env/commit/548658cbcef35037252e63be40248fa6a94b5ec1",
+          "label": "KAE exporter commit"
+        },
+        {
+          "href": "https://github.com/libardo667/kenshi-agent-env/actions/runs/31906703483",
+          "label": "Hosted matrix"
+        }
+      ],
+      "id": "kae_trajectory_export",
+      "name": "Exact KAE trajectory export",
+      "not_proven": "This proves contract compatibility and replay preparation, not KAE subject registration, a public replay run, metric equivalence, an evolved capability, or a live world effect.",
+      "plain_language": "KAE now owns a strict, content-addressed raw-to-normalized boundary. EvoGen reads the exported envelope without guessing aliases, identities, order, or world effects.",
+      "proof": [
+        "source",
+        "static",
+        "portable",
+        "replay",
+        "hosted"
+      ],
+      "status": "available"
+    },
+    {
+      "evidence": [
+        {
           "href": "../SEQUENCED_SUBAGENT_EXECUTION_PLAN.md",
           "label": "KAE journey"
         }
       ],
       "id": "kae_cycle",
       "name": "Historical and new KAE evolution cycles",
-      "not_proven": "G14 is only the first replay-showcase step; no production replay showcase or evolved KAE capability has been retained yet.",
-      "plain_language": "First makes real KAE evidence replayable and visible, then converts one historical deficit into a complete evolution cycle, then attempts one genuinely new deficit through supervised live proof before returning to the broader scientific study.",
+      "not_proven": "G14 proves a portable export contract only; no public replay showcase, evolved capability, or live world effect has been retained.",
+      "plain_language": "The exact KAE exporter and EvoGen strict-envelope boundary are now available; the replay showcase, historical evolution, and supervised live proof remain queued.",
       "proof": [
         "withheld"
       ],
@@ -240,14 +272,19 @@
       "command": "./dev capability-manifest --generation-id 0000000000000000000000000000000000000000000000000000000000000000 --output /tmp/kae-capabilities.json",
       "cwd": "kenshi-agent-env",
       "label": "Publish KAE's capability inventory"
+    },
+    {
+      "command": "./dev trajectory-export --events <events.jsonl> --generation-manifest <generation.json> --capability-manifest <capability.json> --scenario-id <scenario-id> --output <new-bundle>",
+      "cwd": "kenshi-agent-env",
+      "label": "Export an exact KAE trajectory"
     }
   ],
   "current_focus": {
-    "goal_id": "G14",
+    "goal_id": "G15",
     "human_gate": "none",
     "state": "unstarted",
-    "summary": "The first proof-first slice will publish KAE's exact production trajectory contract, make EvoGen consume it, and add the first inspectable raw-to-normalized evidence view. The full replay showcase remains withheld through G17.",
-    "title": "Replace the provisional normalizer with an exact KAE exporter"
+    "summary": "The optional KAE subject plugin remains the next unstarted packet. The replay showcase and any evolved capability remain withheld.",
+    "title": "Register KAE as an EvoGen subject plugin"
   },
   "demo_result": {
     "label": "Deterministic microworld retention proof",
@@ -552,7 +589,7 @@
         "kenshi-agent-env",
         "evogen"
       ],
-      "state": "next",
+      "state": "complete",
       "title": "Replace the provisional normalizer with an exact KAE exporter"
     },
     {
@@ -566,7 +603,7 @@
       "repositories": [
         "kenshi-agent-env"
       ],
-      "state": "unstarted",
+      "state": "next",
       "title": "Register KAE as an EvoGen subject plugin"
     },
     {
@@ -1111,20 +1148,20 @@
     }
   ],
   "last_closed_goal": {
-    "goal_id": "G13",
-    "summary": "KAE now publishes one content-addressed 69-row capability manifest from its real semantic and proof authorities, preserving unsupported and unproven boundaries instead of inventing conformance.",
-    "title": "Generate KAE's capability manifest from authorities"
+    "goal_id": "G14",
+    "summary": "KAE now publishes an exact trajectory exporter and EvoGen consumes its strict current envelope, retiring the broad aliasing normalizer while retaining fixture-only historical diagnosis evidence.",
+    "title": "Replace the provisional normalizer with an exact KAE exporter"
   },
-  "plan_revision_commit": "c82e53d1bb21eb8be4a0a867f5dba3d05dba821f",
+  "plan_revision_commit": "6954f8bc1e0ad95a9ccd9486fe58999dce5cf885",
   "product_name": "EvoGen",
   "product_thesis": "Turn repeated agent failures into evidence-backed capability changes.",
   "progress": {
-    "checkpoint_current_goal_id": "G13",
-    "completed_goal_count": 13,
+    "checkpoint_current_goal_id": "G14",
+    "completed_goal_count": 14,
     "current_route_id": "replay_showcase",
     "goal_count": 49,
-    "last_closed_goal_id": "G13",
-    "next_goal_id": "G14"
+    "last_closed_goal_id": "G14",
+    "next_goal_id": "G15"
   },
   "proof_lanes": [
     {
@@ -1176,25 +1213,25 @@
   "repositories": [
     {
       "branch": "main",
-      "evidence_commit": "73a6ab25f5b726f23cba050f4ace1c3d70c83935",
-      "hosted_run": "31721525900",
-      "href": "https://github.com/libardo667/evogen/commit/73a6ab25f5b726f23cba050f4ace1c3d70c83935",
+      "evidence_commit": "6954f8bc1e0ad95a9ccd9486fe58999dce5cf885",
+      "hosted_run": "31903804873",
+      "href": "https://github.com/libardo667/evogen/commit/6954f8bc1e0ad95a9ccd9486fe58999dce5cf885",
       "id": "evogen",
       "matrix": "Python 3.11–3.13",
       "name": "EvoGen",
       "role": "generic evolution plane",
-      "state": "G01–G08 complete; G13 plan ratchet and cockpit public"
+      "state": "G01–G08 complete; G14 candidate pending root ratchet"
     },
     {
       "branch": "main",
-      "evidence_commit": "a8584554e30bb793f5b60ef57e3d1500de5aaa12",
-      "hosted_run": "31720597916",
-      "href": "https://github.com/libardo667/kenshi-agent-env/commit/a8584554e30bb793f5b60ef57e3d1500de5aaa12",
+      "evidence_commit": "548658cbcef35037252e63be40248fa6a94b5ec1",
+      "hosted_run": "31906703483",
+      "href": "https://github.com/libardo667/kenshi-agent-env/commit/548658cbcef35037252e63be40248fa6a94b5ec1",
       "id": "kae",
       "matrix": "Python 3.11–3.14",
       "name": "Kenshi Agent Environment",
       "role": "first real subject",
-      "state": "G09–G13 complete"
+      "state": "G09–G14 complete"
     },
     {
       "branch": "not created",
@@ -1209,32 +1246,93 @@
     }
   ],
   "schema_version": "evogen-cockpit/v1",
-  "snapshot_label": "G13 closed · G14 queued",
+  "snapshot_label": "G14 closed · G15 queued",
   "source_authority": {
     "branch": "main",
-    "input_digest": "3d69867aab97de9d3cb29abc1ab5699fbe83c7a1bbd1b76d92aa5f07aef581a6",
+    "input_digest": "e07cb63c97aa9f7c9e48dfdfb5d2d3b7ced90fa4e8f86c1ab5b552d8ce9ff23b",
     "inputs": [
       {
         "path": "docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md",
-        "sha256": "22511aee675f4424de0b767e6bbf065740750b43889e86adf798d67cb9fe3c82"
+        "sha256": "22c7162eb7abc66b9b06c8f803fad714b06b3b0c2529d986272f6b1e42634200"
       },
       {
         "path": "docs/INTEGRATION_CHECKPOINT.md",
-        "sha256": "ae39a3978f2a744e3640130a86c3a7b317c15e160285971858fd8813df305b98"
+        "sha256": "2286a9db26fe510369879472bea9e65388c9e84e5408ad23619aee82115734a6"
       },
       {
         "path": "docs/cockpit/content.json",
-        "sha256": "f5a135db7796904fe870f4ba807f5046d838799ba6674570f5e93f716260f730"
+        "sha256": "d4953943516cf555cdcc47238b94d3d50550fdf144da371df9c3c99cce5ffc3d"
+      },
+      {
+        "path": "tests/fixtures/kae_g14_export/manifest.json",
+        "sha256": "82ad0c3e68dbb516cb3f2073e780be47275d10cadd3b19773267af36ac416dac"
+      },
+      {
+        "path": "tests/fixtures/kae_g14_export/raw-events.jsonl",
+        "sha256": "98f3d6cfbc5173692e7bcf3b12942aab80e121695582ca82310188693490e08a"
+      },
+      {
+        "path": "tests/fixtures/kae_g14_export/trajectory.jsonl",
+        "sha256": "4500b85d077024641b5f258ea1cb0733509ee4a3ab77d1068fd53efb8277aee0"
+      },
+      {
+        "path": "tests/fixtures/kae_g14_export/README.md",
+        "sha256": "fde068a7992d709001688e91a350800e9d2109a253ec3e97f936ea689a1ae44b"
       }
     ],
-    "plan_revision_commit": "c82e53d1bb21eb8be4a0a867f5dba3d05dba821f",
+    "plan_revision_commit": "6954f8bc1e0ad95a9ccd9486fe58999dce5cf885",
     "repository": "evogen"
   },
-  "state_id": "sha256:747fe71a8b7dcfd71071ed08609af071c0bd6a65ebf2ed6ff11e2293205d3522",
+  "state_id": "sha256:ff1e2be77095ab7388951207b7967871646c493b52f04cbd41bdc887f3b8c30e",
+  "trajectory_export_proof": {
+    "boundary": "Receipt and later outcome remain separate. The historical soak proves exporter compatibility with an explicitly supplied manifest, not its original generation identity or a live world effect. G15 registration, G16 replay, and G17 metric equivalence remain unstarted.",
+    "bundle_id": "b653c034424ed7e917dc25c411876a1d621cdac756d8054d8ffd0fdb39b4d946",
+    "mapping": [
+      {
+        "normalized": "run_started",
+        "source": "run_started"
+      },
+      {
+        "normalized": "execution_receipt",
+        "source": "action_receipt"
+      },
+      {
+        "normalized": "outcome_observation",
+        "source": "action_outcome"
+      },
+      {
+        "normalized": "observation_delta",
+        "source": "world_state_update"
+      },
+      {
+        "normalized": "run_finished",
+        "source": "run_finished"
+      }
+    ],
+    "portable_source": {
+      "normalized_events": 5,
+      "normalized_sequence": "0..4",
+      "raw_records": 5,
+      "raw_sha256": "98f3d6cfbc5173692e7bcf3b12942aab80e121695582ca82310188693490e08a",
+      "run_id": "kae-g14-portable",
+      "source_sequence": "1..5"
+    },
+    "real_run_acceptance": {
+      "normalized_events": 22995,
+      "raw_records": 38293,
+      "source_sha256": "542eff1353e00b9cd4cad4c83969e4db9156776d7c55b5e51d01a0356ffb92ef"
+    },
+    "scope": "KAE commit 548658c owns normalization; EvoGen only verifies and reads the strict exported envelope.",
+    "title": "Exact KAE events now cross one owned boundary",
+    "withheld": [
+      "binding",
+      "dispatch"
+    ]
+  },
   "withheld_claims": [
     "No general model has yet been shown to infer arbitrary missing capabilities from arbitrary environments.",
     "The KAE generation manifest does not prove that native bytes are loaded, identify a running process, or prove a world effect.",
-    "KAE's capability manifest is available, but KAE is not yet registered as an EvoGen subject and its production trajectory exporter is not complete.",
+    "KAE's production trajectory exporter is available, but KAE is not yet registered as an EvoGen subject and no replay showcase or evolved capability is retained.",
     "No OpenTTD subject repository or retained OpenTTD capability exists yet.",
     "Two-subject genericity and the first serious release remain unproven."
   ]

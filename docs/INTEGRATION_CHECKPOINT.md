@@ -1,4 +1,4 @@
-# Integration checkpoint: G13 generated KAE capability authority
+# Integration checkpoint: G14 exact KAE trajectory contract consumed
 
 This document is the current repository authority for one bounded integration
 goal. Git history retains the completed prerequisite-contract checkpoint.
@@ -6,37 +6,39 @@ goal. Git history retains the completed prerequisite-contract checkpoint.
 ## Repository and planning authority
 
 ```text
-parent commit                    c82e53d1bb21eb8be4a0a867f5dba3d05dba821f
+parent commit                    6954f8bc1e0ad95a9ccd9486fe58999dce5cf885
 integration branch               main
-current goal                     Goal 13 - Generate KAE capability manifest
-next unstarted goal              Goal 14 - Replace the provisional normalizer with an exact KAE exporter
-KAE parent commit                0560b9de6e049f0dc06fab9afbef76f76d198092
-KAE completion commit            a8584554e30bb793f5b60ef57e3d1500de5aaa12
-KAE-recorded EvoGen counterpart  4270e8332f8a03757b39a306b2e936ac8a618cc3
+current goal                     Goal 14 - Replace the provisional normalizer with an exact KAE exporter
+next unstarted goal              Goal 15 - Register KAE as an EvoGen subject plugin
+KAE parent commit                a8584554e30bb793f5b60ef57e3d1500de5aaa12
+KAE completion commit            548658cbcef35037252e63be40248fa6a94b5ec1
+KAE-recorded EvoGen counterpart  6954f8bc1e0ad95a9ccd9486fe58999dce5cf885
 KAE public remote                https://github.com/libardo667/kenshi-agent-env
-KAE hosted run                   31720597916
-EvoGen prerequisite commit       4270e8332f8a03757b39a306b2e936ac8a618cc3
-EvoGen prerequisite hosted run   31717965263
-EvoGen plan ratchet commit       6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a
-EvoGen proof-first route commit  c82e53d1bb21eb8be4a0a867f5dba3d05dba821f
-EvoGen cockpit proof commit      73a6ab25f5b726f23cba050f4ace1c3d70c83935
-EvoGen hosted run                31721525900
+KAE hosted run                   31906703483
+EvoGen prerequisite commit       6954f8bc1e0ad95a9ccd9486fe58999dce5cf885
+EvoGen prerequisite hosted run   31903804873
+EvoGen G14 implementation commit pending root review
+EvoGen G14 implementation run    pending publication
+EvoGen G14 ratchet commit        candidate working tree
+EvoGen G14 ratchet run           pending publication
 alpha release commit             9c8d94c59a95222a719e20fac5a61d2ec712743d
 source plan revision             2026-08-10T21:25:08.835Z
 execution plan                   docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
 ```
 
-Goal 13 began from clean, synchronized KAE `main` after G12's exact
-planner-affordance evidence. EvoGen first published the subject-neutral evidence
-contract above. The KAE commit then generated the real subject capability
-manifest from existing authorities and recorded that exact EvoGen prerequisite
-in its commit message and checkpoint.
+Goal 14 began from clean, synchronized KAE `main` after G13's generated
+capability authority. KAE then published the exact reviewed trajectory exporter
+at `548658cbcef35037252e63be40248fa6a94b5ec1`. EvoGen consumed its strict
+current-envelope contract, removed the provisional broad alias/step-index
+normalizer and CLI, and retained only an explicitly fixture-scoped historical
+reader for the two pre-G14 diagnosis traces.
 
-The follow-up cockpit refresh changed no numbered-goal state. Commit
-`73a6ab25f5b726f23cba050f4ace1c3d70c83935` rendered the already-committed
-G13/G14 queue boundary and KAE proof into the checked-in, offline project
-interface. Hosted run `31721525900` passed Python 3.11, 3.12, and 3.13. This
-final metadata refresh records that proof without advancing into G14.
+The candidate adds an exact compact KAE bundle fixture containing raw events,
+manifest, and trajectory bytes. Its focused tests verify source and trajectory
+digests, five-record counts, strict current-envelope round-trip, exact receipt,
+outcome, and observation-delta mappings, and explicit binding/dispatch
+withholding. Root review must replace the pending hosted fields above with the
+final EvoGen commit and hosted proof before public ratcheting.
 
 ## Navigator-approved proof-first route
 
@@ -58,8 +60,9 @@ be bypassed.
 Every numbered goal still closes, is independently reviewed, updates the
 checkpoint, and stops before the next goal begins. The reusable cockpit must
 make each milestone's newly available proof and strongest withheld claim
-visible. This route amendment does not change the current boundary: G13 remains
-the last closed goal and G14 remains the sole next packet.
+visible. At this checkpoint G14 is closed in scope but still awaits its EvoGen
+commit, public push, and hosted ratchet. G15 is the sole next packet and must
+not begin before that publication boundary is complete.
 
 ## Generated subject authority
 
@@ -149,16 +152,47 @@ UV_CACHE_DIR=/tmp/evogen-uv-cache \
   uv run --frozen --extra dev python scripts/verify.py
 ```
 
-## Withheld claims and completion boundary
+## Goal 14 evidence and completion boundary
 
-The manifest proves a typed inventory and the evidence state KAE can currently
-support. It does not prove that an offered operation was selected, dispatched,
-accepted, completed, or changed Kenshi. Source and portable proof are not live
-proof; even a live evidence reference applies only to its exact retained scope.
+The exact KAE exporter retains raw source bytes and emits a strict current
+trajectory envelope. The EvoGen compact fixture records five source records and
+five normalized events with source sequences `1..5` and normalized sequences
+`0..4`. `action_receipt` remains `execution_receipt`, `action_outcome` remains
+`outcome_observation`, and `world_state_update` remains `observation_delta`.
+Binding and dispatch are explicitly withheld. Receipt, acknowledgement, or
+process exit is not a later world effect.
 
-Goal 13 is complete at KAE commit
-`a8584554e30bb793f5b60ef57e3d1500de5aaa12` once this central plan and cockpit
-ratchet are committed, public, and hosted-green. Goal 14 is the sole next packet.
-It owns the exact KAE trajectory exporter and serial retirement of EvoGen's
-provisional normalizer. G15 subject registration and every later goal remain
-unstarted.
+The stronger retained KAE soak has source SHA-256
+`542eff1353e00b9cd4cad4c83969e4db9156776d7c55b5e51d01a0356ffb92ef`.
+KAE's public command retained all 38,293 raw records and projected 22,995 strict
+events: 11,308 observations, 11,308 observation deltas, 126 outcome
+observations, 121 decisions, 119 execution receipts, 11 errors, one run start,
+and one run finish. EvoGen's actual `read_jsonl_events` parsed all 22,995 with
+normalized sequence `0..22994`, unique event IDs, and singular run/generation
+identity. The soak predates G11 and lacks a contemporaneous generation manifest,
+so this proves exporter compatibility with the exact supplied manifest bytes,
+not the generation that originally produced the run.
+
+The EvoGen candidate deletes `KenshiJsonlAdapter` and the `normalize-kae` CLI.
+The generic `read_jsonl_events` path accepts current envelopes and rejects raw
+KAE records. The two historical raw traces remain checked-in evidence; a
+test-only literal reader under `tests/support` serves only those named fixtures
+for diagnosis coverage. No KAE package is imported by production EvoGen code.
+
+Hypatia authored the isolated EvoGen retirement candidate. Root repaired one
+literal historical-fixture omission and then found that the real repository's
+existing `build/` directory could leak deleted modules into a new wheel. The
+repository verifier now cleans that generated directory and rejects any wheel
+that contains the retired KAE package. Curie independently reviewed the strict
+production boundary and historical quarantine and returned PASS. Averroes
+independently blocked first on contradictory checkpoint prose and then on stale
+generated cockpit artifacts. After both repairs, he reran the authority and
+freshness checks and returned PASS.
+
+Goal 14 is complete in scope at KAE commit
+`548658cbcef35037252e63be40248fa6a94b5ec1` plus the EvoGen candidate described
+above. Root review, a final EvoGen commit, the complete verifier, public push,
+and hosted matrix remain required to replace the pending fields and publish the
+cross-repository ratchet. Goal 15 is the sole next packet. It owns optional KAE
+subject registration; G16, G17, live effects, and retained capabilities remain
+unstarted or withheld.

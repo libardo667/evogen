@@ -41,6 +41,26 @@
       <p class="milestone-boundary"><strong>Boundary:</strong> ${escapeHtml(milestone.boundary)}</p>
     </article>`).join("");
 
+  const trajectoryProof = state.trajectory_export_proof;
+  byId("trajectory-panel").innerHTML = `
+    <div class="trajectory-head">
+      <div><h3>${escapeHtml(trajectoryProof.title)}</h3><p>${escapeHtml(trajectoryProof.scope)}</p></div>
+      <code>bundle ${escapeHtml(trajectoryProof.bundle_id.slice(0, 12))}…</code>
+    </div>
+    <div class="trajectory-stats">
+      <div><strong>${escapeHtml(trajectoryProof.portable_source.raw_records)}</strong><span>portable raw records</span></div>
+      <div><strong>${escapeHtml(trajectoryProof.portable_source.normalized_events)}</strong><span>strict events</span></div>
+      <div><strong>${escapeHtml(trajectoryProof.real_run_acceptance.raw_records.toLocaleString())}</strong><span>real-run raw records checked</span></div>
+      <div><strong>${escapeHtml(trajectoryProof.real_run_acceptance.normalized_events.toLocaleString())}</strong><span>real-run events parsed</span></div>
+    </div>
+    <div class="mapping-list">${trajectoryProof.mapping.map((item) => `
+      <div class="mapping-row"><code>${escapeHtml(item.source)}</code><span aria-hidden="true">→</span><strong>${escapeHtml(item.normalized)}</strong></div>`).join("")}</div>
+    <div class="trajectory-foot">
+      <p><strong>Ordering:</strong> source ${escapeHtml(trajectoryProof.portable_source.source_sequence)} becomes normalized ${escapeHtml(trajectoryProof.portable_source.normalized_sequence)} in encounter order.</p>
+      <p><strong>Explicitly withheld:</strong> ${escapeHtml(trajectoryProof.withheld.join(", "))}.</p>
+      <p class="trajectory-boundary"><strong>Boundary:</strong> ${escapeHtml(trajectoryProof.boundary)}</p>
+    </div>`;
+
   byId("demo-panel").innerHTML = `
     <div class="demo-head"><div><h3>${escapeHtml(state.demo_result.label)}</h3><p>${escapeHtml(state.demo_result.scope)}</p></div><span class="verdict">verdict · ${escapeHtml(state.demo_result.verdict)}</span></div>
     <div class="suite-grid">${state.demo_result.suites.map((suite) => `

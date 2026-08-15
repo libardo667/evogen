@@ -22,7 +22,6 @@ from evogen.adapters.subjects import (
 )
 from evogen.core.enums import StageName
 from evogen.core.models import CycleResult
-from evogen.integrations.kenshi.adapter import KenshiJsonlAdapter
 from evogen.schema import export_schemas
 from evogen.storage.ledger import Ledger
 
@@ -252,27 +251,6 @@ def show_result(
     if not isinstance(result, CycleResult):
         raise typer.BadParameter("Stored select output is not a CycleResult")
     console.print_json(result.model_dump_json())
-
-
-@app.command("normalize-kae")
-def normalize_kae(
-    source: Path = typer.Argument(..., exists=True, dir_okay=False),
-    destination: Path = typer.Argument(..., dir_okay=False),
-    generation_id: str = typer.Option(..., "--generation"),
-    scenario_id: str = typer.Option(..., "--scenario"),
-    run_id: str | None = typer.Option(None, "--run-id"),
-    strict: bool = typer.Option(False, "--strict"),
-) -> None:
-    """Normalize a conservative KAE-like JSONL trace into EvoGen events."""
-    events = KenshiJsonlAdapter().convert_to_file(
-        source,
-        destination,
-        generation_id=generation_id,
-        scenario_id=scenario_id,
-        run_id=run_id,
-        strict=strict,
-    )
-    console.print(f"Wrote {len(events)} normalized events to {destination}")
 
 
 @app.command("export-schemas")

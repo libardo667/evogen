@@ -19,6 +19,7 @@ STATE_JS_PATH = COCKPIT / "state.js"
 INDEX_PATH = COCKPIT / "index.html"
 PLAN_PATH = ROOT / "docs" / "SEQUENCED_SUBAGENT_EXECUTION_PLAN.md"
 CHECKPOINT_PATH = ROOT / "docs" / "INTEGRATION_CHECKPOINT.md"
+KAE_EXPORT_DIR = ROOT / "tests" / "fixtures" / "kae_g14_export"
 
 FALLBACK_START = "<!-- generated:fallback:start -->"
 FALLBACK_END = "<!-- generated:fallback:end -->"
@@ -146,6 +147,78 @@ def _validate_local_links(value: Any) -> None:
             _validate_local_links(item)
 
 
+def _read_jsonl(path: Path) -> list[dict[str, Any]]:
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    if not all(isinstance(record, dict) for record in records):
+        raise CockpitBuildError(f"fixture contains a non-object record: {path}")
+    return records
+
+
+def _validate_trajectory_export_proof(
+    proof: dict[str, Any], checkpoint: str
+) -> list[Path]:
+    manifest_path = KAE_EXPORT_DIR / "manifest.json"
+    raw_path = KAE_EXPORT_DIR / "raw-events.jsonl"
+    trajectory_path = KAE_EXPORT_DIR / "trajectory.jsonl"
+    readme_path = KAE_EXPORT_DIR / "README.md"
+    paths = [manifest_path, raw_path, trajectory_path, readme_path]
+    if not all(path.is_file() for path in paths):
+        raise CockpitBuildError("KAE trajectory proof bundle is incomplete")
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    raw = _read_jsonl(raw_path)
+    trajectory = _read_jsonl(trajectory_path)
+    source = manifest["source"]
+    normalized = manifest["trajectory"]
+    if source["file"] != raw_path.name or normalized["file"] != trajectory_path.name:
+        raise CockpitBuildError("KAE trajectory manifest filenames do not match the bundle")
+    if source["sha256"] != _sha256(raw_path.read_bytes()):
+        raise CockpitBuildError("KAE raw trajectory fixture digest does not match")
+    if normalized["sha256"] != _sha256(trajectory_path.read_bytes()):
+        raise CockpitBuildError("KAE normalized trajectory fixture digest does not match")
+    if source["record_count"] != len(raw) or normalized["event_count"] != len(trajectory):
+        raise CockpitBuildError("KAE trajectory fixture counts do not match")
+    pairs = zip(raw, trajectory, strict=True)
+    if any(event.get("payload", {}).get("raw") != record for record, event in pairs):
+        raise CockpitBuildError("KAE normalized fixture does not retain its exact source records")
+
+    portable = proof["portable_source"]
+    expected_mapping = [
+        {"source": event["source_event_type"], "normalized": event["kind"]}
+        for event in trajectory
+    ]
+    if proof["bundle_id"] != manifest["bundle_id"]:
+        raise CockpitBuildError("cockpit KAE bundle identity is stale")
+    if portable["raw_records"] != len(raw) or portable["normalized_events"] != len(trajectory):
+        raise CockpitBuildError("cockpit KAE portable counts are stale")
+    if portable["raw_sha256"] != source["sha256"]:
+        raise CockpitBuildError("cockpit KAE source identity is stale")
+    if portable["run_id"] != manifest["run_id"]:
+        raise CockpitBuildError("cockpit KAE run identity is stale")
+    if portable["source_sequence"] != "1..5" or [
+        event["source_sequence"] for event in trajectory
+    ] != [1, 2, 3, 4, 5]:
+        raise CockpitBuildError("cockpit KAE source ordering is stale")
+    if portable["normalized_sequence"] != "0..4" or [
+        event["sequence"] for event in trajectory
+    ] != [0, 1, 2, 3, 4]:
+        raise CockpitBuildError("cockpit KAE normalized ordering is stale")
+    if proof["mapping"] != expected_mapping:
+        raise CockpitBuildError("cockpit KAE event mapping is stale")
+    if proof["withheld"] != normalized["withheld_projection_kinds"]:
+        raise CockpitBuildError("cockpit KAE withheld projection list is stale")
+
+    real = proof["real_run_acceptance"]
+    for value in (
+        f"{real['raw_records']:,}",
+        f"{real['normalized_events']:,}",
+        real["source_sha256"],
+    ):
+        if str(value) not in checkpoint:
+            raise CockpitBuildError("cockpit real-run acceptance evidence is stale")
+    return paths
+
+
 def build_state() -> dict[str, Any]:
     content_bytes = CONTENT_PATH.read_bytes()
     config = json.loads(content_bytes)
@@ -157,6 +230,9 @@ def build_state() -> dict[str, Any]:
     goals = parse_goals(plan_bytes.decode("utf-8"))
     routes = parse_execution_route(plan_bytes.decode("utf-8"))
     checkpoint = checkpoint_bytes.decode("utf-8")
+    trajectory_paths = _validate_trajectory_export_proof(
+        config["trajectory_export_proof"], checkpoint
+    )
     titles = config.pop("goal_titles")
     if sorted(titles) != [f"G{number:02d}" for number in range(1, 50)]:
         raise CockpitBuildError("cockpit state must title every goal G01-G49 exactly once")
@@ -215,6 +291,10 @@ def build_state() -> dict[str, Any]:
             "sha256": _sha256(checkpoint_bytes),
         },
         {"path": str(CONTENT_PATH.relative_to(ROOT)), "sha256": _sha256(content_bytes)},
+        *[
+            {"path": str(path.relative_to(ROOT)), "sha256": _sha256(path.read_bytes())}
+            for path in trajectory_paths
+        ],
     ]
     input_digest = _sha256(
         json.dumps(inputs, separators=(",", ":"), sort_keys=True).encode("utf-8")
@@ -259,6 +339,7 @@ def render_state_json(state: dict[str, Any]) -> str:
 def render_fallback(state: dict[str, Any]) -> str:
     last_goal = state["last_closed_goal"]
     next_goal = state["current_focus"]
+    trajectory = state["trajectory_export_proof"]
     proof_labels = ", ".join(lane["label"] for lane in state["proof_lanes"])
     route_labels = " -> ".join(item["label"] for item in state["execution_route"])
     withheld = "".join(f"<li>{item}</li>" for item in state["withheld_claims"])
@@ -272,6 +353,10 @@ def render_fallback(state: dict[str, Any]) -> str:
         {next_goal['title']} (unstarted)</p>
         <p><strong>Proof lanes:</strong> {proof_labels}</p>
         <p><strong>Proof-first route:</strong> {route_labels}</p>
+        <p><strong>KAE export proof:</strong>
+        {trajectory['real_run_acceptance']['raw_records']:,} retained raw records →
+        {trajectory['real_run_acceptance']['normalized_events']:,} strict events;
+        binding and dispatch remain withheld.</p>
         <h2>Claims still withheld</h2>
         <ul>{withheld}</ul>
         <p><a href="../INTEGRATION_CHECKPOINT.md">Open the exact checkpoint</a> ·

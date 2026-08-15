@@ -24,29 +24,35 @@ wholesale into EvoGen.
 - domain metrics such as intervention-free horizon, repeated failures, recovery,
   command ambiguity, and final safe state.
 
-## First adapter shape
+## Current trajectory boundary
 
 ```text
 kenshi-agent-env
-  -> KAE event JSONL
-  -> KenshiJsonlAdapter / project-specific richer normalizer
-  -> EvoGen trajectory and generation contracts
+  -> ./dev trajectory-export (exact reviewed KAE event projection)
+  -> raw-events.jsonl + trajectory.jsonl + manifest.json
+  -> EvoGen read_jsonl_events (strict current envelope)
   -> diagnosis/spec/candidate/evaluation
   -> human-approved KAE sandbox installation
   -> supervised live proof
 ```
 
-The included `KenshiJsonlAdapter` is intentionally modest. It maps a conservative
-alias vocabulary and preserves every original event under `payload.raw`. Unknown
-event kinds are skipped or rejected; they are not laundered into outcome proof.
-Known raw events receive fresh, distinct EvoGen event IDs, even when source IDs
-are duplicated. Raw records are emitted in accepted file encounter order with
-contiguous EvoGen sequences (`0..n-1`); source sequence and step values are
-retained as provenance and never used to sort events. Source event type, ID, and
-world revision preserve the selected raw metadata (including payload revision
-fallbacks), while dispatch, execution receipt, and later outcome observations
-remain separate events. A production KAE adapter should live close to KAE's
-current event models and emit EvoGen events directly.
+KAE owns the production exporter at commit `548658cbcef35037252e63be40248fa6a94b5ec1`.
+It validates the reviewed source-event disposition inventory, retains every raw
+record byte-for-byte, and emits only the exact current EvoGen envelope. EvoGen
+does not guess event types, reorder by `step_index`, or expose a KAE normalizer
+CLI. The generic reader accepts current envelopes (and its existing alpha
+compatibility format) but rejects raw KAE records.
+
+The compact checked-in contract fixture retains the raw source, export manifest,
+and normalized trajectory. It proves source and normalized digests, encounter
+ordering, receipt versus later outcome, `world_state_update` as an observation
+delta, and the explicit withholding of binding and dispatch. This is portable
+contract evidence only, not evidence of a game-world effect.
+
+Two older raw traces remain solely as historical diagnosis evidence. The
+test-only `tests/support/historical_kenshi_fixture.py` reader names those files
+explicitly and is not importable from the production package or CLI. New KAE
+bundles must use KAE's exact exporter instead.
 
 ## Historical-case corpus
 

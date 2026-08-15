@@ -58,7 +58,14 @@ Current execution state:
   Python 3.11, 3.12, 3.13, and 3.14 at the exact completion commit
 - Goal 13 EvoGen prerequisite: commit
   `4270e8332f8a03757b39a306b2e936ac8a618cc3`, hosted run `31717965263`
-- Next unstarted goal: Goal 14
+- Goal 14 state: KAE exporter complete at commit
+  `548658cbcef35037252e63be40248fa6a94b5ec1`; EvoGen retirement candidate is
+  based on parent `6954f8bc1e0ad95a9ccd9486fe58999dce5cf885` and awaits the
+  root's final review, commit, and hosted proof
+- Goal 14 local focused proof: strict compact KAE export fixture round-trip,
+  raw rejection, historical fixture diagnosis, and CLI removal pass in the
+  candidate clone
+- Next unstarted goal: Goal 15
 
 ## 1. What this plan controls
 
@@ -792,8 +799,8 @@ goals:
   - {id: G11, repo: [kenshi-agent-env], depends: [G10], profile: generation_manifest, state: complete, human_gate: []}
   - {id: G12, repo: [kenshi-agent-env], depends: [G11], profile: event_contract, state: complete, human_gate: []}
   - {id: G13, repo: [kenshi-agent-env], depends: [G12], profile: generated_manifest, state: complete, human_gate: []}
-  - {id: G14, repo: [kenshi-agent-env, evogen], depends: [G13], profile: cross_repo_adapter, state: next, human_gate: []}
-  - {id: G15, repo: [kenshi-agent-env], depends: [G14], profile: subject_plugin, state: unstarted, human_gate: []}
+  - {id: G14, repo: [kenshi-agent-env, evogen], depends: [G13], profile: cross_repo_adapter, state: complete, human_gate: []}
+  - {id: G15, repo: [kenshi-agent-env], depends: [G14], profile: subject_plugin, state: next, human_gate: []}
   - {id: G16, repo: [kenshi-agent-env], depends: [G15], profile: observer_replay, state: unstarted, human_gate: []}
   - {id: G17, repo: [kenshi-agent-env], depends: [G16], profile: metric_mapping, state: unstarted, human_gate: []}
   - {id: G18, repo: [kenshi-agent-env], depends: [G17], profile: sealed_case, state: unstarted, human_gate: []}
@@ -832,16 +839,17 @@ goals:
 
 ## 16. Immediate next execution packet
 
-The next permitted packet is G14 only. It remains unstarted until the Goal 13
-KAE commit, clean checkpoint, public push, hosted Python matrix, and this
-central plan/cockpit ratchet are complete.
+The next permitted packet is G15 only. G14 is complete at the KAE exporter
+commit above plus the reviewed EvoGen retirement candidate; the root must still
+commit and publish the EvoGen half before treating the cross-repository goal as
+publicly ratcheted.
 
-G14 is cross-repository and serial. It begins in `kenshi-agent-env` by mapping
-the exact existing session-event and generation/capability authorities into a
-production trajectory exporter. Only after the KAE exporter is committed,
-public, and recorded by exact hash may EvoGen retire its provisional KAE
-normalizer in favor of that exported contract. Each repository checkpoint must
-name the exact counterpart commit.
+G14 was cross-repository and serial. KAE mapped the exact existing session-event
+and generation/capability authorities into a production trajectory exporter at
+commit `548658cbcef35037252e63be40248fa6a94b5ec1`. EvoGen then retired its
+provisional KAE normalizer and `normalize-kae` CLI, retained only fixture-scoped
+historical diagnosis support, and added an exact compact raw/manifest/trajectory
+contract fixture. Each repository checkpoint names the exact counterpart commit.
 
 The exporter must preserve missing, truncated, unknown, and withheld evidence;
 retain event and generation identity; and keep dispatch separate from later
@@ -850,8 +858,7 @@ observer/replay path, change native behavior, install artifacts, launch Kenshi,
 modify a save, or claim a live world effect.
 
 G14 is the first separately closed step of Proof milestone A. Its cockpit
-change must expose the exact raw-to-normalized event mapping, source identity,
-ordering, receipt/outcome separation, and remaining uncertainty. It may show
-that the exporter contract exists once proven, but it must keep the overall KAE
-replay showcase withheld until G15 registration, G16 public replay, and G17
-metric equivalence have each closed.
+change exposes the exact raw-to-normalized event mapping, source identity,
+ordering, receipt/outcome separation, and remaining uncertainty. It keeps the
+overall KAE replay showcase withheld until G15 registration, G16 public replay,
+and G17 metric equivalence have each closed.
