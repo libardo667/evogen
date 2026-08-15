@@ -66,7 +66,15 @@ Current execution state:
 - Goal 14 local proof: clean wheel without the retired adapter, Ruff, strict
   mypy, full tests, compact export round-trip, raw rejection, historical
   fixture diagnosis, CLI removal, cockpit freshness, and the microworld cycle
-- Next unstarted goal: Goal 15
+- Goal 15 state: complete at KAE subject-plugin commit
+  `2c2eb36e4f0b0438f1c42030d56f3a872007264d`
+- Goal 15 hosted proof: KAE run `31913192879` passed the portable gate on
+  Python 3.11, 3.12, 3.13, and 3.14 at the exact completion commit
+- Goal 15 installed proof: a fresh KAE-only wheel environment imported ordinary
+  KAE modules with EvoGen absent; after installing the exact pinned EvoGen API,
+  metadata discovery found the KAE-owned `kenshi` entry point and the doctor
+  passed all seven boundaries with zero diagnostics from an arbitrary directory
+- Next unstarted goal: Goal 16
 
 ## 1. What this plan controls
 
@@ -492,10 +500,10 @@ and no real subject imports in core.
 
 ### Proof milestone A — Real KAE replay showcase (G14–G17)
 
-This is the first human-readable proof target. G14, G15, G16, and G17 still
-close one at a time, but together must leave one obvious command and one
-reusable cockpit view that lets a navigator inspect real KAE evidence flowing
-through EvoGen.
+This is the first human-readable proof target. G14 and G15 are complete. G16
+and G17 still close one at a time, and together the four goals must leave one
+obvious command and one reusable cockpit view that lets a navigator inspect
+real KAE evidence flowing through EvoGen.
 
 - G14 is cross-repository and serial: KAE exporter first, then retirement of the
   EvoGen provisional adapter. Each checkpoint records the counterpart commit.
@@ -801,8 +809,8 @@ goals:
   - {id: G12, repo: [kenshi-agent-env], depends: [G11], profile: event_contract, state: complete, human_gate: []}
   - {id: G13, repo: [kenshi-agent-env], depends: [G12], profile: generated_manifest, state: complete, human_gate: []}
   - {id: G14, repo: [kenshi-agent-env, evogen], depends: [G13], profile: cross_repo_adapter, state: complete, human_gate: []}
-  - {id: G15, repo: [kenshi-agent-env], depends: [G14], profile: subject_plugin, state: next, human_gate: []}
-  - {id: G16, repo: [kenshi-agent-env], depends: [G15], profile: observer_replay, state: unstarted, human_gate: []}
+  - {id: G15, repo: [kenshi-agent-env], depends: [G14], profile: subject_plugin, state: complete, human_gate: []}
+  - {id: G16, repo: [kenshi-agent-env], depends: [G15], profile: observer_replay, state: next, human_gate: []}
   - {id: G17, repo: [kenshi-agent-env], depends: [G16], profile: metric_mapping, state: unstarted, human_gate: []}
   - {id: G18, repo: [kenshi-agent-env], depends: [G17], profile: sealed_case, state: unstarted, human_gate: []}
   - {id: G19, repo: [kenshi-agent-env], depends: [G18], profile: sealed_corpus, state: unstarted, human_gate: []}
@@ -840,26 +848,21 @@ goals:
 
 ## 16. Immediate next execution packet
 
-The next permitted packet is G15 only. G14 is complete at the KAE exporter
-commit above plus the reviewed EvoGen retirement candidate; the root must still
-commit and publish the EvoGen half before treating the cross-repository goal as
-publicly ratcheted.
+The next permitted packet is G16 only. G15 is complete at public KAE commit
+`2c2eb36e4f0b0438f1c42030d56f3a872007264d`; hosted run `31913192879`
+passed Python 3.11 through 3.14 at that exact commit.
 
-G14 was cross-repository and serial. KAE mapped the exact existing session-event
-and generation/capability authorities into a production trajectory exporter at
-commit `548658cbcef35037252e63be40248fa6a94b5ec1`. EvoGen then retired its
-provisional KAE normalizer and `normalize-kae` CLI, retained only fixture-scoped
-historical diagnosis support, and added an exact compact raw/manifest/trajectory
-contract fixture. Each repository checkpoint names the exact counterpart commit.
+G15 adds the optional KAE-owned `kenshi` entry point, API 1.1 factories, and a
+deterministic synthetic conformance subject without making ordinary KAE imports
+depend on EvoGen. Its candidate effect is bound to exact generated source and
+artifact digests; altered bytes stay blocked. A retained conformance child adds
+one explicitly synthetic capability with experiment evidence and no live,
+replay, native, or world-effect claim. The installed wheel was discovered from
+metadata and passed all seven doctor boundaries from an arbitrary directory
+while launch-sensitive process and native-library boundaries were disabled.
 
-The exporter must preserve missing, truncated, unknown, and withheld evidence;
-retain event and generation identity; and keep dispatch separate from later
-world-effect proof. G14 does not register the G15 subject plugin, run the G16
-observer/replay path, change native behavior, install artifacts, launch Kenshi,
-modify a save, or claim a live world effect.
-
-G14 is the first separately closed step of Proof milestone A. Its cockpit
-change exposes the exact raw-to-normalized event mapping, source identity,
-ordering, receipt/outcome separation, and remaining uncertainty. It keeps the
-overall KAE replay showcase withheld until G15 registration, G16 public replay,
-and G17 metric equivalence have each closed.
+G16 now owns the first public observer/replay proof over a checked-in real KAE
+bundle. It must retain typed RunRecord, manifest, artifact, ordering, uncertainty,
+receipt, and later-outcome evidence without launching Kenshi or installing a
+DLL. G15 did not ingest a replay bundle, prove evaluator metric equivalence,
+evolve a real KAE capability, or prove a live world effect.

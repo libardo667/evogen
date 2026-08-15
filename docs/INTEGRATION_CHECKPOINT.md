@@ -1,4 +1,4 @@
-# Integration checkpoint: G14 exact KAE trajectory contract consumed
+# Integration checkpoint: G15 KAE subject plugin registered
 
 This document is the current repository authority for one bounded integration
 goal. Git history retains the completed prerequisite-contract checkpoint.
@@ -6,17 +6,17 @@ goal. Git history retains the completed prerequisite-contract checkpoint.
 ## Repository and planning authority
 
 ```text
-parent commit                    5e72ca364f0a1b2c5b23d41c9af5a2a15099b946
+parent commit                    ee89104fde397ab9de6f5b7dcfee09f372879827
 integration branch               main
-current goal                     Goal 14 - Replace the provisional normalizer with an exact KAE exporter
-next unstarted goal              Goal 15 - Register KAE as an EvoGen subject plugin
-KAE parent commit                a8584554e30bb793f5b60ef57e3d1500de5aaa12
-KAE completion commit            548658cbcef35037252e63be40248fa6a94b5ec1
-KAE-recorded EvoGen counterpart  6954f8bc1e0ad95a9ccd9486fe58999dce5cf885
+current goal                     Goal 15 - Register KAE as an EvoGen subject plugin
+next unstarted goal              Goal 16 - Build observer and replay runners first
+KAE parent commit                548658cbcef35037252e63be40248fa6a94b5ec1
+KAE completion commit            2c2eb36e4f0b0438f1c42030d56f3a872007264d
+KAE-recorded EvoGen counterpart  ee89104fde397ab9de6f5b7dcfee09f372879827
 KAE public remote                https://github.com/libardo667/kenshi-agent-env
-KAE hosted run                   31906703483
-EvoGen prerequisite commit       6954f8bc1e0ad95a9ccd9486fe58999dce5cf885
-EvoGen prerequisite hosted run   31903804873
+KAE hosted run                   31913192879
+EvoGen prerequisite commit       ee89104fde397ab9de6f5b7dcfee09f372879827
+EvoGen prerequisite hosted run   31908691766
 EvoGen G14 completion commit     5e72ca364f0a1b2c5b23d41c9af5a2a15099b946
 EvoGen G14 hosted run            31908510607
 alpha release commit             9c8d94c59a95222a719e20fac5a61d2ec712743d
@@ -24,7 +24,13 @@ source plan revision             2026-08-10T21:25:08.835Z
 execution plan                   docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md
 ```
 
-Goal 14 began from clean, synchronized KAE `main` after G13's generated
+Goal 15 began from clean, synchronized KAE `main` at the completed G14 exporter
+commit. KAE then published the optional subject plugin at the exact completion
+commit above. The installed plugin preserves KAE's generated authorities while
+keeping the game runtime and ordinary KAE imports independent of EvoGen.
+
+The following context retains the G14 prerequisite boundary. Goal 14 began from
+clean, synchronized KAE `main` after G13's generated
 capability authority. KAE then published the exact reviewed trajectory exporter
 at `548658cbcef35037252e63be40248fa6a94b5ec1`. EvoGen consumed its strict
 current-envelope contract, removed the provisional broad alias/step-index
@@ -58,8 +64,8 @@ be bypassed.
 Every numbered goal still closes, is independently reviewed, updates the
 checkpoint, and stops before the next goal begins. The reusable cockpit must
 make each milestone's newly available proof and strongest withheld claim
-visible. At this checkpoint G14 is closed, public, and hosted-green at the
-exact evidence fields above. G15 is the sole next packet and begins only in a
+visible. At this checkpoint G15 is closed, public, and hosted-green at the
+exact evidence fields above. G16 is the sole next packet and begins only in a
 new bounded slice after this metadata ratchet is published.
 
 ## Generated subject authority
@@ -133,15 +139,16 @@ self-comparison, schema/runtime drift, whitespace-only evidence references, and
 incomplete descriptor mutation coverage. Hopper repaired those findings; both
 reviewers retested the exact final tree read-only and returned PASS.
 
-The KAE completion commit passed `./dev verify-portable` before and after commit.
+The historical G13 KAE completion commit passed `./dev verify-portable` before
+and after commit.
 That gate covered locked dependency installation, Ruff, strict mypy over 156
 source files, reverse-engineering evidence, generated event/schema/document
 freshness, the full test suite, and whitespace checks. Public hosted run
 `https://github.com/libardo667/kenshi-agent-env/actions/runs/31720597916`
 passed Python 3.11, 3.12, 3.13, and 3.14 at the exact completion commit.
 
-The EvoGen prerequisite commit passed the complete repository verifier locally
-and public hosted run
+The historical G13 EvoGen prerequisite commit passed the complete repository
+verifier locally and public hosted run
 `https://github.com/libardo667/evogen/actions/runs/31717965263` on Python 3.11,
 3.12, and 3.13. This central ratchet must pass the same complete command:
 
@@ -190,5 +197,32 @@ freshness checks and returned PASS.
 Goal 14 is complete at KAE commit
 `548658cbcef35037252e63be40248fa6a94b5ec1` and EvoGen commit
 `5e72ca364f0a1b2c5b23d41c9af5a2a15099b946`, with both hosted matrices green.
-Goal 15 is the sole next packet. It owns optional KAE subject registration;
-G16, G17, live effects, and retained capabilities remain unstarted or withheld.
+
+## Goal 15 evidence and completion boundary
+
+KAE now publishes an optional `kenshi` entry point in `evogen.subjects`. The
+wheel contains the KAE-owned API 1.1 factories and generated capability
+authority; ordinary KAE installs and imports do not acquire EvoGen. A fresh
+KAE-only wheel environment proved that separation before the exact public
+EvoGen commit was added and metadata discovery loaded the installed plugin.
+
+The synthetic conformance runner preserves dispatch, receipt, and later outcome
+as separate typed events. Improvement requires the exact generated source bytes
+to match both the declared source digest and plugin artifact digest; altered
+source or artifact bytes remain blocked. Retained conformance materialization
+adds only `kae_synthetic_observation`, with proven synthetic experiment evidence
+and explicit no-live, no-replay, no-native, and no-world-effect limitations.
+
+Noether authored the isolated candidate. Curie first blocked it for a mock
+success path and event-inventory bypasses, then reproduced the repaired causal
+falsifiers, installed-wheel discovery, fail-closed event inventory, and retained
+synthetic evidence before returning PASS. Root byte-compared the accepted
+candidate into the real KAE checkout and reran the complete gate before and
+after commit. Public run `31913192879` passed Python 3.11-3.14 at exact commit
+`2c2eb36e4f0b0438f1c42030d56f3a872007264d`.
+
+G15 did not consume a KAE replay bundle, launch or control Kenshi, touch saves
+or DLLs, prove metric equivalence, retain a real KAE capability, or prove a live
+world effect. Goal 16 is the sole next packet and owns the first public KAE
+observer/replay proof. G17 and all live/evolved-capability claims remain
+unstarted or withheld.

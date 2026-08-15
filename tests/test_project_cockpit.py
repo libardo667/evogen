@@ -41,15 +41,15 @@ def test_state_preserves_the_exact_execution_boundary() -> None:
     ]
     assert STATE["progress"] == {
         "goal_count": 49,
-        "completed_goal_count": 14,
-        "next_goal_id": "G15",
-        "last_closed_goal_id": "G14",
-        "checkpoint_current_goal_id": "G14",
+        "completed_goal_count": 15,
+        "next_goal_id": "G16",
+        "last_closed_goal_id": "G15",
+        "checkpoint_current_goal_id": "G15",
         "current_route_id": "replay_showcase",
     }
-    assert [goal["state"] for goal in STATE["goals"][:14]] == ["complete"] * 14
-    assert STATE["goals"][14]["state"] == "next"
-    assert [goal["state"] for goal in STATE["goals"][15:]] == ["unstarted"] * 34
+    assert [goal["state"] for goal in STATE["goals"][:15]] == ["complete"] * 15
+    assert STATE["goals"][15]["state"] == "next"
+    assert [goal["state"] for goal in STATE["goals"][16:]] == ["unstarted"] * 33
 
 
 def test_cockpit_shows_the_exact_proof_first_route_and_boundaries() -> None:
@@ -99,7 +99,8 @@ def test_cockpit_exposes_the_exact_g14_mapping_and_uncertainty() -> None:
     assert proof["real_run_acceptance"]["normalized_events"] == 22_995
     assert proof["withheld"] == ["binding", "dispatch"]
     assert "original generation identity" in proof["boundary"]
-    assert "G15" in proof["boundary"]
+    assert "G15 registration is complete" in proof["boundary"]
+    assert "G16 replay" in proof["boundary"]
 
 
 def test_json_and_file_protocol_script_are_the_same_state() -> None:
@@ -118,8 +119,8 @@ def test_cockpit_has_no_runtime_network_or_module_dependency() -> None:
     assert "XMLHttpRequest" not in javascript
     assert not re.search(r'''(?:src|href)=["']https?://''', index)
     assert "generated:fallback:start" in index
-    assert "Last closed:</strong> G14" in index
-    assert "Next authorized:</strong> G15" in index
+    assert "Last closed:</strong> G15" in index
+    assert "Next authorized:</strong> G16" in index
     assert "Proof-first route:</strong> Real KAE replay showcase" in index
     assert 'id="proof-roadmap"' in index
     assert 'id="trajectory-panel"' in index
@@ -152,6 +153,11 @@ def test_capability_claims_name_proof_and_a_boundary() -> None:
             assert capability["proof"] == ["withheld"]
     demo = next(item for item in STATE["capabilities"] if item["id"] == "cycle")
     assert "live" not in demo["proof"]
+    kenshi = next(
+        item for item in STATE["capabilities"] if item["id"] == "kae_subject_plugin"
+    )
+    assert kenshi["proof"] == ["source", "static", "portable", "hosted", "installed"]
+    assert "synthetic conformance" in kenshi["not_proven"]
 
 
 def test_demo_results_always_show_denominators() -> None:
