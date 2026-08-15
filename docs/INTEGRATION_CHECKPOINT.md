@@ -6,7 +6,7 @@ goal. Git history retains the completed prerequisite-contract checkpoint.
 ## Repository and planning authority
 
 ```text
-parent commit                    73a6ab25f5b726f23cba050f4ace1c3d70c83935
+parent commit                    2f89daee5d7ff2b10ab822a979f0e9c65a407be1
 integration branch               main
 current goal                     Goal 13 - Generate KAE capability manifest
 next unstarted goal              Goal 14 - Replace the provisional normalizer with an exact KAE exporter
@@ -36,6 +36,29 @@ The follow-up cockpit refresh changed no numbered-goal state. Commit
 G13/G14 queue boundary and KAE proof into the checked-in, offline project
 interface. Hosted run `31721525900` passed Python 3.11, 3.12, and 3.13. This
 final metadata refresh records that proof without advancing into G14.
+
+## Navigator-approved proof-first route
+
+The navigator approved a proof-first execution order after G13. The checked-in
+sequenced plan is now the scheduling authority: it tells the root which goal is
+permitted next and when to re-fetch the Drive master plan for the detailed goal
+contract. The Drive source remains authoritative for what each numbered goal
+must prove; it is not used to silently reorder work between those lookups.
+
+The route is G14-G17 for a real KAE replay showcase; G18 and G22-G27 for one
+historical evolution; G28-G29 for one supervised live evolution; G19-G21 for
+the deferred corpus, blind benchmark, and external-model study; then G30-G49
+for OpenTTD and release. G26 precedes G27 so the historical cycle consumes a
+frozen suite and provenance authority. While G21 is deferred, G22 is limited
+to a deterministic or human-authored investigator. G30 depends on both G21 and
+G29, so neither the scientific-depth branch nor the supervised-live branch can
+be bypassed.
+
+Every numbered goal still closes, is independently reviewed, updates the
+checkpoint, and stops before the next goal begins. The reusable cockpit must
+make each milestone's newly available proof and strongest withheld claim
+visible. This route amendment does not change the current boundary: G13 remains
+the last closed goal and G14 remains the sole next packet.
 
 ## Generated subject authority
 

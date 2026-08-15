@@ -1,6 +1,6 @@
 # EvoGen sequenced subagent execution plan
 
-Status: checked-in operational companion to
+Status: checked-in proof-first execution authority for
 `EVOGEN_KENSHI_OPENTTD_BOUNDED_GOALS.md`
 
 Source plan:
@@ -8,9 +8,24 @@ Source plan:
 - Drive file ID: `1IcZkzsjmsdtPqxxj4NxSiKWIBzB8In3D`
 - Source revision observed: `2026-08-10T21:25:08.835Z`
 - Source size observed: 37,532 bytes
-- This companion does not replace or weaken the source plan. When they differ,
-  the numbered goal, its `Done when`, and its `Do not` clauses in the source
-  plan win.
+- The Drive document remains the master specification for each numbered goal,
+  its `Done when`, its `Do not`, and the final G49 completion standard.
+- This checked-in companion owns execution order, local dependencies, subagent
+  packets, proof-milestone UI, repository checkpoints, and the sole next goal.
+- The navigator approved the proof-first order on 2026-08-14. It deliberately
+  defers G19-G21 until after the first historical and supervised-live proofs;
+  it does not delete, weaken, or mark those goals complete.
+
+Drive lookup rule:
+
+1. The root re-fetches the master document before freezing every numbered goal.
+2. The root also re-fetches it at the start of each proof milestone, whenever
+   the observed Drive revision changes, or whenever this companion does not
+   contain enough detail to resolve a `Done when` or `Do not` boundary.
+3. Subagents work from the root's frozen goal packet. They do not independently
+   reinterpret the master plan while implementation is in flight.
+4. If a goal contract conflicts with this file, the Drive goal contract wins.
+   If only order or dependency differs, this proof-first file wins.
 
 Current execution state:
 
@@ -48,8 +63,9 @@ Current execution state:
 ## 1. What this plan controls
 
 The source plan says to give one goal to a coding agent at a time. This document
-keeps that rule and defines how a root agent may use subagents *inside* that one
-goal without blurring authorship, authority, evidence, or completion.
+keeps that rule, changes the order in which the remaining goals are selected,
+and defines how a root agent may use subagents *inside* that one goal without
+blurring authorship, authority, evidence, or completion.
 
 The root agent is the only process allowed to:
 
@@ -59,15 +75,16 @@ The root agent is the only process allowed to:
 4. alter the integration checkpoint;
 5. make the final goal commit;
 6. select or retain an EvoGen candidate; and
-7. unlock the next numbered goal.
+7. unlock the next goal in the proof-first route.
 
 Subagents increase scrutiny and bounded throughput. They never turn the roadmap
-into 49 concurrent tasks.
+into 49 concurrent tasks. A proof milestone is a sequence of separately closed
+numbered goals, not permission to merge their diffs or skip their stop gates.
 
 ## 2. Non-negotiable execution rules
 
-1. **One numbered goal is active globally.** No work from the next goal is
-   smuggled into the current diff.
+1. **One numbered goal is active globally.** No work from the next routed goal
+   is smuggled into the current diff.
 2. **Current checkout beats plan memory.** Every goal begins by resolving the
    current branch, commit, dirty status, checkpoint, architecture authority,
    generated authorities, and recent relevant commits.
@@ -93,7 +110,10 @@ into 49 concurrent tasks.
 11. **Live and installation boundaries stay human-visible.** The root pauses at
     every gate the source goal says requires human approval.
 12. **Every goal ends in a stop.** After checkpoint, commit, clean-tree proof,
-    and handoff, no agent begins the next goal automatically.
+    handoff, and cockpit refresh, no agent begins the next goal automatically.
+13. **Every goal must improve proof visibility.** The checked-in cockpit must
+    show what changed, the strongest evidence actually obtained, the nearest
+    withheld claim, and which proof milestone the next goal advances.
 
 ## 3. Global goal state machine
 
@@ -462,73 +482,112 @@ and no real subject imports in core.
 - Exit artifacts: generated event map, sequence fixture, generation manifest,
   affordance-set event fixture, generated capability manifest, freshness tests.
 
-### G14–G17 — Exact exporter and observer plugin
+### Proof milestone A — Real KAE replay showcase (G14–G17)
+
+This is the first human-readable proof target. G14, G15, G16, and G17 still
+close one at a time, but together must leave one obvious command and one
+reusable cockpit view that lets a navigator inspect real KAE evidence flowing
+through EvoGen.
 
 - G14 is cross-repository and serial: KAE exporter first, then retirement of the
   EvoGen provisional adapter. Each checkpoint records the counterpart commit.
+  Strict mode on the current central-lifecycle real bundle must produce zero
+  unknown event types, and every normalized event must round-trip through the
+  current EvoGen schema.
 - G15 registers the optional KAE plugin without making ordinary KAE imports
   depend on EvoGen.
-- G16 proves checked-in observer and newly produced replay through one public
-  runner path; no game launch or DLL installation.
+- G16 proves a checked-in observer bundle and a newly produced replay through
+  one public runner path, with the typed RunRecord, manifest, artifact digests,
+  and evidence-class distinctions retained; no game launch or DLL installation.
 - G17 maps current evaluator metrics without reducing them to success/action
   count; current and EvoGen results must agree explicitly.
+- The showcase must display source identity, event ordering, observations,
+  affordance sets, decisions, execution receipts, later outcomes, uncertainty,
+  finalization, and metric equivalence. It must visually keep dispatch and
+  native acknowledgement separate from later world-effect evidence.
+- The showcase may claim replay and portable proof only. It may not claim that
+  EvoGen generated or retained a KAE capability.
 - Independent roles: mapping auditor, plugin/conformance reviewer, metrics
-  equivalence verifier.
+  equivalence verifier, and cockpit evidence auditor.
 
-### G18–G20 — Sealed historical corpus and benchmark
+### Proof milestone B — One historical evolution (G18, G22–G27)
 
-- Separate three authorities: case curator with sealed-answer access,
-  diagnostician without it, and scorer/evaluator.
+This is the first end-to-end KAE capability-engineering proof. It intentionally
+uses one exact historical case before building the broader research corpus.
+
 - G18 packages the trade-window lifecycle case from exact historical evidence.
-- G19 adds at least six structurally different additions/removals/representation
-  and evidence corrections.
-- G20 runs the deterministic baseline and proves the inference mount cannot
-  reach sealed answers, commit-message hints, or patch paths.
-- Required artifacts: reconstruction manifest, parent/child commits, source and
-  binary context, hidden diagnosis/spec/patch, integrity digest, leakage audit,
-  multidimensional baseline score.
-
-### G21–G23 — Model study, investigator, architect
-
-- G21 requires navigator approval for provider/model/cost. Retain every request,
-  response, timeout, malformed result, and score artifact. No implementation.
+  The case curator retains sealed-answer access; inference roles do not.
 - G22 investigator output separates available engine mechanism, project-owned
   supported operation, unsafe guess, rejected mechanism, crash history, and
-  remaining unknown.
+  remaining unknown. While G21 is deferred, G22 is deterministic or
+  human-authored only and may not invoke an external model/provider.
 - G23 specs additions, corrections, removals, observations, verification,
   recovery, and probes; implementers cannot broaden them.
-- Independent roles: clean-context runner, evidence-citation auditor,
-  alternative-diagnosis reviewer, frozen-spec reviewer.
+- G24 creates a branch/worktree from the exact historical parent. Candidate
+  authors receive only the issue/spec/evidence packet and have no sealed answer,
+  evaluator, installation credential, or historical child access.
+- G25 reviewers and evaluators independently run KAE portable, replay, variant,
+  and regression gates. Unit tests alone cannot prove gameplay change.
+- G26 freezes the suite, save, model, time, binary, rollback, and approval
+  authority that the historical cycle and later live cycle consume. It does not
+  install or execute a live candidate.
+- G27 runs the historical level-4 cycle through persisted EvoGen stages. The
+  historical child and human patch remain sealed until after root selection,
+  then become comparison evidence rather than selection authority.
+- The cockpit must show the artifact chain from failure evidence through
+  diagnosis, investigation, frozen spec, candidate transcript/patch, independent
+  review, baseline/candidate evaluation, decision, and post-decision comparison.
+- The milestone may claim a historical portable/replay evolution. It may not
+  claim a newly discovered or live-proven KAE improvement.
+- Required separation: case curator -> diagnostician -> investigator -> spec
+  author -> candidate author -> reviewer -> evaluator -> release recommender ->
+  root selection.
 
-### G24–G27 — Isolated level-4 candidate cycle
+### Proof milestone C — One supervised live evolution (G28–G29)
 
-- G24 creates branch/worktree from exact parent; candidate author receives only
-  issue/spec/evidence packet and has no sealed answers, evaluator, or install
-  credentials.
-- G25 reviewer/evaluator independently run KAE portable/replay/regression gates;
-  unit tests alone cannot prove gameplay change.
-- G26 defines suite/save/model/time/binary/rollback/approval authority but does
-  not install or execute live candidates.
-- G27 runs the historical level-4 cycle serially through artifact stages; the
-  historical child is opened only after selection for comparison.
-- Required separation: spec author -> candidate author -> reviewer -> evaluator
-  -> release recommender -> root selection.
+This is the first proof that begins with current live observation and may end in
+a retained KAE capability. It does not begin until milestone B is closed.
 
-### G28–G29 — New live KAE evidence
+- G28 requires navigator approval for each supervised session budget. Completed
+  bundles may be analyzed in parallel afterward. Root and human review whether
+  a repeated issue is capability, planning, environment refusal, or insufficient
+  evidence. Stop before implementation; honest no-issue is completion.
+- G29 is wholly serial: frozen spec, isolated implementation, portable/replay,
+  approved installation, restored revealing fixture, live variants, regression
+  restoration, longer supervised run, rollback, and final safe state.
+- Retention requires exact source, model, prompt, scenario, save, DLL, run, and
+  evidence hashes plus later world evidence across more than one lucky run.
+- The cockpit must expose every approval, baseline/candidate identity, rollback
+  point, revealing/variant/regression result, and the exact later observation
+  that supports or withholds a world-effect claim.
 
-- G28: navigator approves each supervised session budget. Multiple completed
-  bundles may be analyzed in parallel afterward. Root/human reviews whether a
-  repeated issue is capability, planning, or environment refusal. Stop before
-  implementation; honest no-issue is completion.
-- G29: wholly serial live chain—frozen spec, isolated implementation,
-  portable/replay, approved install, restored revealing fixture, live variants,
-  regression restoration, longer supervised run, rollback/final safe state.
-- Retention requires exact source/model/prompt/scenario/save/DLL/run/evidence
-  hashes and later world evidence across more than one lucky run.
+### Deferred scientific depth — G19–G21
 
-Journey II exit gate: KAE conformance, seven sealed cases, one historical
-level-4 cycle, and either one genuinely new supervised live closure or the
-predeclared honest no-qualifying-issue result required by G49.
+These goals move after the first supervised-live proof so the project becomes
+observable sooner. They remain mandatory and must close before Journey III.
+
+- G19 adds at least six cases, for at least seven total including G18: incomplete
+  scans, the unsafe task-probability oracle, selected/queued versus accepted
+  operators, collapsed player topology, obsolete pointer-calibration gating,
+  and equipped-item withholding after the transfer-crash diagnosis. Together
+  they cover additions, removals, representation corrections, and evidence
+  corrections.
+- G20 runs the deterministic hidden-answer baseline and proves the inference
+  mount cannot reach sealed answers, commit-message hints, or patch paths.
+- G21 requires navigator approval for provider, model, and cost, and compares
+  model diagnoses with human diagnoses while retaining every request, response,
+  timeout, malformed result, and score artifact. It performs no implementation.
+- Separate case curator, diagnostician, scorer/evaluator, clean-context runner,
+  evidence-citation auditor, and alternative-diagnosis reviewer authorities.
+- Required artifacts: reconstruction manifests, parent/child commits, source and
+  binary context, hidden diagnosis/spec/patch, integrity digest, leakage audit,
+  multidimensional baseline, and model-versus-human scorecard.
+
+Journey II exit gate: the replay showcase, one historical level-4 cycle, one
+supervised-live closure or the predeclared honest no-qualifying-issue result,
+seven sealed cases, and the hidden-answer/model study are all independently
+closed. Proof-first order changes when these become visible, not what G49
+ultimately requires.
 
 ## 10. Journey III routing — OpenTTD
 
@@ -710,9 +769,15 @@ evidence classification.
 This appendix is routing metadata, not permission to start a goal.
 
 ```yaml
-version: 1
-ordering: strict_numeric
+version: 2
+ordering: proof_first
 global_active_goal_limit: 1
+execution_route:
+  - {id: replay_showcase, status: next, goals: [G14, G15, G16, G17]}
+  - {id: historical_evolution, status: planned, goals: [G18, G22, G23, G24, G25, G26, G27]}
+  - {id: supervised_live_evolution, status: planned, goals: [G28, G29]}
+  - {id: deferred_scientific_depth, status: deferred, goals: [G19, G20, G21]}
+  - {id: openttd_and_release, status: planned, goals: [G30, G31, G32, G33, G34, G35, G36, G37, G38, G39, G40, G41, G42, G43, G44, G45, G46, G47, G48, G49]}
 goals:
   - {id: G01, repo: [evogen], depends: [], profile: foundation_release, state: complete, human_gate: []}
   - {id: G02, repo: [evogen], depends: [G01], profile: core_contract, state: complete, human_gate: []}
@@ -735,15 +800,15 @@ goals:
   - {id: G19, repo: [kenshi-agent-env], depends: [G18], profile: sealed_corpus, state: unstarted, human_gate: []}
   - {id: G20, repo: [kenshi-agent-env, evogen], depends: [G19], profile: blind_benchmark, state: unstarted, human_gate: []}
   - {id: G21, repo: [kenshi-agent-env], depends: [G20], profile: external_model_study, state: unstarted, human_gate: [provider_model_cost]}
-  - {id: G22, repo: [kenshi-agent-env], depends: [G21], profile: investigator, state: unstarted, human_gate: []}
+  - {id: G22, repo: [kenshi-agent-env], depends: [G18], profile: deterministic_or_human_investigator, state: unstarted, human_gate: []}
   - {id: G23, repo: [kenshi-agent-env], depends: [G22], profile: capability_architect, state: unstarted, human_gate: []}
   - {id: G24, repo: [evogen, kenshi-agent-env], depends: [G23], profile: isolated_candidate, state: unstarted, human_gate: []}
   - {id: G25, repo: [kenshi-agent-env], depends: [G24], profile: independent_evaluation, state: unstarted, human_gate: []}
   - {id: G26, repo: [kenshi-agent-env], depends: [G25], profile: live_suite_definition, state: unstarted, human_gate: []}
-  - {id: G27, repo: [evogen, kenshi-agent-env], depends: [G26], profile: historical_level4, state: unstarted, human_gate: []}
+  - {id: G27, repo: [evogen, kenshi-agent-env], depends: [G18, G26], profile: historical_level4, state: unstarted, human_gate: []}
   - {id: G28, repo: [kenshi-agent-env], depends: [G27], profile: supervised_observation, state: unstarted, human_gate: [live_session_budget]}
   - {id: G29, repo: [evogen, kenshi-agent-env], depends: [G28], profile: supervised_live_candidate, state: unstarted, human_gate: [install, live_revealing, live_variants, live_regressions, live_long_run]}
-  - {id: G30, repo: [openttd-agent-env], depends: [G29], profile: subject_bootstrap, state: unstarted, human_gate: [upstream_carrying_strategy]}
+  - {id: G30, repo: [openttd-agent-env], depends: [G21, G29], profile: subject_bootstrap, state: unstarted, human_gate: [upstream_carrying_strategy]}
   - {id: G31, repo: [openttd-agent-env], depends: [G30], profile: headless_build, state: unstarted, human_gate: []}
   - {id: G32, repo: [openttd-agent-env], depends: [G31], profile: scenario_pack, state: unstarted, human_gate: []}
   - {id: G33, repo: [openttd-agent-env], depends: [G32], profile: bridge_spike, state: unstarted, human_gate: [upstream_patch_route]}
@@ -783,3 +848,10 @@ retain event and generation identity; and keep dispatch separate from later
 world-effect proof. G14 does not register the G15 subject plugin, run the G16
 observer/replay path, change native behavior, install artifacts, launch Kenshi,
 modify a save, or claim a live world effect.
+
+G14 is the first separately closed step of Proof milestone A. Its cockpit
+change must expose the exact raw-to-normalized event mapping, source identity,
+ordering, receipt/outcome separation, and remaining uncertainty. It may show
+that the exporter contract exists once proven, but it must keep the overall KAE
+replay showcase withheld until G15 registration, G16 public replay, and G17
+metric equivalence have each closed.
