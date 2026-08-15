@@ -3,7 +3,7 @@
   "product_name": "EvoGen",
   "product_thesis": "Turn repeated agent failures into evidence-backed capability changes.",
   "snapshot_label": "G14 closed · G15 queued",
-  "plan_revision_commit": "6954f8bc1e0ad95a9ccd9486fe58999dce5cf885",
+  "plan_revision_commit": "5e72ca364f0a1b2c5b23d41c9af5a2a15099b946",
   "last_closed_goal": {
     "goal_id": "G14",
     "title": "Replace the provisional normalizer with an exact KAE exporter",
@@ -108,11 +108,11 @@
       "name": "EvoGen",
       "role": "generic evolution plane",
       "branch": "main",
-      "state": "G01–G08 complete; G14 candidate pending root ratchet",
-      "evidence_commit": "6954f8bc1e0ad95a9ccd9486fe58999dce5cf885",
-      "hosted_run": "31903804873",
+      "state": "G01–G08 and G14 complete; G15 queued",
+      "evidence_commit": "5e72ca364f0a1b2c5b23d41c9af5a2a15099b946",
+      "hosted_run": "31908510607",
       "matrix": "Python 3.11–3.13",
-      "href": "https://github.com/libardo667/evogen/commit/6954f8bc1e0ad95a9ccd9486fe58999dce5cf885"
+      "href": "https://github.com/libardo667/evogen/commit/5e72ca364f0a1b2c5b23d41c9af5a2a15099b946"
     },
     {
       "id": "kae",

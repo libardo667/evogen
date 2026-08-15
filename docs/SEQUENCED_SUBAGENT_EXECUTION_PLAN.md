@@ -58,13 +58,14 @@ Current execution state:
   Python 3.11, 3.12, 3.13, and 3.14 at the exact completion commit
 - Goal 13 EvoGen prerequisite: commit
   `4270e8332f8a03757b39a306b2e936ac8a618cc3`, hosted run `31717965263`
-- Goal 14 state: KAE exporter complete at commit
-  `548658cbcef35037252e63be40248fa6a94b5ec1`; EvoGen retirement candidate is
-  based on parent `6954f8bc1e0ad95a9ccd9486fe58999dce5cf885` and awaits the
-  root's final review, commit, and hosted proof
-- Goal 14 local focused proof: strict compact KAE export fixture round-trip,
-  raw rejection, historical fixture diagnosis, and CLI removal pass in the
-  candidate clone
+- Goal 14 state: complete at KAE exporter commit
+  `548658cbcef35037252e63be40248fa6a94b5ec1` and EvoGen retirement commit
+  `5e72ca364f0a1b2c5b23d41c9af5a2a15099b946`
+- Goal 14 hosted proof: KAE run `31906703483` passed Python 3.11-3.14 and
+  EvoGen run `31908510607` passed Python 3.11-3.13 at those exact commits
+- Goal 14 local proof: clean wheel without the retired adapter, Ruff, strict
+  mypy, full tests, compact export round-trip, raw rejection, historical
+  fixture diagnosis, CLI removal, cockpit freshness, and the microworld cycle
 - Next unstarted goal: Goal 15
 
 ## 1. What this plan controls

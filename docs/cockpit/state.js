@@ -1152,7 +1152,7 @@ window.EVOGEN_COCKPIT_STATE = {
     "summary": "KAE now publishes an exact trajectory exporter and EvoGen consumes its strict current envelope, retiring the broad aliasing normalizer while retaining fixture-only historical diagnosis evidence.",
     "title": "Replace the provisional normalizer with an exact KAE exporter"
   },
-  "plan_revision_commit": "6954f8bc1e0ad95a9ccd9486fe58999dce5cf885",
+  "plan_revision_commit": "5e72ca364f0a1b2c5b23d41c9af5a2a15099b946",
   "product_name": "EvoGen",
   "product_thesis": "Turn repeated agent failures into evidence-backed capability changes.",
   "progress": {
@@ -1213,14 +1213,14 @@ window.EVOGEN_COCKPIT_STATE = {
   "repositories": [
     {
       "branch": "main",
-      "evidence_commit": "6954f8bc1e0ad95a9ccd9486fe58999dce5cf885",
-      "hosted_run": "31903804873",
-      "href": "https://github.com/libardo667/evogen/commit/6954f8bc1e0ad95a9ccd9486fe58999dce5cf885",
+      "evidence_commit": "5e72ca364f0a1b2c5b23d41c9af5a2a15099b946",
+      "hosted_run": "31908510607",
+      "href": "https://github.com/libardo667/evogen/commit/5e72ca364f0a1b2c5b23d41c9af5a2a15099b946",
       "id": "evogen",
       "matrix": "Python 3.11–3.13",
       "name": "EvoGen",
       "role": "generic evolution plane",
-      "state": "G01–G08 complete; G14 candidate pending root ratchet"
+      "state": "G01–G08 and G14 complete; G15 queued"
     },
     {
       "branch": "main",
@@ -1249,19 +1249,19 @@ window.EVOGEN_COCKPIT_STATE = {
   "snapshot_label": "G14 closed · G15 queued",
   "source_authority": {
     "branch": "main",
-    "input_digest": "e07cb63c97aa9f7c9e48dfdfb5d2d3b7ced90fa4e8f86c1ab5b552d8ce9ff23b",
+    "input_digest": "9259bd10f2f4eaada1d36504a0a25259a6afbd9c080f45839f056d82da758314",
     "inputs": [
       {
         "path": "docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md",
-        "sha256": "22c7162eb7abc66b9b06c8f803fad714b06b3b0c2529d986272f6b1e42634200"
+        "sha256": "690b1ba6a64f6e59774157bbc438fd68aca0b4d25c6e904c75ebd80b46492fe8"
       },
       {
         "path": "docs/INTEGRATION_CHECKPOINT.md",
-        "sha256": "2286a9db26fe510369879472bea9e65388c9e84e5408ad23619aee82115734a6"
+        "sha256": "8151c4044b8ad3b847508931273c637c763a2e62c9e22907231a6413da3ced99"
       },
       {
         "path": "docs/cockpit/content.json",
-        "sha256": "d4953943516cf555cdcc47238b94d3d50550fdf144da371df9c3c99cce5ffc3d"
+        "sha256": "18b65506ba35dcf89a9ad9602590c20e94e3c090fd5dd713363366cec7d68af2"
       },
       {
         "path": "tests/fixtures/kae_g14_export/manifest.json",
@@ -1280,10 +1280,10 @@ window.EVOGEN_COCKPIT_STATE = {
         "sha256": "fde068a7992d709001688e91a350800e9d2109a253ec3e97f936ea689a1ae44b"
       }
     ],
-    "plan_revision_commit": "6954f8bc1e0ad95a9ccd9486fe58999dce5cf885",
+    "plan_revision_commit": "5e72ca364f0a1b2c5b23d41c9af5a2a15099b946",
     "repository": "evogen"
   },
-  "state_id": "sha256:ff1e2be77095ab7388951207b7967871646c493b52f04cbd41bdc887f3b8c30e",
+  "state_id": "sha256:8ab08483d7e642a30a5828798cd3c4ef247dafb6ab3789419d91db428f1a99c2",
   "trajectory_export_proof": {
     "boundary": "Receipt and later outcome remain separate. The historical soak proves exporter compatibility with an explicitly supplied manifest, not its original generation identity or a live world effect. G15 registration, G16 replay, and G17 metric equivalence remain unstarted.",
     "bundle_id": "b653c034424ed7e917dc25c411876a1d621cdac756d8054d8ffd0fdb39b4d946",
