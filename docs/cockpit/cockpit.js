@@ -32,6 +32,15 @@
     <h2>${escapeHtml(state.current_focus.title)}</h2>
     <p>${escapeHtml(state.current_focus.summary)}</p>`;
 
+  byId("proof-roadmap").innerHTML = state.execution_route.map((milestone, index) => `
+    <article class="proof-milestone ${escapeHtml(milestone.status)}">
+      <div class="milestone-top"><span class="milestone-index">${String(index + 1).padStart(2, "0")}</span><span class="capability-status status-${escapeHtml(milestone.status)}">${escapeHtml(milestone.status)}</span></div>
+      <p class="milestone-goals">${escapeHtml(milestone.goals.join(" → "))}</p>
+      <h3>${escapeHtml(milestone.label)}</h3>
+      <p>${escapeHtml(milestone.delivers)}</p>
+      <p class="milestone-boundary"><strong>Boundary:</strong> ${escapeHtml(milestone.boundary)}</p>
+    </article>`).join("");
+
   byId("demo-panel").innerHTML = `
     <div class="demo-head"><div><h3>${escapeHtml(state.demo_result.label)}</h3><p>${escapeHtml(state.demo_result.scope)}</p></div><span class="verdict">verdict · ${escapeHtml(state.demo_result.verdict)}</span></div>
     <div class="suite-grid">${state.demo_result.suites.map((suite) => `

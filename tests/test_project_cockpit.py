@@ -45,10 +45,35 @@ def test_state_preserves_the_exact_execution_boundary() -> None:
         "next_goal_id": "G14",
         "last_closed_goal_id": "G13",
         "checkpoint_current_goal_id": "G13",
+        "current_route_id": "replay_showcase",
     }
     assert [goal["state"] for goal in STATE["goals"][:13]] == ["complete"] * 13
     assert STATE["goals"][13]["state"] == "next"
     assert [goal["state"] for goal in STATE["goals"][14:]] == ["unstarted"] * 35
+
+
+def test_cockpit_shows_the_exact_proof_first_route_and_boundaries() -> None:
+    routes = STATE["execution_route"]
+    assert [route["id"] for route in routes] == [
+        "replay_showcase",
+        "historical_evolution",
+        "supervised_live_evolution",
+        "deferred_scientific_depth",
+        "openttd_and_release",
+    ]
+    assert [goal for route in routes for goal in route["goals"]] == [
+        "G14", "G15", "G16", "G17",
+        "G18", "G22", "G23", "G24", "G25", "G26", "G27",
+        "G28", "G29",
+        "G19", "G20", "G21",
+        *[f"G{number:02d}" for number in range(30, 50)],
+    ]
+    assert [route["status"] for route in routes] == [
+        "next", "planned", "planned", "deferred", "planned"
+    ]
+    assert all(route["delivers"] and route["boundary"] for route in routes)
+    assert "not optional" in routes[3]["boundary"]
+    assert "availability evidence only" in routes[4]["boundary"]
 
 
 def test_json_and_file_protocol_script_are_the_same_state() -> None:
@@ -69,6 +94,8 @@ def test_cockpit_has_no_runtime_network_or_module_dependency() -> None:
     assert "generated:fallback:start" in index
     assert "Last closed:</strong> G13" in index
     assert "Next authorized:</strong> G14" in index
+    assert "Proof-first route:</strong> Real KAE replay showcase" in index
+    assert 'id="proof-roadmap"' in index
 
 
 def test_evidence_links_are_safe_and_local_links_resolve() -> None:

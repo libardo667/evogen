@@ -180,8 +180,8 @@ window.EVOGEN_COCKPIT_STATE = {
       ],
       "id": "kae_cycle",
       "name": "Historical and new KAE evolution cycles",
-      "not_proven": "Planned in G14–G29; no evolved KAE capability has been retained yet.",
-      "plain_language": "Will convert real KAE history into hidden-answer diagnostics, then close a genuinely new deficit through supervised live proof.",
+      "not_proven": "G14 is only the first replay-showcase step; no production replay showcase or evolved KAE capability has been retained yet.",
+      "plain_language": "First makes real KAE evidence replayable and visible, then converts one historical deficit into a complete evolution cycle, then attempts one genuinely new deficit through supervised live proof before returning to the broader scientific study.",
       "proof": [
         "withheld"
       ],
@@ -196,7 +196,7 @@ window.EVOGEN_COCKPIT_STATE = {
       ],
       "id": "openttd_subject",
       "name": "OpenTTD subject environment",
-      "not_proven": "The local OpenTTD installation is an input, not proof of the planned environment. Repository work begins at G30.",
+      "not_proven": "The local OpenTTD installation is an input, not proof of the planned environment. G30 stays blocked until both supervised live KAE work and deferred scientific depth close.",
       "plain_language": "Will provide a pinned, deterministic, headless second environment with causal command lifecycles and a narrow road-freight surface.",
       "proof": [
         "withheld"
@@ -246,7 +246,7 @@ window.EVOGEN_COCKPIT_STATE = {
     "goal_id": "G14",
     "human_gate": "none",
     "state": "unstarted",
-    "summary": "The next serial slice will publish KAE's exact production trajectory contract first, then make EvoGen consume that authority and retire its provisional normalizer.",
+    "summary": "The first proof-first slice will publish KAE's exact production trajectory contract, make EvoGen consume it, and add the first inspectable raw-to-normalized evidence view. The full replay showcase remains withheld through G17.",
     "title": "Replace the provisional normalizer with an exact KAE exporter"
   },
   "demo_result": {
@@ -276,6 +276,89 @@ window.EVOGEN_COCKPIT_STATE = {
     ],
     "verdict": "retain"
   },
+  "execution_route": [
+    {
+      "boundary": "Portable and replay proof only. No evolved or live-proven KAE capability is claimed.",
+      "delivers": "A real KAE bundle flowing through the public EvoGen path with raw and normalized events, provenance, receipt versus later outcome, and metric equivalence visible in one reusable cockpit.",
+      "goals": [
+        "G14",
+        "G15",
+        "G16",
+        "G17"
+      ],
+      "id": "replay_showcase",
+      "label": "Real KAE replay showcase",
+      "status": "next"
+    },
+    {
+      "boundary": "Historical portable and replay evidence is not a newly discovered or live-proven capability.",
+      "delivers": "One sealed historical KAE deficit carried through diagnosis, investigation, specification, isolated implementation, independent evaluation, and retained EvoGen lineage.",
+      "goals": [
+        "G18",
+        "G22",
+        "G23",
+        "G24",
+        "G25",
+        "G26",
+        "G27"
+      ],
+      "id": "historical_evolution",
+      "label": "One historical evolution",
+      "status": "planned"
+    },
+    {
+      "boundary": "A dispatch, native acknowledgement, receipt, or process exit never substitutes for later world evidence.",
+      "delivers": "A current supervised KAE observation that may proceed through approved installation, live variants, regressions, long-run evidence, and rollback to a retention decision.",
+      "goals": [
+        "G28",
+        "G29"
+      ],
+      "id": "supervised_live_evolution",
+      "label": "One supervised live evolution",
+      "status": "planned"
+    },
+    {
+      "boundary": "Deferred means later in the proof-first route, not optional; OpenTTD remains blocked until this branch closes.",
+      "delivers": "A diverse sealed corpus, blind deterministic benchmark, and approved model-versus-human diagnosis study with all transcripts and failures retained.",
+      "goals": [
+        "G19",
+        "G20",
+        "G21"
+      ],
+      "id": "deferred_scientific_depth",
+      "label": "Deferred scientific depth",
+      "status": "deferred"
+    },
+    {
+      "boundary": "The local OpenTTD installation is availability evidence only; subject and release claims begin only after both KAE branches close.",
+      "delivers": "A pinned headless second subject, a retained OpenTTD capability change, two-subject genericity, and a release audit.",
+      "goals": [
+        "G30",
+        "G31",
+        "G32",
+        "G33",
+        "G34",
+        "G35",
+        "G36",
+        "G37",
+        "G38",
+        "G39",
+        "G40",
+        "G41",
+        "G42",
+        "G43",
+        "G44",
+        "G45",
+        "G46",
+        "G47",
+        "G48",
+        "G49"
+      ],
+      "id": "openttd_and_release",
+      "label": "OpenTTD and release",
+      "status": "planned"
+    }
+  ],
   "goals": [
     {
       "depends_on": [],
@@ -575,12 +658,12 @@ window.EVOGEN_COCKPIT_STATE = {
     },
     {
       "depends_on": [
-        "G21"
+        "G18"
       ],
       "human_gates": [],
       "id": "G22",
       "journey_id": "kenshi",
-      "profile": "investigator",
+      "profile": "deterministic_or_human_investigator",
       "repositories": [
         "kenshi-agent-env"
       ],
@@ -646,6 +729,7 @@ window.EVOGEN_COCKPIT_STATE = {
     },
     {
       "depends_on": [
+        "G18",
         "G26"
       ],
       "human_gates": [],
@@ -698,6 +782,7 @@ window.EVOGEN_COCKPIT_STATE = {
     },
     {
       "depends_on": [
+        "G21",
         "G29"
       ],
       "human_gates": [
@@ -1030,12 +1115,13 @@ window.EVOGEN_COCKPIT_STATE = {
     "summary": "KAE now publishes one content-addressed 69-row capability manifest from its real semantic and proof authorities, preserving unsupported and unproven boundaries instead of inventing conformance.",
     "title": "Generate KAE's capability manifest from authorities"
   },
-  "plan_revision_commit": "6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a",
+  "plan_revision_commit": "c82e53d1bb21eb8be4a0a867f5dba3d05dba821f",
   "product_name": "EvoGen",
   "product_thesis": "Turn repeated agent failures into evidence-backed capability changes.",
   "progress": {
     "checkpoint_current_goal_id": "G13",
     "completed_goal_count": 13,
+    "current_route_id": "replay_showcase",
     "goal_count": 49,
     "last_closed_goal_id": "G13",
     "next_goal_id": "G14"
@@ -1126,25 +1212,25 @@ window.EVOGEN_COCKPIT_STATE = {
   "snapshot_label": "G13 closed · G14 queued",
   "source_authority": {
     "branch": "main",
-    "input_digest": "b8d317a9b66b1a24dc0600209792b30c969ab4ab12c467573aa89ff0e6feece3",
+    "input_digest": "3d69867aab97de9d3cb29abc1ab5699fbe83c7a1bbd1b76d92aa5f07aef581a6",
     "inputs": [
       {
         "path": "docs/SEQUENCED_SUBAGENT_EXECUTION_PLAN.md",
-        "sha256": "dc76efdde52d0e502cfb3ed67e53623096c10bcae9555bb20a6c030750420486"
+        "sha256": "22511aee675f4424de0b767e6bbf065740750b43889e86adf798d67cb9fe3c82"
       },
       {
         "path": "docs/INTEGRATION_CHECKPOINT.md",
-        "sha256": "e28cec187ce1bf9c113adfced7deb6b4056cd7740d6eb3252c50454b0cb4ee1b"
+        "sha256": "ae39a3978f2a744e3640130a86c3a7b317c15e160285971858fd8813df305b98"
       },
       {
         "path": "docs/cockpit/content.json",
-        "sha256": "321bedeb67c3dc5242c7c9dcdb2e3d48d8a108c61ec1798e0f17f0a786da5579"
+        "sha256": "f5a135db7796904fe870f4ba807f5046d838799ba6674570f5e93f716260f730"
       }
     ],
-    "plan_revision_commit": "6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a",
+    "plan_revision_commit": "c82e53d1bb21eb8be4a0a867f5dba3d05dba821f",
     "repository": "evogen"
   },
-  "state_id": "sha256:74dc18c6fb0818d9b64eb57cd97f39f341df69b3fe0db6b9db93346491cfff85",
+  "state_id": "sha256:747fe71a8b7dcfd71071ed08609af071c0bd6a65ebf2ed6ff11e2293205d3522",
   "withheld_claims": [
     "No general model has yet been shown to infer arbitrary missing capabilities from arbitrary environments.",
     "The KAE generation manifest does not prove that native bytes are loaded, identify a running process, or prove a world effect.",

@@ -3,7 +3,7 @@
   "product_name": "EvoGen",
   "product_thesis": "Turn repeated agent failures into evidence-backed capability changes.",
   "snapshot_label": "G13 closed · G14 queued",
-  "plan_revision_commit": "6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a",
+  "plan_revision_commit": "c82e53d1bb21eb8be4a0a867f5dba3d05dba821f",
   "last_closed_goal": {
     "goal_id": "G13",
     "title": "Generate KAE's capability manifest from authorities",
@@ -13,9 +13,51 @@
     "goal_id": "G14",
     "title": "Replace the provisional normalizer with an exact KAE exporter",
     "state": "unstarted",
-    "summary": "The next serial slice will publish KAE's exact production trajectory contract first, then make EvoGen consume that authority and retire its provisional normalizer.",
+    "summary": "The first proof-first slice will publish KAE's exact production trajectory contract, make EvoGen consume it, and add the first inspectable raw-to-normalized evidence view. The full replay showcase remains withheld through G17.",
     "human_gate": "none"
   },
+  "execution_route": [
+    {
+      "id": "replay_showcase",
+      "label": "Real KAE replay showcase",
+      "goals": ["G14", "G15", "G16", "G17"],
+      "status": "next",
+      "delivers": "A real KAE bundle flowing through the public EvoGen path with raw and normalized events, provenance, receipt versus later outcome, and metric equivalence visible in one reusable cockpit.",
+      "boundary": "Portable and replay proof only. No evolved or live-proven KAE capability is claimed."
+    },
+    {
+      "id": "historical_evolution",
+      "label": "One historical evolution",
+      "goals": ["G18", "G22", "G23", "G24", "G25", "G26", "G27"],
+      "status": "planned",
+      "delivers": "One sealed historical KAE deficit carried through diagnosis, investigation, specification, isolated implementation, independent evaluation, and retained EvoGen lineage.",
+      "boundary": "Historical portable and replay evidence is not a newly discovered or live-proven capability."
+    },
+    {
+      "id": "supervised_live_evolution",
+      "label": "One supervised live evolution",
+      "goals": ["G28", "G29"],
+      "status": "planned",
+      "delivers": "A current supervised KAE observation that may proceed through approved installation, live variants, regressions, long-run evidence, and rollback to a retention decision.",
+      "boundary": "A dispatch, native acknowledgement, receipt, or process exit never substitutes for later world evidence."
+    },
+    {
+      "id": "deferred_scientific_depth",
+      "label": "Deferred scientific depth",
+      "goals": ["G19", "G20", "G21"],
+      "status": "deferred",
+      "delivers": "A diverse sealed corpus, blind deterministic benchmark, and approved model-versus-human diagnosis study with all transcripts and failures retained.",
+      "boundary": "Deferred means later in the proof-first route, not optional; OpenTTD remains blocked until this branch closes."
+    },
+    {
+      "id": "openttd_and_release",
+      "label": "OpenTTD and release",
+      "goals": ["G30", "G31", "G32", "G33", "G34", "G35", "G36", "G37", "G38", "G39", "G40", "G41", "G42", "G43", "G44", "G45", "G46", "G47", "G48", "G49"],
+      "status": "planned",
+      "delivers": "A pinned headless second subject, a retained OpenTTD capability change, two-subject genericity, and a release audit.",
+      "boundary": "The local OpenTTD installation is availability evidence only; subject and release claims begin only after both KAE branches close."
+    }
+  ],
   "journeys": [
     {"id": "foundation", "label": "I · EvoGen foundation", "first_goal": 1, "last_goal": 8, "summary": "Make the generic evolution engine deterministic, resumable, typed, and subject-neutral."},
     {"id": "kenshi", "label": "II · Kenshi proof", "first_goal": 9, "last_goal": 29, "summary": "Integrate a real autonomous-game subject while preserving causal and live-proof boundaries."},
@@ -145,9 +187,9 @@
       "id": "kae_cycle",
       "name": "Historical and new KAE evolution cycles",
       "status": "planned",
-      "plain_language": "Will convert real KAE history into hidden-answer diagnostics, then close a genuinely new deficit through supervised live proof.",
+      "plain_language": "First makes real KAE evidence replayable and visible, then converts one historical deficit into a complete evolution cycle, then attempts one genuinely new deficit through supervised live proof before returning to the broader scientific study.",
       "proof": ["withheld"],
-      "not_proven": "Planned in G14–G29; no evolved KAE capability has been retained yet.",
+      "not_proven": "G14 is only the first replay-showcase step; no production replay showcase or evolved KAE capability has been retained yet.",
       "evidence": [{"label": "KAE journey", "href": "../SEQUENCED_SUBAGENT_EXECUTION_PLAN.md"}]
     },
     {
@@ -156,7 +198,7 @@
       "status": "planned",
       "plain_language": "Will provide a pinned, deterministic, headless second environment with causal command lifecycles and a narrow road-freight surface.",
       "proof": ["withheld"],
-      "not_proven": "The local OpenTTD installation is an input, not proof of the planned environment. Repository work begins at G30.",
+      "not_proven": "The local OpenTTD installation is an input, not proof of the planned environment. G30 stays blocked until both supervised live KAE work and deferred scientific depth close.",
       "evidence": [{"label": "OpenTTD journey", "href": "../SEQUENCED_SUBAGENT_EXECUTION_PLAN.md"}]
     },
     {

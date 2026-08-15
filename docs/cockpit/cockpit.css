@@ -101,6 +101,19 @@ h3 { margin: 0; font-size: 17px; line-height: 1.3; }
 .proven, .status-available { color: var(--proven); background: var(--proven-pale); }
 .status-next { color: var(--attention); background: var(--attention-pale); }
 .status-planned { color: var(--unknown); background: #ebe7f2; }
+.status-deferred { color: var(--muted); background: #e8e6e0; }
+.proof-route-heading { margin-top: -28px; }
+.proof-roadmap { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 25px 0 72px; }
+.proof-milestone { min-width: 0; padding: 21px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--paper); }
+.proof-milestone.next { border-top: 4px solid var(--attention); box-shadow: var(--shadow); }
+.proof-milestone.deferred { border-style: dashed; background: rgb(255 253 248 / 45%); }
+.milestone-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.milestone-index { color: var(--muted); font: 12px "SFMono-Regular", Consolas, monospace; }
+.milestone-goals { min-height: 38px; margin: 17px 0 8px; color: var(--accent); font: 11px/1.5 "SFMono-Regular", Consolas, monospace; }
+.proof-milestone h3 { min-height: 44px; font: 500 20px/1.12 Georgia, serif; }
+.proof-milestone > p:not(.milestone-goals) { color: #556168; font-size: 12px; }
+.milestone-boundary { padding-top: 13px; border-top: 1px solid var(--rule); }
+.milestone-boundary strong { color: var(--attention); }
 .demo-panel { margin: 25px 0 72px; padding: clamp(26px, 4vw, 46px); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--ink); color: #eef1f0; box-shadow: var(--shadow); }
 .demo-head { display: flex; justify-content: space-between; gap: 30px; align-items: start; }
 .demo-head h3 { font: 500 clamp(24px, 3vw, 34px) Georgia, serif; }
@@ -196,6 +209,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
   .definition-card { max-width: 620px; }
   .suite-grid { grid-template-columns: repeat(2, 1fr); }
   .repo-grid { grid-template-columns: 1fr; }
+  .proof-roadmap { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .repo-card { min-height: 0; }
 }
 @media (max-width: 760px) {
@@ -219,6 +233,9 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
   .handoff-card.closed, .handoff-card.next { border-radius: var(--radius); }
   .handoff-arrow { height: 45px; border: 0; background: transparent; transform: rotate(90deg); }
   .split-grid, .capability-grid { grid-template-columns: 1fr; }
+  .proof-roadmap { grid-template-columns: 1fr; }
+  .proof-route-heading { margin-top: 0; }
+  .proof-milestone h3, .milestone-goals { min-height: 0; }
   .suite-grid { grid-template-columns: 1fr 1fr; }
   .demo-head { display: block; }
   .goal-controls { display: grid; }

@@ -3,11 +3,12 @@
 Open `index.html` directly in a browser. It has no network, package, font, or
 server dependency and works through `file://`.
 
-The interface is a derived evidence view. Its authorities are
+The interface is a derived evidence view. It also shows the approved
+proof-first route separately from numeric goal identity. Its authorities are
 `../SEQUENCED_SUBAGENT_EXECUTION_PLAN.md`, `../INTEGRATION_CHECKPOINT.md`, and
 the reviewed narrative in `content.json`. The builder refuses disagreement
-about the 49-goal registry, the sole next goal, the latest closed goal, and the
-KAE evidence commit.
+about the 49-goal registry, exact execution route, the sole next goal, the
+latest closed goal, and the KAE evidence commit.
 
 Rebuild after changing any authority:
 

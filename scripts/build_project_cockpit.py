@@ -28,6 +28,11 @@ GOAL_ROW = re.compile(
     r"depends: \[(?P<depends>[^]]*)\], profile: (?P<profile>[^,]+), "
     r"state: (?P<state>[^,]+), human_gate: \[(?P<gates>[^]]*)\]\}"
 )
+ROUTE_ROW = re.compile(
+    r"^  - \{id: (?P<id>[a-z_]+), status: (?P<status>[a-z_]+), "
+    r"goals: \[(?P<goals>[^]]+)\]\}$",
+    re.MULTILINE,
+)
 
 
 class CockpitBuildError(ValueError):
@@ -65,6 +70,39 @@ def parse_goals(plan: str) -> list[dict[str, Any]]:
     if len(next_goals) != 1:
         raise CockpitBuildError("execution plan must have exactly one next goal")
     return goals
+
+
+def parse_execution_route(plan: str) -> list[dict[str, Any]]:
+    routes = [
+        {
+            "id": match.group("id"),
+            "status": match.group("status"),
+            "goals": _list(match.group("goals")),
+        }
+        for match in ROUTE_ROW.finditer(plan)
+    ]
+    expected_ids = [
+        "replay_showcase",
+        "historical_evolution",
+        "supervised_live_evolution",
+        "deferred_scientific_depth",
+        "openttd_and_release",
+    ]
+    if [route["id"] for route in routes] != expected_ids:
+        raise CockpitBuildError("execution plan must contain the exact proof-first route")
+    flattened = [goal for route in routes for goal in route["goals"]]
+    expected_goals = {f"G{number:02d}" for number in range(14, 50)}
+    if len(flattened) != len(set(flattened)) or set(flattened) != expected_goals:
+        raise CockpitBuildError("proof-first route must cover G14-G49 exactly once")
+    if [route["status"] for route in routes] != [
+        "next",
+        "planned",
+        "planned",
+        "deferred",
+        "planned",
+    ]:
+        raise CockpitBuildError("proof-first route has invalid milestone statuses")
+    return routes
 
 
 def checkpoint_value(checkpoint: str, label: str) -> str:
@@ -117,6 +155,7 @@ def build_state() -> dict[str, Any]:
     plan_bytes = PLAN_PATH.read_bytes()
     checkpoint_bytes = CHECKPOINT_PATH.read_bytes()
     goals = parse_goals(plan_bytes.decode("utf-8"))
+    routes = parse_execution_route(plan_bytes.decode("utf-8"))
     checkpoint = checkpoint_bytes.decode("utf-8")
     titles = config.pop("goal_titles")
     if sorted(titles) != [f"G{number:02d}" for number in range(1, 50)]:
@@ -136,6 +175,28 @@ def build_state() -> dict[str, Any]:
         raise CockpitBuildError("last_closed_goal must name the latest completed goal")
     if checkpoint_current != last_closed["id"]:
         raise CockpitBuildError("checkpoint current goal must be the latest closed goal")
+
+    configured_routes = [
+        {
+            "id": route["id"],
+            "status": route["status"],
+            "goals": route["goals"],
+        }
+        for route in config["execution_route"]
+    ]
+    if configured_routes != routes:
+        raise CockpitBuildError("cockpit execution route disagrees with the plan")
+    current_route = next(
+        route for route in routes if next_goal["id"] in route["goals"]
+    )
+    first_incomplete = next(
+        goal_id
+        for route in routes
+        for goal_id in route["goals"]
+        if next(goal for goal in goals if goal["id"] == goal_id)["state"] != "complete"
+    )
+    if first_incomplete != next_goal["id"]:
+        raise CockpitBuildError("sole next goal must be first incomplete route goal")
 
     kae_commit = checkpoint_value(checkpoint, "KAE completion commit")
     kae_repo = next(repo for repo in config["repositories"] if repo["id"] == "kae")
@@ -173,6 +234,7 @@ def build_state() -> dict[str, Any]:
             "next_goal_id": next_goal["id"],
             "last_closed_goal_id": last_closed["id"],
             "checkpoint_current_goal_id": checkpoint_current,
+            "current_route_id": current_route["id"],
         },
         "goals": goals,
     }
@@ -198,6 +260,7 @@ def render_fallback(state: dict[str, Any]) -> str:
     last_goal = state["last_closed_goal"]
     next_goal = state["current_focus"]
     proof_labels = ", ".join(lane["label"] for lane in state["proof_lanes"])
+    route_labels = " -> ".join(item["label"] for item in state["execution_route"])
     withheld = "".join(f"<li>{item}</li>" for item in state["withheld_claims"])
     return f"""{FALLBACK_START}
     <noscript>
@@ -208,6 +271,7 @@ def render_fallback(state: dict[str, Any]) -> str:
         <p><strong>Next authorized:</strong> {next_goal['goal_id']} —
         {next_goal['title']} (unstarted)</p>
         <p><strong>Proof lanes:</strong> {proof_labels}</p>
+        <p><strong>Proof-first route:</strong> {route_labels}</p>
         <h2>Claims still withheld</h2>
         <ul>{withheld}</ul>
         <p><a href="../INTEGRATION_CHECKPOINT.md">Open the exact checkpoint</a> ·

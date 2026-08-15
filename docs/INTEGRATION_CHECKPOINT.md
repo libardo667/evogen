@@ -6,7 +6,7 @@ goal. Git history retains the completed prerequisite-contract checkpoint.
 ## Repository and planning authority
 
 ```text
-parent commit                    2f89daee5d7ff2b10ab822a979f0e9c65a407be1
+parent commit                    c82e53d1bb21eb8be4a0a867f5dba3d05dba821f
 integration branch               main
 current goal                     Goal 13 - Generate KAE capability manifest
 next unstarted goal              Goal 14 - Replace the provisional normalizer with an exact KAE exporter
@@ -18,6 +18,7 @@ KAE hosted run                   31720597916
 EvoGen prerequisite commit       4270e8332f8a03757b39a306b2e936ac8a618cc3
 EvoGen prerequisite hosted run   31717965263
 EvoGen plan ratchet commit       6265c42950fc5cf47eac70d64dc8e9d8ad86ba7a
+EvoGen proof-first route commit  c82e53d1bb21eb8be4a0a867f5dba3d05dba821f
 EvoGen cockpit proof commit      73a6ab25f5b726f23cba050f4ace1c3d70c83935
 EvoGen hosted run                31721525900
 alpha release commit             9c8d94c59a95222a719e20fac5a61d2ec712743d
